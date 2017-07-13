@@ -4,7 +4,7 @@
     "description": "RPG rolling dice simulation",
     "keywords": ["dice", "roll", "rpg"],
     "homepage": "https://github.com/Ethtezahl/dice-roller",
-    "licence": "MIT",
+    "license": "MIT",
     "authors": [
         {
             "name": "Bertrand Andres",
