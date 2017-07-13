@@ -1,0 +1,12 @@
+{
+    "require": {
+        "php": ">=7.0",
+        "phpunit/phpunit": "^6.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ethtezahl\\DiceRoller\\": "src",
+            "Ethtezahl\\DiceRoller\\Test\\": "test"
+        }
+    }
+}
