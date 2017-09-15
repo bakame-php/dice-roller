@@ -19,8 +19,15 @@
     },
     "autoload": {
         "psr-4": {
-            "Ethtezahl\\DiceRoller\\": "src",
+            "Ethtezahl\\DiceRoller\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
             "Ethtezahl\\DiceRoller\\Test\\": "test"
         }
+    },
+    "scripts": {
+        "phpunit": "phpunit --coverage-text"
     }
 }
