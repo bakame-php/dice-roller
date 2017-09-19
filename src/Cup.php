@@ -46,17 +46,11 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         }
 
         $size = self::filterSize($pSize);
-        $className = Dice::class;
         if ('f' === $size) {
-            $className = FudgeDice::class;
+            return new self(...array_fill(0, $pQuantity, new FudgeDice()));
         }
 
-        $dice = new self();
-        for ($i = 0; $i < $pQuantity; ++$i) {
-            $dice->items[] = new $className($size);
-        }
-
-        return $dice;
+        return new self(...array_fill(0, $pQuantity, new Dice($size)));
     }
 
     /**
