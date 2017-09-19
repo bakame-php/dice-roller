@@ -12,7 +12,6 @@ use PHPUnit\Framework\TestCase;
  */
 final class SortModifierTest extends TestCase
 {
-
     private $cup;
 
     public function setUp()

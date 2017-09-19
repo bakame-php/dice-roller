@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Ethtezahl\DiceRoller;
 
-use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use OutOfRangeException;
@@ -20,20 +19,10 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     private $items = [];
 
     /**
-     * New instance
-     *
-     * @param Rollable[] $pItems a list of Rollable object
-     */
-    public function __construct(Rollable ...$pItems)
-    {
-        $this->items = $pItems;
-    }
-
-    /**
      * Create a new Cup From Dice definition
      *
      * @param int        $pQuantity Dice count
-     * @param int|string $pSize    Dice sides count
+     * @param int|string $pSize     Dice sides count
      *
      * @throws OutOfRangeException if the quantity is lesser than 1
      *
@@ -46,11 +35,9 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         }
 
         $size = self::filterSize($pSize);
-        if ('f' === $size) {
-            return new self(...array_fill(0, $pQuantity, new FudgeDice()));
-        }
+        $dice = ('f' === $size) ? new FudgeDice() : new Dice($size);
 
-        return new self(...array_fill(0, $pQuantity, new Dice($size)));
+        return new self(...array_fill(0, $pQuantity, $dice));
     }
 
     /**
@@ -70,11 +57,21 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         }
 
         $size = strtolower((string) $pSize);
-        if ('f' === $size) {
+        if ('f' == $size) {
             return $size;
         }
 
         throw new OutOfRangeException(sprintf('The number of dice size `%s` is not valid', $pSize));
+    }
+
+    /**
+     * New instance
+     *
+     * @param Rollable ...$pItems a list of Rollable objects
+     */
+    public function __construct(Rollable ...$pItems)
+    {
+        $this->items = $pItems;
     }
 
     /**
@@ -90,7 +87,9 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getIterator()
     {
-        return new ArrayIterator($this->items);
+        foreach ($this->items as $rollable) {
+            yield $rollable;
+        }
     }
 
     /**

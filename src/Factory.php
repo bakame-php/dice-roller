@@ -13,15 +13,19 @@ final class Factory
 {
     const POOL_PATTERN = ',^(?<quantity>\d*)d(?<size>\d+|F)?(?<modifier>.*)?$,i';
     const MODIFIER_PATTERN = ',^
-        (?<modifier>
-            (?<type>!|!>|!<|dh|dl|kh|kl)?
-            (?<threshold>\d+)?
+        (?<algo>                             # modifier definition pattern
+            (?<type>!|!>|!<|!=|dh|dl|kh|kl)? # modifier types - exploding and sorting
+            (?<threshold>\d+)?               # modifier threshold
         )?
-        (?<math>
-            (?<operator>\+|-|/|\*|^)
-            (?<value>\d+)
-        )?$
-    ,xi';
+        (?<math1>                            # first arithmetic modifier pattern
+            (?<operator1>\+|-|/|\*|\^)       # first arithmetic operator supported
+            (?<value1>\d+)                   # first value to use to modify roll result
+        )?
+        (?<math2>                            # second arithmetic modifier pattern
+            (?<operator2>\+|-|/|\*|\^)       # second arithmetic operator supported
+            (?<value2>\d+)                   # second value to use to modify roll result
+        )?
+    $,xi';
 
     /**
      * Returns a new Cup Instance from a string pattern
@@ -124,15 +128,7 @@ final class Factory
             throw new InvalidArgumentException(sprintf('the following modifier `%s` is invalid or not supported', $pModifier));
         }
 
-        if ('' != $matches['modifier']) {
-            $rollable = $this->addModifier($matches, $pRollable);
-        }
-
-        if (!isset($matches['math'])) {
-            return $rollable ?? $pRollable;
-        }
-
-        return new ArithmeticModifier($rollable ?? $pRollable, (int) $matches['value'], $matches['operator']);
+        return $this->addArithmeticModifier($matches, $this->addComplexModifier($matches, $pRollable));
     }
 
     /**
@@ -143,11 +139,17 @@ final class Factory
      *
      * @return Rollable
      */
-    private function addModifier(array $pMatches, Cup $pRollable): Rollable
+    private function addComplexModifier(array $pMatches, Cup $pRollable): Rollable
     {
+        if ('' == $pMatches['algo']) {
+            return $pRollable;
+        }
+
         $type = strtolower($pMatches['type']);
         if (0 !== strpos($type, '!')) {
-            return new SortModifier($pRollable, (int) $pMatches['threshold'], $type);
+            $threshold = $pMatches['threshold'] ?? 1;
+
+            return new SortModifier($pRollable, (int) $threshold, $type);
         }
 
         $compare = substr($type, 1);
@@ -158,5 +160,27 @@ final class Factory
         $threshold = $pMatches['threshold'] ?? -1;
 
         return new ExplodeModifier($pRollable, (int) $threshold, $compare);
+    }
+
+    /**
+     * Decorate the Rollable object with up to 2 ArithmeticModifier
+     *
+     * @param array    $pMatches
+     * @param Rollable $pRollable
+     *
+     * @return Rollable
+     */
+    private function addArithmeticModifier(array $pMatches, Rollable $pRollable): Rollable
+    {
+        if (!isset($pMatches['math1'])) {
+            return $pRollable;
+        }
+
+        $rollable = new ArithmeticModifier($pRollable, (int) $pMatches['value1'], $pMatches['operator1']);
+        if (!isset($pMatches['math2'])) {
+            return $rollable;
+        }
+
+        return new ArithmeticModifier($rollable, (int) $pMatches['value2'], $pMatches['operator2']);
     }
 }

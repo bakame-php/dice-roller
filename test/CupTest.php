@@ -14,11 +14,11 @@ use PHPUnit\Framework\TestCase;
  */
 final class CupTest extends TestCase
 {
-    private $Factory;
+    private $factory;
 
     public function setUp()
     {
-        $this->Factory = new Factory();
+        $this->factory = new Factory();
     }
 
     /**
@@ -35,8 +35,8 @@ final class CupTest extends TestCase
     public function testRoll()
     {
         $cup = new Cup(
-            $this->Factory->newInstance('4D10'),
-            $this->Factory->newInstance('2d4')
+            $this->factory->newInstance('4D10'),
+            $this->factory->newInstance('2d4')
         );
         $this->assertSame(6, $cup->getMinimum());
         $this->assertSame(48, $cup->getMaximum());

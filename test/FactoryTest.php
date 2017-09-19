@@ -13,16 +13,16 @@ use PHPUnit\Framework\TestCase;
  */
 final class FactoryTest extends TestCase
 {
-    private $Factory;
+    private $factory;
 
     public function setUp()
     {
-        $this->Factory = new Factory();
+        $this->factory = new Factory();
     }
 
     public function testConstructor()
     {
-        $this->assertEquals($this->Factory, new Factory());
+        $this->assertEquals($this->factory, new Factory());
     }
 
     /**
@@ -35,7 +35,7 @@ final class FactoryTest extends TestCase
     public function testInvalidGroupDefinition(string $expected)
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->Factory->newInstance($expected);
+        $this->factory->newInstance($expected);
     }
 
     public function invalidStringProvider()
@@ -52,15 +52,16 @@ final class FactoryTest extends TestCase
      * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
-     * @covers ::addModifier
+     * @covers ::addComplexModifier
+     * @covers ::addArithmeticModifier
      * @covers ::decorate
      * @covers ::createPool
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @dataProvider validStringProvider
      */
-    public function testValidGroupDefinition(string $expected)
+    public function testValidParser(string $expected)
     {
-        $cup = $this->Factory->newInstance($expected);
+        $cup = $this->factory->newInstance($expected);
         $this->assertInstanceOf(Rollable::class, $cup);
     }
 
@@ -78,12 +79,72 @@ final class FactoryTest extends TestCase
             'multiple fudge dice' => ['dF+3dF'],
             'mixed cup' => ['2df+3d2'],
             'add modifier' => ['2d3-4'],
-            'add modifier to multiple group' => ['2d3+4+3dF!>1'],
+            'add modifier to multiple group' => ['2d3+4+3dF!>1/4^3'],
             'add explode modifier' => ['2d3!'],
             'add keep lowest modifier' => ['2d3kl1'],
             'add keep highest modifier' => ['2d3kh2'],
             'add drop lowest modifier' => ['4d6dl2'],
             'add drop highest modifier' => ['4d6dh3'],
+        ];
+    }
+
+    /**
+     * @covers ::newInstance
+     * @covers ::explode
+     * @covers ::parsePool
+     * @covers ::addComplexModifier
+     * @covers ::addArithmeticModifier
+     * @covers ::decorate
+     * @covers ::createPool
+     * @dataProvider permissiveParserProvider
+     */
+    public function testPermissiveParser($full, $short)
+    {
+        $this->assertEquals(
+            $this->factory->newInstance($full),
+            $this->factory->newInstance($short)
+        );
+    }
+
+    public function permissiveParserProvider()
+    {
+        return [
+            'default dice size' => [
+                'full' => '1d6',
+                'short' => '1d',
+            ],
+            'default dice size 2' => [
+                'full' => '1d6',
+                'short' => 'd',
+            ],
+            'default fudge dice size' => [
+                'full' => '1dF',
+                'short' => 'df',
+            ],
+            'default keep lowest modifier' => [
+                'full' => '2d3kl1',
+                'short' => '2d3KL',
+            ],
+            'default keep highest modifier' => [
+                'full' => '2d3KH1',
+                'short' => '2d3kh',
+            ],
+            'default drop highest modifier' => [
+                'full' => '2d3dh1',
+                'short' => '2d3DH',
+            ],
+            'default drop lowest modifier' => [
+                'full' => '2d3dl1',
+                'short' => '2D3Dl',
+            ],
+            'default explode modifier' => [
+                'full' => '1d6!',
+                'short' => 'D!',
+            ],
+            'default explode modifier with threshold' => [
+                'full' => '1d6!=3',
+                'short' => 'D!3',
+            ]
         ];
     }
 
@@ -95,7 +156,7 @@ final class FactoryTest extends TestCase
      */
     public function testFiveFourSidedDice()
     {
-        $group = $this->Factory->newInstance('5D4');
+        $group = $this->factory->newInstance('5D4');
         $this->assertCount(5, $group);
         $this->assertContainsOnlyInstancesOf(Dice::class, $group);
         foreach ($group as $dice) {
@@ -116,7 +177,7 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithNoDice()
     {
-        $cup = $this->Factory->newInstance();
+        $cup = $this->factory->newInstance();
         $this->assertCount(0, $cup);
         for ($i = 0; $i < 5; $i++) {
             $this->assertEquals(0, $cup->roll());
@@ -132,7 +193,7 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithSingleDice()
     {
-        $cup = $this->Factory->newInstance('d8');
+        $cup = $this->factory->newInstance('d8');
         $this->assertCount(1, $cup);
         $this->assertContainsOnlyInstancesOf(Rollable::class, $cup);
         foreach ($cup as $dice) {
@@ -155,7 +216,7 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithDefaultDice()
     {
-        $cup = $this->Factory->newInstance('d');
+        $cup = $this->factory->newInstance('d');
         $this->assertCount(1, $cup);
         $this->assertContainsOnlyInstancesOf(Rollable::class, $cup);
         foreach ($cup as $dice) {
@@ -182,7 +243,7 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithMultipleDice()
     {
-        $cup = $this->Factory->newInstance('2D6+3d4');
+        $cup = $this->factory->newInstance('2D6+3d4');
         $this->assertCount(2, $cup);
         $res = iterator_to_array($cup, false);
         $this->assertInstanceOf(Cup::class, $res[0]);

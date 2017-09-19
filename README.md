@@ -15,6 +15,8 @@ composer require ethtezahl/dice-roller
 The code above will simulate the roll of two six-sided die
 
 ```php
+<?php
+
 // First: import needed class
 use Ethtezahl\DiceRoller\Factory;
 
@@ -28,10 +30,11 @@ $cup = $factory->newInstance('2D6');
 echo $cup->roll();
 ```
 
-## Advanced use: with multiple types of die
+## Advanced use: with multiple types of dices
 
-Imagine you need to roll three twenty-sided die and one four-sided dice:
+The following expression is supported by the library:
 
 ```php
-$cup = $factory->newInstance('3D20+4+D4!>3');
+$cup = $factory->newInstance('3D20+4+D4!>3/4^3');
+echo $cup->roll();
 ```
