@@ -9,7 +9,6 @@ namespace Ethtezahl\DiceRoller;
 
 use Countable;
 use IteratorAggregate;
-use OutOfRangeException;
 
 final class Cup implements Countable, IteratorAggregate, Rollable
 {
@@ -24,18 +23,18 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      * @param int        $pQuantity Dice count
      * @param int|string $pSize     Dice sides count
      *
-     * @throws OutOfRangeException if the quantity is lesser than 1
+     * @throws Exception if the quantity is lesser than 1
      *
      * @return self
      */
     public static function createFromDice(int $pQuantity, $pSize): self
     {
         if ($pQuantity < 1) {
-            throw new OutOfRangeException(sprintf('The quantity of dice `%s` is not valid', $pQuantity));
+            throw new Exception(sprintf('The quantity of dice `%s` is not valid', $pQuantity));
         }
 
         $size = self::filterSize($pSize);
-        $dice = ('f' === $size) ? new FudgeDice() : new Dice($size);
+        $dice = 'f' === $size ? new FudgeDice() : new Dice($size);
 
         return new self(...array_fill(0, $pQuantity, $dice));
     }
@@ -45,7 +44,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      *
      * @param  int|string $pSize
      *
-     * @throws OutOfRangeException if the submitted size is invalid
+     * @throws Exception if the submitted size is invalid
      *
      * @return int|string
      */
@@ -61,7 +60,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
             return $size;
         }
 
-        throw new OutOfRangeException(sprintf('The number of dice size `%s` is not valid', $pSize));
+        throw new Exception(sprintf('The number of dice `%s` is not valid', $pSize));
     }
 
     /**

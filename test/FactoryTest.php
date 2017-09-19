@@ -2,10 +2,10 @@
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\Dice;
+use Ethtezahl\DiceRoller\Exception;
+use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\Rollable;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,12 +29,12 @@ final class FactoryTest extends TestCase
      * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
-     * @covers ::decorate
+     * @covers ::createPool
      * @dataProvider invalidStringProvider
      */
     public function testInvalidGroupDefinition(string $expected)
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(Exception::class);
         $this->factory->newInstance($expected);
     }
 
@@ -54,7 +54,6 @@ final class FactoryTest extends TestCase
      * @covers ::parsePool
      * @covers ::addComplexModifier
      * @covers ::addArithmeticModifier
-     * @covers ::decorate
      * @covers ::createPool
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @dataProvider validStringProvider
@@ -94,7 +93,6 @@ final class FactoryTest extends TestCase
      * @covers ::parsePool
      * @covers ::addComplexModifier
      * @covers ::addArithmeticModifier
-     * @covers ::decorate
      * @covers ::createPool
      * @dataProvider permissiveParserProvider
      */

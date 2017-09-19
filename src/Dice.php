@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Ethtezahl\DiceRoller;
 
 use Countable;
-use OutOfRangeException;
 
 final class Dice implements Countable, Rollable
 {
@@ -23,12 +22,12 @@ final class Dice implements Countable, Rollable
      *
      * @param int $pSize number of side of your dice.
      *
-     * @throws OutOfRangeException if a Dice contains less than 2 size
+     * @throws Exception if a Dice contains less than 2 size
      */
     public function __construct(int $pSize)
     {
         if (2 > $pSize) {
-            throw new OutOfRangeException('Your dice must have at least 2 size.');
+            throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', $pSize));
         }
 
         $this->size = $pSize;

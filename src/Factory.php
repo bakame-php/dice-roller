@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace Ethtezahl\DiceRoller;
 
-use InvalidArgumentException;
-
 final class Factory
 {
     const POOL_PATTERN = ',^(?<quantity>\d*)d(?<size>\d+|F)?(?<modifier>.*)?$,i';
@@ -36,10 +34,6 @@ final class Factory
      */
     public function newInstance(string $pAsked = ''): Rollable
     {
-        if ('' == $pAsked) {
-            return new Cup();
-        }
-
         $parts = $this->explode($pAsked);
         if (1 == count($parts)) {
             return $this->parsePool(array_shift($parts));
@@ -76,17 +70,21 @@ final class Factory
      *
      * @param string $pStr dice configuration string
      *
-     * @throws InvalidArgumentException if the configuration string is not supported
+     * @throws Exception if the configuration string is not supported
      *
      * @return Rollable
      */
     private function parsePool(string $pStr): Rollable
     {
-        if (!preg_match(self::POOL_PATTERN, $pStr, $matches)) {
-            throw new InvalidArgumentException(sprintf('the following dice format `%s` is invalid or not supported', $pStr));
+        if ('' == $pStr) {
+            return new Cup();
         }
 
-        return $this->createPool($matches);
+        if (preg_match(self::POOL_PATTERN, $pStr, $matches)) {
+            return $this->createPool($matches);
+        }
+
+        throw new Exception(sprintf('the submitted dice format `%s` is invalid or not supported', $pStr));
     }
 
     /**
@@ -109,26 +107,11 @@ final class Factory
             $size = '6';
         }
 
-        return $this->decorate($pMatches['modifier'], Cup::createFromDice($quantity, $size));
-    }
-
-    /**
-     * Decorate the Pool with modifiers
-     *
-     * @param string $pModifier
-     * @param Cup    $pRollable
-     *
-     * @throws InvalidArgumentException If the modifier string is unknown or not supported
-     *
-     * @return Rollable
-     */
-    private function decorate(string $pModifier, Cup $pRollable): Rollable
-    {
-        if (!preg_match(self::MODIFIER_PATTERN, $pModifier, $matches)) {
-            throw new InvalidArgumentException(sprintf('the following modifier `%s` is invalid or not supported', $pModifier));
+        if (preg_match(self::MODIFIER_PATTERN, $pMatches['modifier'], $matches)) {
+            return $this->addArithmeticModifier($matches, $this->addComplexModifier($matches, Cup::createFromDice($quantity, $size)));
         }
 
-        return $this->addArithmeticModifier($matches, $this->addComplexModifier($matches, $pRollable));
+        throw new Exception(sprintf('the submitted modifier `%s` is invalid or not supported', $pMatches['modifier']));
     }
 
     /**

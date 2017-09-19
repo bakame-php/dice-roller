@@ -2,7 +2,7 @@
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\Dice;
-use OutOfRangeException;
+use Ethtezahl\DiceRoller\Exception;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -36,7 +36,7 @@ final class DiceTest extends TestCase
      */
     public function testConstructorWithWrongValue()
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(Exception::class);
         new Dice(1);
     }
 }

@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace Ethtezahl\DiceRoller;
 
-use OutOfRangeException;
-
 final class ExplodeModifier implements Rollable
 {
     const EQUALS = '=';
@@ -51,7 +49,7 @@ final class ExplodeModifier implements Rollable
         }
 
         if (!in_array($pCompare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
-            throw new OutOfRangeException(sprintf('The submitted compared string `%s` is invalid or unsuported', $pCompare));
+            throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $pCompare));
         }
 
         $this->compare = $pCompare;

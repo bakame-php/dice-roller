@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace Ethtezahl\DiceRoller;
 
-use OutOfRangeException;
-
 final class SortModifier implements Rollable
 {
     const DROP_HIGHEST = 'dh';
@@ -54,11 +52,11 @@ final class SortModifier implements Rollable
     public function __construct(Cup $pRollable, int $pThreshold, string $pAlgo)
     {
         if (count($pRollable) < $pThreshold) {
-            throw new OutOfRangeException(sprintf('The number of rollable objects %s must be lesser or equal to the threshold value %s', count($pRollable), $pThreshold));
+            throw new Exception(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pRollable), $pThreshold));
         }
 
         if (!isset($this->methodList[$pAlgo])) {
-            throw new OutOfRangeException('Unknown or unsupported sortable algorithm');
+            throw new Exception(sprintf('Unknown or unsupported sortable algorithm `%s`', $pAlgo));
         }
 
         $this->rollable = $pRollable;

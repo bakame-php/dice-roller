@@ -1,9 +1,9 @@
 <?php
 namespace Ethtezahl\DiceRoller\Test;
 
-use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\ArithmeticModifier;
-use OutOfRangeException;
+use Ethtezahl\DiceRoller\Dice;
+use Ethtezahl\DiceRoller\Exception;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -16,7 +16,7 @@ final class ArithmeticModifierTest extends TestCase
      */
     public function testArithmeticModifierConstructorThrows1()
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(Exception::class);
         new ArithmeticModifier(new Dice(6), -3, '+');
     }
 
@@ -25,7 +25,7 @@ final class ArithmeticModifierTest extends TestCase
      */
     public function testArithmeticModifierConstructorThrows2()
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(Exception::class);
         new ArithmeticModifier(new Dice(6), 3, '**');
     }
 

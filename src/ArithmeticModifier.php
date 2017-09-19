@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace Ethtezahl\DiceRoller;
 
-use OutOfRangeException;
-
 final class ArithmeticModifier implements Rollable
 {
     /**
@@ -38,15 +36,18 @@ final class ArithmeticModifier implements Rollable
      * @param Rollable $pRollable
      * @param int      $pValue
      * @param string   $operator
+     *
+     * @throws Exception if the value is lesser than 0
+     * @throws Exception if the operator is not recognized
      */
     public function __construct(Rollable $pRollable, int $pValue, string $pOperator)
     {
         if ($pValue < 0) {
-            throw new OutOfRangeException('The value MUST be equal or greather than 0');
+            throw new Exception(sprintf('The submitted value `%s` MUST be equal or greather than 0', $pValue));
         }
 
-        if (!in_array($pOperator, ['+', '-', '*', '^', '/'], true)) {
-            throw new OutOfRangeException('Invalid or Unsupported operator');
+        if (!in_array($pOperator, ['+', '-', '*', '^', '/'])) {
+            throw new Exception(sprintf('Invalid or Unsupported operator `%s`', $pOperator));
         }
 
         $this->operator = $pOperator;

@@ -2,9 +2,9 @@
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\Dice;
+use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\SortModifier;
-use OutOfRangeException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,7 +24,7 @@ final class SortModifierTest extends TestCase
      */
     public function testConstructorThrows1()
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(Exception::class);
         new SortModifier($this->cup, 6, SortModifier::DROP_LOWEST);
     }
 
@@ -33,7 +33,7 @@ final class SortModifierTest extends TestCase
      */
     public function testConstructorThrows2()
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(Exception::class);
         new SortModifier($this->cup, 3, 'foobar');
     }
 

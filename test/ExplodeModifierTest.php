@@ -2,9 +2,9 @@
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\Factory;
+use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\ExplodeModifier;
-use OutOfRangeException;
+use Ethtezahl\DiceRoller\Factory;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,7 +24,7 @@ final class ExplodeModifierTest extends TestCase
      */
     public function testConstructorThrows()
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(Exception::class);
         new ExplodeModifier($this->cup, 2, 'foobar');
     }
 

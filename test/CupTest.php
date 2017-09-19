@@ -2,11 +2,11 @@
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\Dice;
+use Ethtezahl\DiceRoller\Exception;
+use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\FudgeDice;
 use Ethtezahl\DiceRoller\Rollable;
-use OutOfRangeException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -114,7 +114,7 @@ final class CupTest extends TestCase
      */
     public function testCreateFromDiceThrowsException($quantity, $sides)
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(Exception::class);
         Cup::createFromDice($quantity, $sides);
     }
 
