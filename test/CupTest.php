@@ -52,21 +52,65 @@ final class CupTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::createFromDice
+     * @covers ::filterSize
      * @covers ::getMinimum
      * @covers ::getMaximum
+     * @dataProvider validNamedConstructor
      */
-    public function testCreateFromDice()
+    public function testCreateFromDice($quantity, $sides, $className, $min, $max)
     {
-        $cup = Cup::createFromDice(2, 3);
-        $this->assertCount(2, $cup);
-        $this->assertContainsOnlyInstancesOf(Dice::class, $cup);
-        $this->assertSame(2, $cup->getMinimum());
-        $this->assertSame(6, $cup->getMaximum());
+        $cup = Cup::createFromDice($quantity, $sides);
+        $this->assertCount($quantity, $cup);
+        $this->assertContainsOnlyInstancesOf($className, $cup);
+        $this->assertSame($min, $cup->getMinimum());
+        $this->assertSame($max, $cup->getMaximum());
+    }
+
+    public function validNamedConstructor()
+    {
+        return [
+            'basic dice' => [
+                'quantity' => 2,
+                'sides' => 6,
+                'className' => Dice::class,
+                'min' => 2,
+                'max' => 12,
+            ],
+            'fudge dice' => [
+                'quantity' => 2,
+                'sides' => 'F',
+                'className' => FudgeDice::class,
+                'min' => -2,
+                'max' => 2,
+            ],
+            'fudge dice case insensitive' => [
+                'quantity' => 2,
+                'sides' => 'f',
+                'className' => FudgeDice::class,
+                'min' => -2,
+                'max' => 2,
+            ],
+            'multiple basic dice' => [
+                'quantity' => 4,
+                'sides' => 3,
+                'className' => Dice::class,
+                'min' => 4,
+                'max' => 12,
+            ],
+            'multipe fudge dice' => [
+                'quantity' => 4,
+                'sides' => 'f',
+                'className' => FudgeDice::class,
+                'min' => -4,
+                'max' => 4,
+            ],
+        ];
     }
 
     /**
      * @covers ::createFromDice
-     * @dataProvider invalidDiceProvider
+     * @covers ::filterSize
+     * @dataProvider invalidNamedConstructor
      */
     public function testCreateFromDiceThrowsException($quantity, $sides)
     {
@@ -74,7 +118,7 @@ final class CupTest extends TestCase
         Cup::createFromDice($quantity, $sides);
     }
 
-    public function invalidDiceProvider()
+    public function invalidNamedConstructor()
     {
         return [
             'invalid quantity' => [
@@ -82,33 +126,13 @@ final class CupTest extends TestCase
                 'sides' => 3,
             ],
             'invalid sides' => [
-                'quantity' => 1,
+                'quantity' => 2,
                 'sides' => 1,
             ],
+            'invalid sides with wrong string' => [
+                'quantity' => 3,
+                'sides' => 'foobar',
+            ]
         ];
-    }
-
-    /**
-     * @covers ::__construct
-     * @covers ::createFromFudgeDice
-     * @covers ::getMinimum
-     * @covers ::getMaximum
-     */
-    public function testCreateFromFudgeDice()
-    {
-        $cup = Cup::createFromFudgeDice(3);
-        $this->assertCount(3, $cup);
-        $this->assertContainsOnlyInstancesOf(FudgeDice::class, $cup);
-        $this->assertSame(-3, $cup->getMinimum());
-        $this->assertSame(3, $cup->getMaximum());
-    }
-
-    /**
-     * @covers ::createFromFudgeDice
-     */
-    public function testCreateFromFudgeDiceThrowsException()
-    {
-        $this->expectException(OutOfRangeException::class);
-        Cup::createFromFudgeDice(0);
     }
 }

@@ -32,48 +32,55 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * Create a new Cup From Dice definition
      *
-     * @param int $pQuantity Dice count
-     * @param int $pSides    Dice sides count
+     * @param int        $pQuantity Dice count
+     * @param int|string $pSize    Dice sides count
      *
      * @throws OutOfRangeException if the quantity is lesser than 1
      *
      * @return self
      */
-    public static function createFromDice(int $pQuantity, int $pSides): self
+    public static function createFromDice(int $pQuantity, $pSize): self
     {
         if ($pQuantity < 1) {
             throw new OutOfRangeException(sprintf('The quantity of dice `%s` is not valid', $pQuantity));
         }
 
+        $size = self::filterSize($pSize);
+        $className = Dice::class;
+        if ('f' === $size) {
+            $className = FudgeDice::class;
+        }
+
         $dice = new self();
         for ($i = 0; $i < $pQuantity; ++$i) {
-            $dice->items[] = new Dice($pSides);
+            $dice->items[] = new $className($size);
         }
 
         return $dice;
     }
 
     /**
-     * Create a new Cup From Dice definition
+     * Filter the Dice Slide size
      *
-     * @param int $pQuantity Dice count
+     * @param  int|string $pSize
      *
-     * @throws OutOfRangeException if the quantity is lesser than 1
+     * @throws OutOfRangeException if the submitted size is invalid
      *
-     * @return self
+     * @return int|string
      */
-    public static function createFromFudgeDice(int $pQuantity): self
+    private static function filterSize($pSize)
     {
-        if ($pQuantity < 1) {
-            throw new OutOfRangeException(sprintf('The quantity of dice `%s` is not valid', $pQuantity));
+        $size = (int) filter_var($pSize, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
+        if ($size > 1) {
+            return $size;
         }
 
-        $dice = new self();
-        for ($i = 0; $i < $pQuantity; ++$i) {
-            $dice->items[] = new FudgeDice();
+        $size = strtolower((string) $pSize);
+        if ('f' === $size) {
+            return $size;
         }
 
-        return $dice;
+        throw new OutOfRangeException(sprintf('The number of dice size `%s` is not valid', $pSize));
     }
 
     /**

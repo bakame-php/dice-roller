@@ -11,11 +11,17 @@ use InvalidArgumentException;
 
 final class Factory
 {
-    const ARITHMETIC_MODIFIER_PATTERN = ',^(?<operator>\+|-|/|\*|^)(?<value>\d+)$,';
-    const SORT_MODIFIER_PATTERN = ',^(?<algo>kh|kl|dl|dh)(?<value>\d+)$,i';
-    const EXPLODE_MODIFIER_PATTERN = ',^\!(?<compare>>|<)?(?<value>\d+)?$,i';
-    const DICE_PATTERN = ',^(?<quantity>\d*)d(?<size>\d+)?(?<modifier>.*)?$,i';
-    const FUDGE_DICE_PATTERN = ',^(?<quantity>\d*)dF(?<modifier>.*)?$,i';
+    const POOL_PATTERN = ',^(?<quantity>\d*)d(?<size>\d+|F)?(?<modifier>.*)?$,i';
+    const MODIFIER_PATTERN = ',^
+        (?<modifier>
+            (?<type>!|!>|!<|dh|dl|kh|kl)?
+            (?<threshold>\d+)?
+        )?
+        (?<math>
+            (?<operator>\+|-|/|\*|^)
+            (?<value>\d+)
+        )?$
+    ,xi';
 
     /**
      * Returns a new Cup Instance from a string pattern
@@ -32,10 +38,10 @@ final class Factory
 
         $parts = $this->explode($pAsked);
         if (1 == count($parts)) {
-            return $this->parseGroup($parts[0]);
+            return $this->parsePool(array_shift($parts));
         }
 
-        return new Cup(...array_map([$this, 'parseGroup'], $parts));
+        return new Cup(...array_map([$this, 'parsePool'], $parts));
     }
 
     /**
@@ -50,7 +56,7 @@ final class Factory
         $parts = explode('+', $pStr);
         $res = [];
         foreach ($parts as $offset => $value) {
-            if (is_numeric($value) && $offset > 0) {
+            if (false === stripos($value, 'd') && $offset > 0) {
                 $res[count($res) - 1] .= '+'.$value;
                 continue;
             }
@@ -70,17 +76,13 @@ final class Factory
      *
      * @return Rollable
      */
-    private function parseGroup(string $pStr): Rollable
+    private function parsePool(string $pStr): Rollable
     {
-        if (preg_match(self::FUDGE_DICE_PATTERN, $pStr, $matches)) {
-            return $this->createFudgeDicePool($matches);
+        if (!preg_match(self::POOL_PATTERN, $pStr, $matches)) {
+            throw new InvalidArgumentException(sprintf('the following dice format `%s` is invalid or not supported', $pStr));
         }
 
-        if (preg_match(self::DICE_PATTERN, $pStr, $matches)) {
-            return $this->createDicePool($matches);
-        }
-
-        throw new InvalidArgumentException(sprintf('the following dice format `%s` is invalid or not supported', $pStr));
+        return $this->createPool($matches);
     }
 
     /**
@@ -90,44 +92,24 @@ final class Factory
      *
      * @return Rollable
      */
-    private function createDicePool(array $pMatches): Rollable
+    private function createPool(array $pMatches): Rollable
     {
         $quantity = (int) ($pMatches['quantity'] ?? 1);
         if (0 == $quantity) {
             $quantity = 1;
         }
 
-        $size = (int) ($pMatches['size'] ?? 6);
-        if (0 == $size) {
-            $size = 6;
+        $size = $pMatches['size'] ?? '6';
+        $size = strtolower($size);
+        if ('' == $size) {
+            $size = '6';
         }
 
-        $modifier = $pMatches['modifier'] ?? '';
-
-        return $this->addModifier($modifier, Cup::createFromDice($quantity, $size));
+        return $this->decorate($pMatches['modifier'], Cup::createFromDice($quantity, $size));
     }
 
     /**
-     * Returns a Cup made of identical Dices
-     *
-     * @param array $pMatches
-     *
-     * @return Rollable
-     */
-    private function createFudgeDicePool(array $pMatches): Rollable
-    {
-        $quantity = (int) ($pMatches['quantity'] ?? 1);
-        if (0 == $quantity) {
-            $quantity = 1;
-        }
-
-        $modifier = $pMatches['modifier'] ?? '';
-
-        return $this->addModifier($modifier, Cup::createFromFudgeDice($quantity));
-    }
-
-    /**
-     * Add the correct modifier
+     * Decorate the Pool with modifiers
      *
      * @param string $pModifier
      * @param Cup    $pRollable
@@ -136,29 +118,45 @@ final class Factory
      *
      * @return Rollable
      */
-    private function addModifier(string $pModifier, Cup $pRollable): Rollable
+    private function decorate(string $pModifier, Cup $pRollable): Rollable
     {
-        if ('' == $pModifier) {
-            return $pRollable;
+        if (!preg_match(self::MODIFIER_PATTERN, $pModifier, $matches)) {
+            throw new InvalidArgumentException(sprintf('the following modifier `%s` is invalid or not supported', $pModifier));
         }
 
-        if (preg_match(self::ARITHMETIC_MODIFIER_PATTERN, $pModifier, $matches)) {
-            return new ArithmeticModifier($pRollable, (int) $matches['value'], $matches['operator']);
+        if ('' != $matches['modifier']) {
+            $rollable = $this->addModifier($matches, $pRollable);
         }
 
-        if (preg_match(self::SORT_MODIFIER_PATTERN, $pModifier, $matches)) {
-            $matches['algo'] = strtolower($matches['algo']);
-
-            return new SortModifier($pRollable, (int) $matches['value'], $matches['algo']);
+        if (!isset($matches['math'])) {
+            return $rollable ?? $pRollable;
         }
 
-        if (preg_match(self::EXPLODE_MODIFIER_PATTERN, $pModifier, $matches)) {
-            $matches['compare'] = $matches['compare'] ?? ExplodeModifier::EQUALS;
-            $matches['value'] = $matches['value'] ?? '-1';
+        return new ArithmeticModifier($rollable ?? $pRollable, (int) $matches['value'], $matches['operator']);
+    }
 
-            return new ExplodeModifier($pRollable, (int) $matches['value'], $matches['compare']);
+    /**
+     * Decorate the Rollable object with The SortModifer Or the ExplodeModifier
+     *
+     * @param array $pMatches
+     * @param Cup   $pRollable
+     *
+     * @return Rollable
+     */
+    private function addModifier(array $pMatches, Cup $pRollable): Rollable
+    {
+        $type = strtolower($pMatches['type']);
+        if (0 !== strpos($type, '!')) {
+            return new SortModifier($pRollable, (int) $pMatches['threshold'], $type);
         }
 
-        throw new InvalidArgumentException(sprintf('the following modifier `%s` is invalid or not supported', $pModifier));
+        $compare = substr($type, 1);
+        if ('' == $compare) {
+            $compare = ExplodeModifier::EQUALS;
+        }
+
+        $threshold = $pMatches['threshold'] ?? -1;
+
+        return new ExplodeModifier($pRollable, (int) $threshold, $compare);
     }
 }

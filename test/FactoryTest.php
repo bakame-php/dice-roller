@@ -28,8 +28,8 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers ::explode
-     * @covers ::parseGroup
-     * @covers ::addModifier
+     * @covers ::parsePool
+     * @covers ::decorate
      * @dataProvider invalidStringProvider
      */
     public function testInvalidGroupDefinition(string $expected)
@@ -51,10 +51,10 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers ::explode
-     * @covers ::parseGroup
+     * @covers ::parsePool
      * @covers ::addModifier
-     * @covers ::createDicePool
-     * @covers ::createFudgeDicePool
+     * @covers ::decorate
+     * @covers ::createPool
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @dataProvider validStringProvider
      */
@@ -79,6 +79,7 @@ final class FactoryTest extends TestCase
             'mixed cup' => ['2df+3d2'],
             'add modifier' => ['2d3-4'],
             'add modifier to multiple group' => ['2d3+4+3dF!>1'],
+            'add explode modifier' => ['2d3!'],
             'add keep lowest modifier' => ['2d3kl1'],
             'add keep highest modifier' => ['2d3kh2'],
             'add drop lowest modifier' => ['4d6dl2'],
@@ -87,7 +88,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::createDicePool
+     * @covers ::createPool
      * @covers \Ethtezahl\DiceRoller\Rollable
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::getIterator
@@ -123,7 +124,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::parseGroup
+     * @covers ::parsePool
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::getIterator
      * @covers \Ethtezahl\DiceRoller\Rollable
@@ -146,7 +147,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::parseGroup
+     * @covers ::parsePool
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::getIterator
      * @covers \Ethtezahl\DiceRoller\Rollable
@@ -173,7 +174,7 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers ::parseGroup
+     * @covers ::parsePool
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::getIterator
      * @covers \Ethtezahl\DiceRoller\Rollable
