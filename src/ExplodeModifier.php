@@ -78,7 +78,7 @@ final class ExplodeModifier implements Rollable
     {
         $sum = 0;
         foreach ($this->rollable as $innerRoll) {
-            $sum = $this->sum($sum, $innerRoll);
+            $sum = $this->calculate($sum, $innerRoll);
         }
 
         return $sum;
@@ -93,7 +93,7 @@ final class ExplodeModifier implements Rollable
      *
      * @return int
      */
-    private function sum(int $pSum, Rollable $pRollable): int
+    private function calculate(int $pSum, Rollable $pRollable): int
     {
         $threshold = $this->threshold === -1 ? $pRollable->getMaximum() : $this->threshold;
         do {

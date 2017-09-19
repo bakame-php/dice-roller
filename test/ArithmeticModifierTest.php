@@ -33,7 +33,7 @@ final class ArithmeticModifierTest extends TestCase
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
-     * @covers ::sum
+     * @covers ::calculate
      * @covers ::roll
      * @dataProvider validArithmeticProvider
      */

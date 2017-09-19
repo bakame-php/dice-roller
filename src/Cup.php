@@ -74,7 +74,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     }
 
     /**
-     * @inheritdoc
+     * Returns the number of Rollable objects
      */
     public function count()
     {
@@ -100,11 +100,11 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     }
 
     /**
-     * Add the result of the Rollable::roll method
+     * Add the result of the Rollable::getMinimum method
      * to the submitted sum
      *
-     * @param  int      $pSum  initial sum
-     * @param  Rollable $pRollable
+     * @param int      $pSum  initial sum
+     * @param Rollable $pRollable
      *
      * @return int
      */
@@ -122,11 +122,11 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     }
 
     /**
-     * Add the result of the Rollable::roll method
+     * Add the result of the Rollable::getMaximum method
      * to the submitted sum
      *
-     * @param  int      $pSum  initial sum
-     * @param  Rollable $pRollable
+     * @param int      $pSum  initial sum
+     * @param Rollable $pRollable
      *
      * @return int
      */
@@ -140,7 +140,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function roll(): int
     {
-        return array_reduce($this->items, [$this, 'sum'], 0);
+        return array_reduce($this->items, [$this, 'calculate'], 0);
     }
 
     /**
@@ -152,7 +152,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      *
      * @return int
      */
-    private function sum(int $pSum, Rollable $pRollable): int
+    private function calculate(int $pSum, Rollable $pRollable): int
     {
         return $pSum + $pRollable->roll();
     }

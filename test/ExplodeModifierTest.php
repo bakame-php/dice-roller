@@ -32,7 +32,7 @@ final class ExplodeModifierTest extends TestCase
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
-     * @covers ::sum
+     * @covers ::calculate
      * @covers ::isValid
      * @covers ::roll
      * @dataProvider validProvider

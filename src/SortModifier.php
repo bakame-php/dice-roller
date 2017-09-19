@@ -69,17 +69,33 @@ final class SortModifier implements Rollable
      */
     public function getMinimum(): int
     {
-        return $this->sum('getMinimum');
+        return $this->calculate('getMinimum');
     }
 
     /**
-     * Compute the sum to be return
+     * @inheritdoc
+     */
+    public function getMaximum(): int
+    {
+        return $this->calculate('getMaximum');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function roll(): int
+    {
+        return $this->calculate('roll');
+    }
+
+    /**
+     * Computes the sum to be return
      *
      * @param string $pMethod One of the Rollable method
      *
      * @return int
      */
-    private function sum(string $pMethod): int
+    private function calculate(string $pMethod): int
     {
         $res = [];
         foreach ($this->rollable as $rollable) {
@@ -143,21 +159,5 @@ final class SortModifier implements Rollable
         sort($pSum);
 
         return array_sum(array_slice($pSum, 0, $this->threshold));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMaximum(): int
-    {
-        return $this->sum('getMaximum');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function roll(): int
-    {
-        return $this->sum('roll');
     }
 }

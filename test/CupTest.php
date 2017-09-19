@@ -26,7 +26,7 @@ final class CupTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
-     * @covers ::sum
+     * @covers ::calculate
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::count

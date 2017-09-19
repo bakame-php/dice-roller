@@ -20,9 +20,9 @@ final class Dice implements Countable, Rollable
     /**
      * new instance
      *
-     * @param int $pSize number of side of your dice.
+     * @param int $pSize side count
      *
-     * @throws Exception if a Dice contains less than 2 size
+     * @throws Exception if a Dice contains less than 2 sides
      */
     public function __construct(int $pSize)
     {
@@ -34,7 +34,7 @@ final class Dice implements Countable, Rollable
     }
 
     /**
-     * Returns the number of size in the dice
+     * Returns the side count
      *
      * @return int
      */

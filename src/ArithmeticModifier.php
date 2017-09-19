@@ -56,13 +56,37 @@ final class ArithmeticModifier implements Rollable
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getMinimum(): int
+    {
+        return $this->calculate('getMinimum');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMaximum(): int
+    {
+        return $this->calculate('getMaximum');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function roll(): int
+    {
+        return $this->calculate('roll');
+    }
+
+    /**
      * Compute the sum to be return
      *
      * @param string $pMethod One of the Rollable method
      *
      * @return int
      */
-    private function sum(string $pMethod): int
+    private function calculate(string $pMethod): int
     {
         if ('+' == $this->operator) {
             return $this->rollable->$pMethod() + $this->value;
@@ -81,29 +105,5 @@ final class ArithmeticModifier implements Rollable
         }
 
         return pow($this->rollable->$pMethod(), $this->value);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMinimum(): int
-    {
-        return $this->sum('getMinimum');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMaximum(): int
-    {
-        return $this->sum('getMaximum');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function roll(): int
-    {
-        return $this->sum('roll');
     }
 }

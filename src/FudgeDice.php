@@ -12,7 +12,7 @@ use Countable;
 final class FudgeDice implements Countable, Rollable
 {
     /**
-     * Returns the number of size in the dice
+     * Returns the side count
      *
      * @return int
      */

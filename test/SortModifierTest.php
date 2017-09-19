@@ -41,7 +41,7 @@ final class SortModifierTest extends TestCase
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
-     * @covers ::sum
+     * @covers ::calculate
      * @covers ::keepLowest
      * @covers ::keepHighest
      * @covers ::dropLowest
