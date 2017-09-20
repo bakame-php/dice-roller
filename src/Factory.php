@@ -10,8 +10,12 @@ namespace Ethtezahl\DiceRoller;
 final class Factory
 {
     const POOL_PATTERN = ',^
-        (?<quantity>\d*)d(?<size>\d+|F)?     # dice pattern
-        (?<modifier>.*)?                     # modifier pattern
+        (?<dice>
+            (?<simple>(?<quantity>\d*)d(?<size>\d+|F)?) # simple dice pattern
+            |
+            (?<complex>\((?<mixed>.+)\))                # complex dice pattern
+        )
+        (?<modifier>.*)?                                # modifier pattern
     $,xi';
 
     const MODIFIER_PATTERN = ',^
@@ -58,8 +62,20 @@ final class Factory
         $parts = explode('+', $pStr);
         $res = [];
         foreach ($parts as $offset => $value) {
-            if (false === stripos($value, 'd') && $offset > 0) {
-                $res[count($res) - 1] .= '+'.$value;
+            if (0 == $offset) {
+                $res[] = $value;
+                continue;
+            }
+
+            $previous_offset = count($res) - 1;
+            if (false === stripos($value, 'd')) {
+                $res[$previous_offset] .= '+'.$value;
+                continue;
+            }
+
+            if (false !== strpos($value, ')')
+                && false !== strpos($res[$previous_offset], '(')) {
+                $res[$previous_offset] .= '+'.$value;
                 continue;
             }
 
@@ -100,6 +116,28 @@ final class Factory
      */
     private function createPool(array $pMatches): Rollable
     {
+        $method = 'createSimplePool';
+        if ('' !== $pMatches['complex']) {
+            $method = 'createComplexPool';
+        }
+
+        $pool = $this->$method($pMatches);
+        if (preg_match(self::MODIFIER_PATTERN, $pMatches['modifier'], $matches)) {
+            return $this->addArithmeticModifier($matches, $this->addComplexModifier($matches, $pool));
+        }
+
+        throw new Exception(sprintf('the submitted modifier `%s` is invalid or not supported', $pMatches['modifier']));
+    }
+
+    /**
+     * Create a simple Uniformed Pool
+     *
+     * @param array $pMatches
+     *
+     * @return Cup
+     */
+    private function createSimplePool(array $pMatches): Cup
+    {
         $quantity = (int) ($pMatches['quantity'] ?? 1);
         if (0 == $quantity) {
             $quantity = 1;
@@ -111,11 +149,19 @@ final class Factory
             $size = '6';
         }
 
-        if (preg_match(self::MODIFIER_PATTERN, $pMatches['modifier'], $matches)) {
-            return $this->addArithmeticModifier($matches, $this->addComplexModifier($matches, Cup::createFromDice($quantity, $size)));
-        }
+        return Cup::createFromDice($quantity, $size);
+    }
 
-        throw new Exception(sprintf('the submitted modifier `%s` is invalid or not supported', $pMatches['modifier']));
+    /**
+     * Create a complex mixed Pool
+     *
+     * @param array $pMatches
+     *
+     * @return Cup
+     */
+    private function createComplexPool(array $pMatches): Cup
+    {
+        return new Cup(...array_map([$this, 'parsePool'], $this->explode($pMatches['mixed'])));
     }
 
     /**

@@ -34,6 +34,8 @@ final class FactoryTest extends TestCase
      * @covers ::addExplodeModifier
      * @covers ::addSortModifier
      * @covers ::createPool
+     * @covers ::createSimplePool
+     * @covers ::createComplexPool
      * @dataProvider invalidStringProvider
      */
     public function testInvalidGroupDefinition(string $expected)
@@ -50,6 +52,9 @@ final class FactoryTest extends TestCase
             'invalid group' => ['10+3dF'],
             'invalid modifier' => ['3dFZZZZ'],
             'invalid explode modifier' => ['D6!>'],
+            'invalid complex cup' => ['(3DF+2D6)*3+3F^2'],
+            'invalid complex cup 2' => ['(3DFoobar+2D6)*3+3DF^2'],
+            'invalid complex cup 3' => ['()*3'],
         ];
     }
 
@@ -62,6 +67,8 @@ final class FactoryTest extends TestCase
      * @covers ::addExplodeModifier
      * @covers ::addSortModifier
      * @covers ::createPool
+     * @covers ::createSimplePool
+     * @covers ::createComplexPool
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::__toString
      * @covers \Ethtezahl\DiceRoller\Dice::__toString
@@ -98,6 +105,7 @@ final class FactoryTest extends TestCase
             'add keep highest modifier' => ['2d3kh2', '2D3KH2'],
             'add drop lowest modifier' => ['4d6dl2',  '4D6DL2'],
             'add drop highest modifier' => ['4d6dh3', '4D6DH3'],
+            'complex mixed cup' => ['(3DF+2D6)*3+3DF^2', '(3DF+2D6)*3+3DF^2'],
         ];
     }
 
