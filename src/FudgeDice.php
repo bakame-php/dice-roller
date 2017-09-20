@@ -44,4 +44,12 @@ final class FudgeDice implements Countable, Rollable
     {
         return random_int(-1, 1);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function __toString()
+    {
+        return 'DF';
+    }
 }

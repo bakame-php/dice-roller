@@ -1,6 +1,7 @@
 <?php
 namespace Ethtezahl\DiceRoller\Test;
 
+use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\ExplodeModifier;
@@ -26,6 +27,20 @@ final class ExplodeModifierTest extends TestCase
     {
         $this->expectException(Exception::class);
         new ExplodeModifier($this->cup, 2, 'foobar');
+    }
+
+    /**
+     * @covers ::__toString
+     */
+    public function testToString()
+    {
+        $cup = new ExplodeModifier(new Cup(
+            new Dice(3),
+            new Dice(3),
+            new Dice(4)
+        ), 3, ExplodeModifier::EQUALS);
+
+        $this->assertSame('(2D3+D4)!=3', (string) $cup);
     }
 
     /**

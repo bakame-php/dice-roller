@@ -33,4 +33,12 @@ interface Rollable
      * @return int
      */
     public function roll(): int;
+
+    /**
+     * Returns the string representation of the
+     * Rollable object using Dice annotation
+     *
+     * @return int
+     */
+    public function __toString();
 }

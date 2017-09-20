@@ -29,6 +29,10 @@ final class FactoryTest extends TestCase
      * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
+     * @covers ::addArithmeticModifier
+     * @covers ::addComplexModifier
+     * @covers ::addExplodeModifier
+     * @covers ::addSortModifier
      * @covers ::createPool
      * @dataProvider invalidStringProvider
      */
@@ -45,6 +49,7 @@ final class FactoryTest extends TestCase
             'missing group definition' => ['+'],
             'invalid group' => ['10+3dF'],
             'invalid modifier' => ['3dFZZZZ'],
+            'invalid explode modifier' => ['D6!>'],
         ];
     }
 
@@ -52,38 +57,47 @@ final class FactoryTest extends TestCase
      * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
-     * @covers ::addComplexModifier
      * @covers ::addArithmeticModifier
+     * @covers ::addComplexModifier
+     * @covers ::addExplodeModifier
+     * @covers ::addSortModifier
      * @covers ::createPool
      * @covers \Ethtezahl\DiceRoller\Cup::count
+     * @covers \Ethtezahl\DiceRoller\Cup::__toString
+     * @covers \Ethtezahl\DiceRoller\Dice::__toString
+     * @covers \Ethtezahl\DiceRoller\FudgeDice::__toString
+     * @covers \Ethtezahl\DiceRoller\ArithmeticModifier::__toString
+     * @covers \Ethtezahl\DiceRoller\SortModifier::__toString
+     * @covers \Ethtezahl\DiceRoller\ExplodeModifier::__toString
      * @dataProvider validStringProvider
      */
-    public function testValidParser(string $expected)
+    public function testValidParser(string $expected, string $toString)
     {
         $cup = $this->factory->newInstance($expected);
         $this->assertInstanceOf(Rollable::class, $cup);
+        $this->assertSame($toString, (string) $cup);
     }
 
     public function validStringProvider()
     {
         return [
-            'empty cup' => [''],
-            'simple' => ['2D3'],
-            'empty nb dice' => ['d3'],
-            'empty nb sides' => ['3d'],
-            'mixed group' => ['2D3+1D4'],
-            'case insensitive' => ['2d3+1d4'],
-            'default to one dice' => ['d3+d4+1d3+5d2'],
-            'fudge dice' => ['2dF'],
-            'multiple fudge dice' => ['dF+3dF'],
-            'mixed cup' => ['2df+3d2'],
-            'add modifier' => ['2d3-4'],
-            'add modifier to multiple group' => ['2d3+4+3dF!>1/4^3'],
-            'add explode modifier' => ['2d3!'],
-            'add keep lowest modifier' => ['2d3kl1'],
-            'add keep highest modifier' => ['2d3kh2'],
-            'add drop lowest modifier' => ['4d6dl2'],
-            'add drop highest modifier' => ['4d6dh3'],
+            'empty cup' => ['', ''],
+            'simple' => ['2D3', '2D3'],
+            'empty nb dice' => ['d3', 'D3'],
+            'empty nb sides' => ['3d', '3D6'],
+            'mixed group' => ['2D3+1D4', '2D3+D4'],
+            'case insensitive' => ['2d3+1d4', '2D3+D4'],
+            'default to one dice' => ['d3+d4+1d3+5d2', '2D3+D4+5D2'],
+            'fudge dice' => ['2dF', '2DF'],
+            'multiple fudge dice' => ['dF+3dF', 'DF+3DF'],
+            'mixed cup' => ['2df+3d2', '2DF+3D2'],
+            'add modifier' => ['2d3-4', '2D3-4'],
+            'add modifier to multiple group' => ['2d3+4+3dF!>1/4^3', '2D3+4+3DF!>1/4^3'],
+            'add explode modifier' => ['2d3!', '2D3!'],
+            'add keep lowest modifier' => ['2d3kl1', '2D3KL1'],
+            'add keep highest modifier' => ['2d3kh2', '2D3KH2'],
+            'add drop lowest modifier' => ['4d6dl2',  '4D6DL2'],
+            'add drop highest modifier' => ['4d6dh3', '4D6DH3'],
         ];
     }
 
@@ -91,8 +105,10 @@ final class FactoryTest extends TestCase
      * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
-     * @covers ::addComplexModifier
      * @covers ::addArithmeticModifier
+     * @covers ::addComplexModifier
+     * @covers ::addExplodeModifier
+     * @covers ::addSortModifier
      * @covers ::createPool
      * @dataProvider permissiveParserProvider
      */

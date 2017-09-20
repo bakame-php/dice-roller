@@ -9,7 +9,11 @@ namespace Ethtezahl\DiceRoller;
 
 final class Factory
 {
-    const POOL_PATTERN = ',^(?<quantity>\d*)d(?<size>\d+|F)?(?<modifier>.*)?$,i';
+    const POOL_PATTERN = ',^
+        (?<quantity>\d*)d(?<size>\d+|F)?     # dice pattern
+        (?<modifier>.*)?                     # modifier pattern
+    $,xi';
+
     const MODIFIER_PATTERN = ',^
         (?<algo>                             # modifier definition pattern
             (?<type>!|!>|!<|!=|dh|dl|kh|kl)? # modifier types - exploding and sorting
@@ -130,19 +134,50 @@ final class Factory
 
         $type = strtolower($pMatches['type']);
         if (0 !== strpos($type, '!')) {
-            $threshold = $pMatches['threshold'] ?? 1;
-
-            return new SortModifier($pRollable, (int) $threshold, $type);
+            return $this->addSortModifier($type, $pMatches, $pRollable);
         }
 
-        $compare = substr($type, 1);
+        return $this->addExplodeModifier(substr($type, 1), $pMatches, $pRollable);
+    }
+
+    /**
+     * Decorate the Rollable object with the SortModifer modifier
+     *
+     * @param string $algo
+     * @param array  $pMatches
+     *
+     * @param Cup $pRollable
+     */
+    private function addSortModifier(string $algo, array $pMatches, Cup $pRollable): Rollable
+    {
+        $threshold = $pMatches['threshold'] ?? 1;
+
+        return new SortModifier($pRollable, (int) $threshold, $algo);
+    }
+
+    /**
+     * Decorate the Rollable object with the ExplodeModifier modifier
+     *
+     * @param string $algo
+     * @param array  $pMatches
+     *
+     * @param Cup $pRollable
+     */
+    private function addExplodeModifier(string $compare, array $pMatches, Cup $pRollable): Rollable
+    {
         if ('' == $compare) {
             $compare = ExplodeModifier::EQUALS;
+            $threshold = $pMatches['threshold'] ?? -1;
+
+            return new ExplodeModifier($pRollable, (int) $threshold, $compare);
         }
 
-        $threshold = $pMatches['threshold'] ?? -1;
+        if (isset($pMatches['threshold'])) {
+            return new ExplodeModifier($pRollable, (int) $pMatches['threshold'], $compare);
 
-        return new ExplodeModifier($pRollable, (int) $threshold, $compare);
+        }
+
+        throw new Exception(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $pMatches['algo']));
     }
 
     /**

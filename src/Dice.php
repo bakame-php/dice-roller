@@ -66,4 +66,12 @@ final class Dice implements Countable, Rollable
     {
         return random_int(1, $this->size);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function __toString()
+    {
+        return 'D'.$this->size;
+    }
 }

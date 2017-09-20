@@ -59,16 +59,18 @@ interface Rollable
     public function getMinimum(): int;
     public function getMaximum(): int;
     public function roll(): int;
+    public function __toString();
 }
 ```
 
 - `Rollable::getMinimum` returns the minimum value the rollable object can return during a roll;
 - `Rollable::getMaximum` returns the maximum value the rollable object can return during a roll;
 - `Rollable::roll` returns a value from a roll.
+- `Rollable::__toString` returns the string annotation of the Rollable object.
 
 ### Dices
 
-There are 2 types of Dices, each type implements the `Rollable` interface and the `Countable` interface. The `count` method returns the dice number of sides.
+There are 2 types of Dices, each type implements the `Rollable` interface and the `Countable` interface. The `count` method returns the dice sides count.
 
 #### Basic Dices
 
@@ -83,7 +85,7 @@ final class Dice implements Rollable, Countable
 }
 ```
 
-The basic dice class constructor unique argument expects the dice slides number. A dice must have at least 2 sides otherwise a `Ethtezahl\DiceRoller\Exception` will be thrown.
+The basic dice class constructor unique argument expects the dice sides count. A dice must have at least 2 sides otherwise a `Ethtezahl\DiceRoller\Exception` is thrown.
 
 #### Fludge Dices
 
@@ -117,20 +119,19 @@ A `Cup` is a collection of `Rollable` objects. This means that a `Cup` can conta
 
 #### createFromDice
 
-The named constructer `Cup::createFromDice` enables creating uniformed `Cup` object which contains only `Dice` or `FludgeDice` objects.
+The `Cup::createFromDice` named constructor enables creating uniformed `Cup` object which contains only `Dice` or `FludgeDice` objects.
 
 ```php
 <?php
 
 use Ethtezahl\DiceRoller\Cup;
 
-$cupOne = Cup::createFromDice(3, 5);     //create a object containing 3 basic 5 slides dices
-$cupTwo = Cup::createFromDice(4, 'F');   //create a object containing 4 fudge dices
-$cupThree = Cup::createFromDice(2, 'f'); //create a object containing 2 fudge dices
+echo Cup::createFromDice(3, 5);   // displays 3D5
+echo Cup::createFromDice(4, 'F'); // displays 4DF
+echo Cup::createFromDice(2, 'f'); // displays 2DF
 ```
 
-A Cup must contain at least 2 dices otherwise a `Ethtezahl\DiceRoller\Exception` will be thrown.
-
+A Cup must contain at least `1` dice otherwise a `Ethtezahl\DiceRoller\Exception` is thrown.
 
 ### Modifiers
 
@@ -169,10 +170,8 @@ If the value or the operator are not valid a `Ethtezahl\DiceRoller\Exception` wi
 use Ethtezahl\DiceRoller\ArithmeticModifier;
 use Ethtezahl\DiceRoller\Dice;
 
-$dice = new Dice(6);
-$modifier = new ArithmeticModifier($dice, 3, '*');
-
-$modifier->roll(); //if $dice->roll(); returns 3 using the modifier you will get 9;
+$modifier = new ArithmeticModifier(new Dice(6), 3, '*');
+echo $modifier; // displays D6*3;
 ```
 
 #### The Sort Modifier
@@ -209,10 +208,12 @@ If the algorithm or the threshold are not valid a `Ethtezahl\DiceRoller\Exceptio
 use Ethtezahl\DiceRoller\ArithmeticModifier;
 use Ethtezahl\DiceRoller\Cup;
 
-$cup = Cup::createFromDice(4, 6);
-$modifier = new SortModifier($cup, 3, SortModifier::DROP_HIGHEST);
-$modifier->roll(); // if all inner roll returns 3 + 1 + 2 + 5,
-                   // the result will be 1 as (3, 2, 5 are dropped)
+$modifier = new SortModifier(
+    Cup::createFromDice(4, 6),
+    3,
+    SortModifier::DROP_HIGHEST
+);
+echo $modifier; // displays '4D6DH3'
 ```
 
 #### The Explode Modifier
@@ -249,9 +250,7 @@ use Ethtezahl\DiceRoller\FudgeDice;
 
 $cup = new Cup(new Dice(6), new FudgeDice(), new Dice(6), new Dice(6));
 $modifier = new ExplodeModifier($cup, 3, ExplodeModifier::EQUALS);
-$modifier->roll(); // if all inner roll returns 3 + 1 + 2 + 5,
-                   // the result will be 3 + 1 + 2 + 5 + 4 because the first dice
-                   // as been roll again as it returned the threshold value
+echo $modifier; // displays (3D6+DF)!=3
 ```
 
 ### Factory
@@ -267,9 +266,9 @@ final class Factory
 }
 ```
 
-Because combining dices, cups and modifiers can be difficult, the package comes bundles with a `Factory` class to ease `Rollable` instance creation. The factory supports basic roll annotation rules:
+Because combining dices, cups and modifiers can be difficult, the package comes bundles with a `Factory` class to ease `Rollable` instance creation. The factory supports basic roll annotation rules in a case insentitive way:
 
-- `NdX` : create a dice pool where `N` represents the number of dices and `X` the number of sides. If you want a fudgeDice `X` must be equal to `F` otherwise `X` must be an integer equal or greater than 2. If `X` is omitted this means you are requesting a 6 sides basic dice. If `N` is omitted this means that you are requestion a single dice.
+- `NDX` : create a dice pool where `N` represents the number of dices and `X` the number of sides. If you want a fudgeDice `X` must be equal to `F` otherwise `X` must be an integer equal or greater than 2. If `X` is omitted this means you are requesting a 6 sides basic dice. If `N` is omitted this means that you are requestion a single dice.
 
 The modifiers are appended to the dice annotation with the following rules:
 
@@ -281,10 +280,10 @@ For the arithmetic modifier:
 
 For the sorting modifier:
 
-- `dhX`: drops the highest where `X` is the threshold value;
-- `dlX`: drops the lowest where `X` is the threshold value;
-- `khX`: keeps the highest where `X` is the threshold value;
-- `klX`: keeps the lowest where `X` is the threshold value;
+- `DHX`: drops the highest where `X` is the threshold value;
+- `DLX`: drops the lowest where `X` is the threshold value;
+- `KHX`: keeps the highest where `X` is the threshold value;
+- `KLX`: keeps the lowest where `X` is the threshold value;
 
 *If the `X` value is omitted it will default to `1`*
 
@@ -309,4 +308,4 @@ echo $cup->roll();
 
 if the `Factory` can not parse the submitted string a `Ethtezahl\DiceRoller\Exception` will be thrown.
 
-Happy Coding!
+**Happy Coding!**

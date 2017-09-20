@@ -2,6 +2,7 @@
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\ArithmeticModifier;
+use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +28,19 @@ final class ArithmeticModifierTest extends TestCase
     {
         $this->expectException(Exception::class);
         new ArithmeticModifier(new Dice(6), 3, '**');
+    }
+
+    /**
+     * @covers ::__toString
+     */
+    public function testToString()
+    {
+        $cup = new ArithmeticModifier(new Cup(
+            new Dice(3),
+            new Dice(3),
+            new Dice(4)
+        ), 3, '^');
+        $this->assertSame('(2D3+D4)^3', (string) $cup);
     }
 
     /**

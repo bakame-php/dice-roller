@@ -58,6 +58,30 @@ final class ExplodeModifier implements Rollable
     /**
      * @inheritdoc
      */
+    public function __toString()
+    {
+        $prefix = '!';
+        if (self::EQUALS != $this->compare ||
+            (self::EQUALS == $this->compare && -1 != $this->threshold)
+        ) {
+            $prefix .= $this->compare;
+        }
+
+        if (-1 !== $this->threshold) {
+            $prefix .= $this->threshold;
+        }
+
+        $str = (string) $this->rollable;
+        if (false !== strpos($str, '+')) {
+            $str = '('.$str.')';
+        }
+
+        return $str.$prefix;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getMinimum(): int
     {
         return $this->rollable->getMinimum();

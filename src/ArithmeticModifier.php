@@ -58,6 +58,19 @@ final class ArithmeticModifier implements Rollable
     /**
      * @inheritdoc
      */
+    public function __toString()
+    {
+        $str = (string) $this->rollable;
+        if (false !== strpos($str, '+')) {
+            $str = '('.$str.')';
+        }
+
+        return $str.$this->operator.$this->value;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getMinimum(): int
     {
         return $this->calculate('getMinimum');
@@ -104,6 +117,6 @@ final class ArithmeticModifier implements Rollable
             return intdiv($this->rollable->$pMethod(), $this->value);
         }
 
-        return pow($this->rollable->$pMethod(), $this->value);
+        return $this->rollable->$pMethod() ** $this->value;
     }
 }

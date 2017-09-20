@@ -14,7 +14,7 @@ final class SortModifier implements Rollable
     const KEEP_HIGHEST = 'kh';
     const KEEP_LOWEST = 'kl';
 
-    private $methodList = [
+    private static $methodList = [
         self::DROP_HIGHEST => 'dropHighest',
         self::DROP_LOWEST => 'dropLowest',
         self::KEEP_HIGHEST => 'keepHighest',
@@ -55,13 +55,28 @@ final class SortModifier implements Rollable
             throw new Exception(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pRollable), $pThreshold));
         }
 
-        if (!isset($this->methodList[$pAlgo])) {
+        if (!isset(self::$methodList[$pAlgo])) {
             throw new Exception(sprintf('Unknown or unsupported sortable algorithm `%s`', $pAlgo));
         }
 
         $this->rollable = $pRollable;
         $this->threshold = $pThreshold;
-        $this->method = $this->methodList[$pAlgo];
+        $this->method = self::$methodList[$pAlgo];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __toString()
+    {
+        $str = (string) $this->rollable;
+        if (false !== strpos($str, '+')) {
+            $str = '('.$str.')';
+        }
+
+        return $str
+            .strtoupper(array_search($this->method, self::$methodList))
+            .$this->threshold;
     }
 
     /**

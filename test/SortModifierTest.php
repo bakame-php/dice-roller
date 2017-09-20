@@ -1,6 +1,7 @@
 <?php
 namespace Ethtezahl\DiceRoller\Test;
 
+use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Factory;
@@ -35,6 +36,19 @@ final class SortModifierTest extends TestCase
     {
         $this->expectException(Exception::class);
         new SortModifier($this->cup, 3, 'foobar');
+    }
+
+    /**
+     * @covers ::__toString
+     */
+    public function testToString()
+    {
+        $cup = new SortModifier(new Cup(
+            new Dice(3),
+            new Dice(3),
+            new Dice(4)
+        ), 2, SortModifier::DROP_LOWEST);
+        $this->assertSame('(2D3+D4)DL2', (string) $cup);
     }
 
     /**
