@@ -12,6 +12,14 @@ use Countable;
 final class FudgeDice implements Countable, Rollable
 {
     /**
+     * @inheritdoc
+     */
+    public function __toString()
+    {
+        return 'DF';
+    }
+
+    /**
      * Returns the side count
      *
      * @return int
@@ -43,13 +51,5 @@ final class FudgeDice implements Countable, Rollable
     public function roll(): int
     {
         return random_int(-1, 1);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __toString()
-    {
-        return 'DF';
     }
 }

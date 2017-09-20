@@ -29,5 +29,8 @@
     },
     "scripts": {
         "phpunit": "phpunit --coverage-text"
-    }
+    },
+    "bin": [
+        "bin/roll"
+    ]
 }

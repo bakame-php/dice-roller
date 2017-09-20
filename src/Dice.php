@@ -34,6 +34,14 @@ final class Dice implements Countable, Rollable
     }
 
     /**
+     * @inheritdoc
+     */
+    public function __toString()
+    {
+        return 'D'.$this->size;
+    }
+
+    /**
      * Returns the side count
      *
      * @return int
@@ -65,13 +73,5 @@ final class Dice implements Countable, Rollable
     public function roll() : int
     {
         return random_int(1, $this->size);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __toString()
-    {
-        return 'D'.$this->size;
     }
 }

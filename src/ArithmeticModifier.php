@@ -117,6 +117,6 @@ final class ArithmeticModifier implements Rollable
             return intdiv($this->rollable->$pMethod(), $this->value);
         }
 
-        return $this->rollable->$pMethod() ** $this->value;
+        return (int) $this->rollable->$pMethod() ** $this->value;
     }
 }
