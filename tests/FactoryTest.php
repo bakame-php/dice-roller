@@ -73,9 +73,9 @@ final class FactoryTest extends TestCase
      * @covers \Ethtezahl\DiceRoller\Cup::__toString
      * @covers \Ethtezahl\DiceRoller\Dice::__toString
      * @covers \Ethtezahl\DiceRoller\FudgeDice::__toString
-     * @covers \Ethtezahl\DiceRoller\ArithmeticModifier::__toString
-     * @covers \Ethtezahl\DiceRoller\SortModifier::__toString
-     * @covers \Ethtezahl\DiceRoller\ExplodeModifier::__toString
+     * @covers \Ethtezahl\DiceRoller\Modifier\Arithmetic::__toString
+     * @covers \Ethtezahl\DiceRoller\Modifier\Sort::__toString
+     * @covers \Ethtezahl\DiceRoller\Modifier\Explode::__toString
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString)

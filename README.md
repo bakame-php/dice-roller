@@ -142,9 +142,9 @@ Sometimes you may want to modify the outcome of a dice or a cup roll. The librar
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller;
+namespace Ethtezahl\DiceRoller\Modifier;
 
-final class ArithmeticModifier implements Rollable
+final class Arithmetic implements Rollable
 {
     public function __construct(Rollable $rollable, int $value, string $operator);
 }
@@ -167,10 +167,10 @@ If the value or the operator are not valid a `Ethtezahl\DiceRoller\Exception` wi
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\ArithmeticModifier;
+use Ethtezahl\DiceRoller\Modifier\Arithmetic;
 use Ethtezahl\DiceRoller\Dice;
 
-$modifier = new ArithmeticModifier(new Dice(6), 3, '*');
+$modifier = new Arithmetic(new Dice(6), 3, '*');
 echo $modifier; // displays D6*3;
 ```
 
@@ -179,9 +179,9 @@ echo $modifier; // displays D6*3;
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller;
+namespace Ethtezahl\DiceRoller\Modifier;
 
-final class SortModifier implements Rollable
+final class Sort implements Rollable
 {
     const DROP_HIGHEST = 'dh';
     const DROP_LOWEST = 'dl';
@@ -193,10 +193,10 @@ final class SortModifier implements Rollable
 
 This modifier is a decorator class which modify the outcome of a given `Cup` object using a given threshold and a sorting algorithm. The supported algorithm are:
 
-- `dh` or `SortModifier::DROP_HIGHEST` to drop the `$pThreshold` highest results of a given `Cup` object;
-- `dl` or `SortModifier::DROP_LOWEST` to drop the `$pThreshold` lowest results of a given `Cup` object;
-- `kh` or `SortModifier::KEEP_HIGHEST` to keep the `$pThreshold` highest results of a given `Cup` object;
-- `kl` or `SortModifier::KEEP_LOWEST` to keep the `$pThreshold` lowest results of a given `Cup` object;
+- `dh` or `Sort::DROP_HIGHEST` to drop the `$pThreshold` highest results of a given `Cup` object;
+- `dl` or `Sort::DROP_LOWEST` to drop the `$pThreshold` lowest results of a given `Cup` object;
+- `kh` or `Sort::KEEP_HIGHEST` to keep the `$pThreshold` highest results of a given `Cup` object;
+- `kl` or `Sort::KEEP_LOWEST` to keep the `$pThreshold` lowest results of a given `Cup` object;
 
 The `$pThreshold` MUST be lower or equals to the total numbers of rollable items in the `Cup` object.
 
@@ -205,14 +205,10 @@ If the algorithm or the threshold are not valid a `Ethtezahl\DiceRoller\Exceptio
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\ArithmeticModifier;
+use Ethtezahl\DiceRoller\Modifier\Sort;
 use Ethtezahl\DiceRoller\Cup;
 
-$modifier = new SortModifier(
-    Cup::createFromDice(4, 6),
-    3,
-    SortModifier::DROP_HIGHEST
-);
+$modifier = new Sort(Cup::createFromDice(4, 6), 3, Sort::DROP_HIGHEST);
 echo $modifier; // displays '4D6DH3'
 ```
 
@@ -221,9 +217,9 @@ echo $modifier; // displays '4D6DH3'
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller;
+namespace Ethtezahl\DiceRoller\Modifier;
 
-final class ExplodeModifier implements Rollable
+final class Explode implements Rollable
 {
     const EQUALS = '=';
     const GREATER_THAN = '>';
@@ -234,9 +230,9 @@ final class ExplodeModifier implements Rollable
 
 This modifier is a decorator class which modify the outcome of a given `Cup` object using a threshold and a comparison operator. The following operators are supported:
 
-- `=` or `ExplodeModifier::EQUALS` explodes if any inner rollable roll result is equal to the `$threshold`;
-- `>` or `ExplodeModifier::GREATER_THAN` explodes if any inner rollable roll result is greater than the `$threshold`;
-- `<` or `SortModifier::LESSER_THAN` explodes if any inner rollable roll result is lesser than the `$threshold`;
+- `=` or `Explode::EQUALS` explodes if any inner rollable roll result is equal to the `$pThreshold`;
+- `>` or `Explode::GREATER_THAN` explodes if any inner rollable roll result is greater than the `$pThreshold`;
+- `<` or `Explode::LESSER_THAN` explodes if any inner rollable roll result is lesser than the `$pThreshold`;
 
 If the comparison operator is not recognized a `Ethtezahl\DiceRoller\Exception` will be thrown.
 
@@ -245,11 +241,11 @@ If the comparison operator is not recognized a `Ethtezahl\DiceRoller\Exception` 
 
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\ExplodeModifier;
+use Ethtezahl\DiceRoller\Modifier\Explode;
 use Ethtezahl\DiceRoller\FudgeDice;
 
 $cup = new Cup(new Dice(6), new FudgeDice(), new Dice(6), new Dice(6));
-$modifier = new ExplodeModifier($cup, 3, ExplodeModifier::EQUALS);
+$modifier = new Explode($cup, 3, Explode::EQUALS);
 echo $modifier; // displays (3D6+DF)!=3
 ```
 

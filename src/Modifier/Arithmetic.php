@@ -7,7 +7,12 @@ declare(strict_types=1);
 
 namespace Ethtezahl\DiceRoller;
 
-final class ArithmeticModifier implements Rollable
+namespace Ethtezahl\DiceRoller\Modifier;
+
+use Ethtezahl\DiceRoller\Exception;
+use Ethtezahl\DiceRoller\Rollable;
+
+final class Arithmetic implements Rollable
 {
     /**
      * The rollable object to decorate

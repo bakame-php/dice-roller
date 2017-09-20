@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Ethtezahl\DiceRoller;
 
+use Ethtezahl\DiceRoller\Modifier;
+
 final class Factory
 {
     const POOL_PATTERN = ',^
@@ -198,7 +200,7 @@ final class Factory
     {
         $threshold = $pMatches['threshold'] ?? 1;
 
-        return new SortModifier($pRollable, (int) $threshold, $algo);
+        return new Modifier\Sort($pRollable, (int) $threshold, $algo);
     }
 
     /**
@@ -212,14 +214,14 @@ final class Factory
     private function addExplodeModifier(string $compare, array $pMatches, Cup $pRollable): Rollable
     {
         if ('' == $compare) {
-            $compare = ExplodeModifier::EQUALS;
+            $compare = Modifier\Explode::EQUALS;
             $threshold = $pMatches['threshold'] ?? -1;
 
-            return new ExplodeModifier($pRollable, (int) $threshold, $compare);
+            return new Modifier\Explode($pRollable, (int) $threshold, $compare);
         }
 
         if (isset($pMatches['threshold'])) {
-            return new ExplodeModifier($pRollable, (int) $pMatches['threshold'], $compare);
+            return new Modifier\Explode($pRollable, (int) $pMatches['threshold'], $compare);
 
         }
 
@@ -240,11 +242,11 @@ final class Factory
             return $pRollable;
         }
 
-        $rollable = new ArithmeticModifier($pRollable, (int) $pMatches['value1'], $pMatches['operator1']);
+        $rollable = new Modifier\Arithmetic($pRollable, (int) $pMatches['value1'], $pMatches['operator1']);
         if (!isset($pMatches['math2'])) {
             return $rollable;
         }
 
-        return new ArithmeticModifier($rollable, (int) $pMatches['value2'], $pMatches['operator2']);
+        return new Modifier\Arithmetic($rollable, (int) $pMatches['value2'], $pMatches['operator2']);
     }
 }

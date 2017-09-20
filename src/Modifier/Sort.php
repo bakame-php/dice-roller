@@ -5,9 +5,13 @@
  */
 declare(strict_types=1);
 
-namespace Ethtezahl\DiceRoller;
+namespace Ethtezahl\DiceRoller\Modifier;
 
-final class SortModifier implements Rollable
+use Ethtezahl\DiceRoller\Cup;
+use Ethtezahl\DiceRoller\Exception;
+use Ethtezahl\DiceRoller\Rollable;
+
+final class Sort implements Rollable
 {
     const DROP_HIGHEST = 'dh';
     const DROP_LOWEST = 'dl';

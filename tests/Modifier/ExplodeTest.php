@@ -1,17 +1,17 @@
 <?php
-namespace Ethtezahl\DiceRoller\Test;
+namespace Ethtezahl\DiceRoller\Test\Modifier;
 
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\ExplodeModifier;
 use Ethtezahl\DiceRoller\Factory;
+use Ethtezahl\DiceRoller\Modifier\Explode;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\ExplodeModifier
+ * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\Explode
  */
-final class ExplodeModifierTest extends TestCase
+final class ExplodeTest extends TestCase
 {
     private $cup;
 
@@ -26,7 +26,7 @@ final class ExplodeModifierTest extends TestCase
     public function testConstructorThrows()
     {
         $this->expectException(Exception::class);
-        new ExplodeModifier($this->cup, 2, 'foobar');
+        new Explode($this->cup, 2, 'foobar');
     }
 
     /**
@@ -34,11 +34,11 @@ final class ExplodeModifierTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new ExplodeModifier(new Cup(
+        $cup = new Explode(new Cup(
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), 3, ExplodeModifier::EQUALS);
+        ), 3, Explode::EQUALS);
 
         $this->assertSame('(2D3+D4)!=3', (string) $cup);
     }
@@ -54,7 +54,7 @@ final class ExplodeModifierTest extends TestCase
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {
-        $cup = new ExplodeModifier($this->cup, $threshold, $algo);
+        $cup = new Explode($this->cup, $threshold, $algo);
         $res = $cup->roll();
         $this->assertSame($min, $cup->getMinimum());
         $this->assertSame($max, $cup->getMaximum());
@@ -66,19 +66,19 @@ final class ExplodeModifierTest extends TestCase
     {
         return [
             'equals' => [
-                'algo' => ExplodeModifier::EQUALS,
+                'algo' => Explode::EQUALS,
                 'threshold' => 3,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
             ],
             'greater than' => [
-                'algo' => ExplodeModifier::LESSER_THAN,
+                'algo' => Explode::LESSER_THAN,
                 'threshold' => 2,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
             ],
             'lesser than' => [
-                'algo' => ExplodeModifier::GREATER_THAN,
+                'algo' => Explode::GREATER_THAN,
                 'threshold' => 2,
                 'min' => 4,
                 'max' => PHP_INT_MAX,

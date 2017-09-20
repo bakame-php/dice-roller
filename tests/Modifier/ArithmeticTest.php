@@ -1,33 +1,33 @@
 <?php
-namespace Ethtezahl\DiceRoller\Test;
+namespace Ethtezahl\DiceRoller\Test\Modifier;
 
-use Ethtezahl\DiceRoller\ArithmeticModifier;
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
+use Ethtezahl\DiceRoller\Modifier\Arithmetic;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\ArithmeticModifier
+ * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\Arithmetic
  */
-final class ArithmeticModifierTest extends TestCase
+final class ArithmeticTest extends TestCase
 {
     /**
      * @covers ::__construct
      */
-    public function testArithmeticModifierConstructorThrows1()
+    public function testArithmeticConstructorThrows1()
     {
         $this->expectException(Exception::class);
-        new ArithmeticModifier(new Dice(6), -3, '+');
+        new Arithmetic(new Dice(6), -3, '+');
     }
 
     /**
      * @covers ::__construct
      */
-    public function testArithmeticModifierConstructorThrows2()
+    public function testArithmeticConstructorThrows2()
     {
         $this->expectException(Exception::class);
-        new ArithmeticModifier(new Dice(6), 3, '**');
+        new Arithmetic(new Dice(6), 3, '**');
     }
 
     /**
@@ -35,7 +35,7 @@ final class ArithmeticModifierTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new ArithmeticModifier(new Cup(
+        $cup = new Arithmetic(new Cup(
             new Dice(3),
             new Dice(3),
             new Dice(4)
@@ -51,9 +51,9 @@ final class ArithmeticModifierTest extends TestCase
      * @covers ::roll
      * @dataProvider validArithmeticProvider
      */
-    public function testArithmeticModifier(string $operator, int $size, int $value, int $min, int $max)
+    public function testArithmetic(string $operator, int $size, int $value, int $min, int $max)
     {
-        $roll = new ArithmeticModifier(new Dice($size), $value, $operator);
+        $roll = new Arithmetic(new Dice($size), $value, $operator);
         $test = $roll->roll();
         $this->assertSame($min, $roll->getMinimum());
         $this->assertSame($max, $roll->getMaximum());

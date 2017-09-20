@@ -1,17 +1,17 @@
 <?php
-namespace Ethtezahl\DiceRoller\Test;
+namespace Ethtezahl\DiceRoller\Test\Modifier;
 
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Factory;
-use Ethtezahl\DiceRoller\SortModifier;
+use Ethtezahl\DiceRoller\Modifier\Sort;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\SortModifier
+ * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\Sort
  */
-final class SortModifierTest extends TestCase
+final class SortTest extends TestCase
 {
     private $cup;
 
@@ -26,7 +26,7 @@ final class SortModifierTest extends TestCase
     public function testConstructorThrows1()
     {
         $this->expectException(Exception::class);
-        new SortModifier($this->cup, 6, SortModifier::DROP_LOWEST);
+        new Sort($this->cup, 6, Sort::DROP_LOWEST);
     }
 
     /**
@@ -35,7 +35,7 @@ final class SortModifierTest extends TestCase
     public function testConstructorThrows2()
     {
         $this->expectException(Exception::class);
-        new SortModifier($this->cup, 3, 'foobar');
+        new Sort($this->cup, 3, 'foobar');
     }
 
     /**
@@ -43,11 +43,11 @@ final class SortModifierTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new SortModifier(new Cup(
+        $cup = new Sort(new Cup(
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), 2, SortModifier::DROP_LOWEST);
+        ), 2, Sort::DROP_LOWEST);
         $this->assertSame('(2D3+D4)DL2', (string) $cup);
     }
 
@@ -65,7 +65,7 @@ final class SortModifierTest extends TestCase
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {
-        $cup = new SortModifier($this->cup, $threshold, $algo);
+        $cup = new Sort($this->cup, $threshold, $algo);
         $res = $cup->roll();
         $this->assertSame($min, $cup->getMinimum());
         $this->assertSame($max, $cup->getMaximum());
@@ -77,25 +77,25 @@ final class SortModifierTest extends TestCase
     {
         return [
             'dl' => [
-                'algo' => SortModifier::DROP_LOWEST,
+                'algo' => Sort::DROP_LOWEST,
                 'threshold' => 3,
                 'min' => 1,
                 'max' => 6,
             ],
             'dh' => [
-                'algo' => SortModifier::DROP_HIGHEST,
+                'algo' => Sort::DROP_HIGHEST,
                 'threshold' => 2,
                 'min' => 2,
                 'max' => 12,
             ],
             'kl' => [
-                'algo' => SortModifier::KEEP_LOWEST,
+                'algo' => Sort::KEEP_LOWEST,
                 'threshold' => 2,
                 'min' => 2,
                 'max' => 12,
             ],
             'kh' => [
-                'algo' => SortModifier::KEEP_HIGHEST,
+                'algo' => Sort::KEEP_HIGHEST,
                 'threshold' => 3,
                 'min' => 3,
                 'max' => 18,
