@@ -7,6 +7,7 @@ use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use function Ethtezahl\DiceRoller\roll_create;
 
 /**
  * @coversDefaultClass Ethtezahl\DiceRoller\Factory
@@ -20,20 +21,14 @@ final class FactoryTest extends TestCase
         $this->factory = new Factory();
     }
 
-    public function testConstructor()
-    {
-        $this->assertEquals($this->factory, new Factory());
-    }
-
     /**
      * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
-     * @covers ::addArithmeticModifier
+     * @covers ::addArithmetic
+     * @covers ::addExplode
+     * @covers ::addDropKeep
      * @covers ::addComplexModifier
-     * @covers ::addExplodeModifier
-     * @covers ::addSortModifier
-     * @covers ::createPool
      * @covers ::createSimplePool
      * @covers ::createComplexPool
      * @dataProvider invalidStringProvider
@@ -41,7 +36,7 @@ final class FactoryTest extends TestCase
     public function testInvalidGroupDefinition(string $expected)
     {
         $this->expectException(Exception::class);
-        $this->factory->newInstance($expected);
+        roll_create($expected);
     }
 
     public function invalidStringProvider()
@@ -62,25 +57,25 @@ final class FactoryTest extends TestCase
      * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
-     * @covers ::addArithmeticModifier
+     * @covers ::addArithmetic
+     * @covers ::addExplode
+     * @covers ::addDropKeep
      * @covers ::addComplexModifier
-     * @covers ::addExplodeModifier
-     * @covers ::addSortModifier
-     * @covers ::createPool
      * @covers ::createSimplePool
      * @covers ::createComplexPool
+     * @covers \Ethtezahl\DiceRoller\roll_create
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::__toString
      * @covers \Ethtezahl\DiceRoller\Dice::__toString
      * @covers \Ethtezahl\DiceRoller\FudgeDice::__toString
      * @covers \Ethtezahl\DiceRoller\Modifier\Arithmetic::__toString
-     * @covers \Ethtezahl\DiceRoller\Modifier\Sort::__toString
+     * @covers \Ethtezahl\DiceRoller\Modifier\DropKeep::__toString
      * @covers \Ethtezahl\DiceRoller\Modifier\Explode::__toString
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString)
     {
-        $cup = $this->factory->newInstance($expected);
+        $cup = roll_create($expected);
         $this->assertInstanceOf(Rollable::class, $cup);
         $this->assertSame($toString, (string) $cup);
     }
@@ -113,17 +108,16 @@ final class FactoryTest extends TestCase
      * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
-     * @covers ::addArithmeticModifier
+     * @covers ::addArithmetic
+     * @covers ::addExplode
+     * @covers ::addDropKeep
      * @covers ::addComplexModifier
-     * @covers ::addExplodeModifier
-     * @covers ::addSortModifier
-     * @covers ::createPool
      * @dataProvider permissiveParserProvider
      */
     public function testPermissiveParser($full, $short)
     {
         $this->assertEquals(
-            $this->factory->newInstance($full),
+            roll_create($full),
             $this->factory->newInstance($short)
         );
     }
@@ -171,7 +165,6 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::createPool
      * @covers \Ethtezahl\DiceRoller\Rollable
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::getIterator

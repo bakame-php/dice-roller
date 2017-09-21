@@ -55,6 +55,10 @@ final class Arithmetic implements Rollable
             throw new Exception(sprintf('Invalid or Unsupported operator `%s`', $pOperator));
         }
 
+        if ($pValue == 0 && $pOperator == '/') {
+            throw new Exception(sprintf('The value `%i` is invalid for the given `%s` operator', $pValue, $pOperator));
+        }
+
         $this->operator = $pOperator;
         $this->rollable = $pRollable;
         $this->value = $pValue;

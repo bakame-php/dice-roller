@@ -50,7 +50,7 @@ final class ExplodeTest extends TestCase
      * @covers ::calculate
      * @covers ::isValid
      * @covers ::roll
-     * @dataProvider validProvider
+     * @dataProvider validParametersProvider
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {
@@ -62,7 +62,7 @@ final class ExplodeTest extends TestCase
         $this->assertLessThanOrEqual($max, $res);
     }
 
-    public function validProvider()
+    public function validParametersProvider()
     {
         return [
             'equals' => [

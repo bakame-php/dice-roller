@@ -31,6 +31,15 @@ final class ArithmeticTest extends TestCase
     }
 
     /**
+     * @covers ::__construct
+     */
+    public function testArithmeticConstructorThrows3()
+    {
+        $this->expectException(Exception::class);
+        new Arithmetic(new Dice(6), 0, '/');
+    }
+
+    /**
      * @covers ::__toString
      */
     public function testToString()
@@ -49,7 +58,7 @@ final class ArithmeticTest extends TestCase
      * @covers ::getMaximum
      * @covers ::calculate
      * @covers ::roll
-     * @dataProvider validArithmeticProvider
+     * @dataProvider validParametersProvider
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max)
     {
@@ -61,7 +70,7 @@ final class ArithmeticTest extends TestCase
         $this->assertLessThanOrEqual($max, $test);
     }
 
-    public function validArithmeticProvider()
+    public function validParametersProvider()
     {
         return [
             'adding' => [

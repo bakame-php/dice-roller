@@ -25,12 +25,18 @@
     "autoload-dev": {
         "psr-4": {
             "Ethtezahl\\DiceRoller\\Test\\": "test"
-        }
+        },
+        "files": ["src/functions_include.php"]
     },
     "scripts": {
         "phpunit": "phpunit --coverage-text"
     },
     "bin": [
         "bin/roll"
-    ]
+    ],
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    }
 }

@@ -5,13 +5,13 @@ use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Factory;
-use Ethtezahl\DiceRoller\Modifier\Sort;
+use Ethtezahl\DiceRoller\Modifier\DropKeep;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\Sort
+ * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\DropKeep
  */
-final class SortTest extends TestCase
+final class DropKeepTest extends TestCase
 {
     private $cup;
 
@@ -26,7 +26,7 @@ final class SortTest extends TestCase
     public function testConstructorThrows1()
     {
         $this->expectException(Exception::class);
-        new Sort($this->cup, 6, Sort::DROP_LOWEST);
+        new DropKeep($this->cup, 6, DropKeep::DROP_LOWEST);
     }
 
     /**
@@ -35,7 +35,7 @@ final class SortTest extends TestCase
     public function testConstructorThrows2()
     {
         $this->expectException(Exception::class);
-        new Sort($this->cup, 3, 'foobar');
+        new DropKeep($this->cup, 3, 'foobar');
     }
 
     /**
@@ -43,11 +43,11 @@ final class SortTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new Sort(new Cup(
+        $cup = new DropKeep(new Cup(
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), 2, Sort::DROP_LOWEST);
+        ), 2, DropKeep::DROP_LOWEST);
         $this->assertSame('(2D3+D4)DL2', (string) $cup);
     }
 
@@ -61,11 +61,11 @@ final class SortTest extends TestCase
      * @covers ::dropLowest
      * @covers ::dropHighest
      * @covers ::roll
-     * @dataProvider validArithmeticProvider
+     * @dataProvider validParametersProvider
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {
-        $cup = new Sort($this->cup, $threshold, $algo);
+        $cup = new DropKeep($this->cup, $threshold, $algo);
         $res = $cup->roll();
         $this->assertSame($min, $cup->getMinimum());
         $this->assertSame($max, $cup->getMaximum());
@@ -73,29 +73,29 @@ final class SortTest extends TestCase
         $this->assertLessThanOrEqual($max, $res);
     }
 
-    public function validArithmeticProvider()
+    public function validParametersProvider()
     {
         return [
             'dl' => [
-                'algo' => Sort::DROP_LOWEST,
+                'algo' => DropKeep::DROP_LOWEST,
                 'threshold' => 3,
                 'min' => 1,
                 'max' => 6,
             ],
             'dh' => [
-                'algo' => Sort::DROP_HIGHEST,
+                'algo' => DropKeep::DROP_HIGHEST,
                 'threshold' => 2,
                 'min' => 2,
                 'max' => 12,
             ],
             'kl' => [
-                'algo' => Sort::KEEP_LOWEST,
+                'algo' => DropKeep::KEEP_LOWEST,
                 'threshold' => 2,
                 'min' => 2,
                 'max' => 12,
             ],
             'kh' => [
-                'algo' => Sort::KEEP_HIGHEST,
+                'algo' => DropKeep::KEEP_HIGHEST,
                 'threshold' => 3,
                 'min' => 3,
                 'max' => 18,

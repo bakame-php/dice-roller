@@ -11,7 +11,7 @@ use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Rollable;
 
-final class Sort implements Rollable
+final class DropKeep implements Rollable
 {
     const DROP_HIGHEST = 'dh';
     const DROP_LOWEST = 'dl';

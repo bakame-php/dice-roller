@@ -102,33 +102,21 @@ final class Factory
             return new Cup();
         }
 
-        if (preg_match(self::POOL_PATTERN, $pStr, $matches)) {
-            return $this->createPool($matches);
+        if (!preg_match(self::POOL_PATTERN, $pStr, $matches)) {
+            throw new Exception(sprintf('the submitted dice format `%s` is invalid or not supported', $pStr));
         }
 
-        throw new Exception(sprintf('the submitted dice format `%s` is invalid or not supported', $pStr));
-    }
-
-    /**
-     * Returns a Cup made of identical Dices
-     *
-     * @param array $pMatches
-     *
-     * @return Rollable
-     */
-    private function createPool(array $pMatches): Rollable
-    {
         $method = 'createSimplePool';
-        if ('' !== $pMatches['complex']) {
+        if ('' !== $matches['complex']) {
             $method = 'createComplexPool';
         }
 
-        $pool = $this->$method($pMatches);
-        if (preg_match(self::MODIFIER_PATTERN, $pMatches['modifier'], $matches)) {
-            return $this->addArithmeticModifier($matches, $this->addComplexModifier($matches, $pool));
+        $pool = $this->$method($matches);
+        if (preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
+            return $this->addArithmetic($modifier_matches, $this->addComplexModifier($modifier_matches, $pool));
         }
 
-        throw new Exception(sprintf('the submitted modifier `%s` is invalid or not supported', $pMatches['modifier']));
+        throw new Exception(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
     }
 
     /**
@@ -167,7 +155,7 @@ final class Factory
     }
 
     /**
-     * Decorate the Rollable object with The SortModifer Or the ExplodeModifier
+     * Decorate the Rollable object with the DropKeep or the Explode Modifier
      *
      * @param array $pMatches
      * @param Cup   $pRollable
@@ -182,10 +170,10 @@ final class Factory
 
         $type = strtolower($pMatches['type']);
         if (0 !== strpos($type, '!')) {
-            return $this->addSortModifier($type, $pMatches, $pRollable);
+            return $this->addDropKeep($type, $pMatches, $pRollable);
         }
 
-        return $this->addExplodeModifier(substr($type, 1), $pMatches, $pRollable);
+        return $this->addExplode(substr($type, 1), $pMatches, $pRollable);
     }
 
     /**
@@ -196,11 +184,11 @@ final class Factory
      *
      * @param Cup $pRollable
      */
-    private function addSortModifier(string $algo, array $pMatches, Cup $pRollable): Rollable
+    private function addDropKeep(string $algo, array $pMatches, Cup $pRollable): Rollable
     {
         $threshold = $pMatches['threshold'] ?? 1;
 
-        return new Modifier\Sort($pRollable, (int) $threshold, $algo);
+        return new Modifier\DropKeep($pRollable, (int) $threshold, $algo);
     }
 
     /**
@@ -211,7 +199,7 @@ final class Factory
      *
      * @param Cup $pRollable
      */
-    private function addExplodeModifier(string $compare, array $pMatches, Cup $pRollable): Rollable
+    private function addExplode(string $compare, array $pMatches, Cup $pRollable): Rollable
     {
         if ('' == $compare) {
             $compare = Modifier\Explode::EQUALS;
@@ -236,7 +224,7 @@ final class Factory
      *
      * @return Rollable
      */
-    private function addArithmeticModifier(array $pMatches, Rollable $pRollable): Rollable
+    private function addArithmetic(array $pMatches, Rollable $pRollable): Rollable
     {
         if (!isset($pMatches['math1'])) {
             return $pRollable;
