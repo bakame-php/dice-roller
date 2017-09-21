@@ -39,13 +39,13 @@ final class Arithmetic implements Rollable
      * new Instance
      *
      * @param Rollable $pRollable
-     * @param int      $pValue
      * @param string   $operator
+     * @param int      $pValue
      *
      * @throws Exception if the value is lesser than 0
      * @throws Exception if the operator is not recognized
      */
-    public function __construct(Rollable $pRollable, int $pValue, string $pOperator)
+    public function __construct(Rollable $pRollable, string $pOperator, int $pValue)
     {
         if ($pValue < 0) {
             throw new Exception(sprintf('The submitted value `%s` MUST be equal or greather than 0', $pValue));

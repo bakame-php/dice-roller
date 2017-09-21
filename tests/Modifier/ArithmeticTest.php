@@ -18,7 +18,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows1()
     {
         $this->expectException(Exception::class);
-        new Arithmetic(new Dice(6), -3, '+');
+        new Arithmetic(new Dice(6), '+', -3);
     }
 
     /**
@@ -27,7 +27,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows2()
     {
         $this->expectException(Exception::class);
-        new Arithmetic(new Dice(6), 3, '**');
+        new Arithmetic(new Dice(6), '**', 3);
     }
 
     /**
@@ -36,7 +36,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows3()
     {
         $this->expectException(Exception::class);
-        new Arithmetic(new Dice(6), 0, '/');
+        new Arithmetic(new Dice(6), '/', 0);
     }
 
     /**
@@ -48,7 +48,7 @@ final class ArithmeticTest extends TestCase
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), 3, '^');
+        ), '^', 3);
         $this->assertSame('(2D3+D4)^3', (string) $cup);
     }
 
@@ -62,7 +62,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max)
     {
-        $roll = new Arithmetic(new Dice($size), $value, $operator);
+        $roll = new Arithmetic(new Dice($size), $operator, $value);
         $test = $roll->roll();
         $this->assertSame($min, $roll->getMinimum());
         $this->assertSame($max, $roll->getMaximum());

@@ -50,10 +50,10 @@ final class DropKeep implements Rollable
      * new instance
      *
      * @param Cup    $pRollable
-     * @param int    $pThreshold
      * @param string $pAlgo
+     * @param int    $pThreshold
      */
-    public function __construct(Cup $pRollable, int $pThreshold, string $pAlgo)
+    public function __construct(Cup $pRollable, string $pAlgo, int $pThreshold)
     {
         if (count($pRollable) < $pThreshold) {
             throw new Exception(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pRollable), $pThreshold));

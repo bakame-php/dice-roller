@@ -1,6 +1,7 @@
 <?php
 namespace Ethtezahl\DiceRoller\Test;
 
+use Ethtezahl\DiceRoller;
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
@@ -14,13 +15,6 @@ use PHPUnit\Framework\TestCase;
  */
 final class CupTest extends TestCase
 {
-    private $factory;
-
-    public function setUp()
-    {
-        $this->factory = new Factory();
-    }
-
     /**
      * @covers ::__construct
      * @covers ::getMinimum
@@ -35,8 +29,8 @@ final class CupTest extends TestCase
     public function testRoll()
     {
         $cup = new Cup(
-            $this->factory->newInstance('4D10'),
-            $this->factory->newInstance('2d4')
+            DiceRoller\roll_create('4D10'),
+            DiceRoller\roll_create('2d4')
         );
         $this->assertSame(6, $cup->getMinimum());
         $this->assertSame(48, $cup->getMaximum());

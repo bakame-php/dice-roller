@@ -188,7 +188,7 @@ final class Factory
     {
         $threshold = $pMatches['threshold'] ?? 1;
 
-        return new Modifier\DropKeep($pRollable, (int) $threshold, $algo);
+        return new Modifier\DropKeep($pRollable, $algo, (int) $threshold);
     }
 
     /**
@@ -205,11 +205,11 @@ final class Factory
             $compare = Modifier\Explode::EQUALS;
             $threshold = $pMatches['threshold'] ?? -1;
 
-            return new Modifier\Explode($pRollable, (int) $threshold, $compare);
+            return new Modifier\Explode($pRollable, $compare, (int) $threshold);
         }
 
         if (isset($pMatches['threshold'])) {
-            return new Modifier\Explode($pRollable, (int) $pMatches['threshold'], $compare);
+            return new Modifier\Explode($pRollable, $compare, (int) $pMatches['threshold']);
 
         }
 
@@ -230,11 +230,11 @@ final class Factory
             return $pRollable;
         }
 
-        $rollable = new Modifier\Arithmetic($pRollable, (int) $pMatches['value1'], $pMatches['operator1']);
+        $rollable = new Modifier\Arithmetic($pRollable, $pMatches['operator1'], (int) $pMatches['value1']);
         if (!isset($pMatches['math2'])) {
             return $rollable;
         }
 
-        return new Modifier\Arithmetic($rollable, (int) $pMatches['value2'], $pMatches['operator2']);
+        return new Modifier\Arithmetic($rollable, $pMatches['operator2'], (int) $pMatches['value2']);
     }
 }

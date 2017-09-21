@@ -44,10 +44,10 @@ final class Explode implements Rollable
      * new instance
      *
      * @param Cup    $pRollable
-     * @param int    $pThreshold
      * @param string $pCompare
+     * @param int    $pThreshold
      */
-    public function __construct(Cup $pRollable, int $pThreshold, string $pCompare)
+    public function __construct(Cup $pRollable, string $pCompare, int $pThreshold)
     {
         $this->rollable = $pRollable;
         if (-1 != $pThreshold) {

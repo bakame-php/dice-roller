@@ -80,12 +80,12 @@ The package comes bundles with the following rollable objects
 | Modifier      | `Ethtezahl\DiceRoller\Modifier\DropKeep` |
 
 
-#### Dice Types
+### Dices
 
 In addition to the `Rollable` interface, the Dice type implement the `Countable` interface. The `count` method returns the dice sides count.
 
 - The `Dice` constructor unique argument is the dice sides count. A `Dice` object must have at least 2 sides otherwise a `Ethtezahl\DiceRoller\Exception` is thrown.
-- `FludgeDice` constructor takes no argument as fudge dices are always 3 sides dices with values being `-1`, `0` or `1`.
+- The `FludgeDice` constructor takes no argument as fudge dices are always 3 sides dices with values being `-1`, `0` or `1`.
 
 ```php
 <?php
@@ -94,17 +94,17 @@ use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\FudgeDice;
 
 $basic = new Dice(3);
-echo $basic; // 'D3';
+echo $basic;    // 'D3';
 $basic->roll(); // may return 1,2 or 3
-count($basic); // returns 3
+count($basic);  // returns 3
 
-$fugde = new Fugde();
-echo $fudge; // displays 'DF'
+$fugde = new FudgeDice();
+echo $fudge;    // displays 'DF'
 $fudge->roll(); // may return -1, 0, or 1
-count($fudge); // returns 3
+count($fudge);  // returns 3
 ```
 
-#### The Collection Type
+### Dices Collection
 
 A `Cup` is a collection of `Rollable` objects. This means that a `Cup` can contains multiple dices but others `Cup` objects as well. Once a `Cup` is instantiated there are no method to alter its properties.
 
@@ -132,9 +132,21 @@ echo Cup::createFromDice(4, 'F'); // displays 4DF
 echo Cup::createFromDice(2, 'f'); // displays 2DF
 ```
 
-A Cup must contain at least `1` dice otherwise a `Ethtezahl\DiceRoller\Exception` is thrown.
+A Cup created using `createFromDice` must contain at least 1 `Rollable` object otherwise a `Ethtezahl\DiceRoller\Exception` is thrown.
 
-#### Modifiers
+Where iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
+
+```php
+<?php
+
+use Ethtezahl\DiceRoller\Cup;
+
+foreach (Cup::createFromDice(3, 5) as $rollable) {
+    echo $rollable; // will always return D5
+}
+```
+
+### Roll Modifiers
 
 Sometimes you may want to modify the outcome of a roll. The library comes bundle with 3 modifiers, each implementing the `Rollable` interface.
 
@@ -147,7 +159,7 @@ namespace Ethtezahl\DiceRoller\Modifier;
 
 final class Arithmetic implements Rollable
 {
-    public function __construct(Rollable $rollable, int $value, string $operator);
+    public function __construct(Rollable $rollable, string $operator, int $value);
 }
 ```
 
@@ -169,7 +181,7 @@ The value given must be a positive integer or 0. If the value or the operator ar
 use Ethtezahl\DiceRoller\Modifier\Arithmetic;
 use Ethtezahl\DiceRoller\Dice;
 
-$modifier = new Arithmetic(new Dice(6), 3, '*');
+$modifier = new Arithmetic(new Dice(6), '*', 3);
 echo $modifier; // displays D6*3;
 $modifier->roll(); //may return 4*3 = 12
 ```
@@ -187,15 +199,15 @@ final class DropKeep implements Rollable
     const DROP_LOWEST = 'dl';
     const KEEP_HIGHEST = 'kh';
     const KEEP_LOWEST = 'kl';
-    public function __construct(Cup $pRollable, int $pThreshold, string $pAlgo);
+    public function __construct(Cup $pRollable, string $pAlgo, int $pThreshold);
 }
 ```
 
 This modifier decorates a `Rollable` object by applying the one of the dropkeep algorithm on a collection of `Rollable` objects. The constructor expects:
 
 - a `Cup` object;
-- a threshold to trigger the alogrithm;
 - a algorithm name;
+- a threshold to trigger the alogrithm;
 
 The supported algorithms are:
 
@@ -214,7 +226,7 @@ If the algorithm or the threshold are not valid a `Ethtezahl\DiceRoller\Exceptio
 use Ethtezahl\DiceRoller\Modifier\DropKeep;
 use Ethtezahl\DiceRoller\Cup;
 
-$modifier = new DropKeep(Cup::createFromDice(4, 6), 3, DropKeep::DROP_HIGHEST);
+$modifier = new DropKeep(Cup::createFromDice(4, 6), DropKeep::DROP_HIGHEST, 3);
 echo $modifier; // displays '4D6DH3'
 ```
 
@@ -230,15 +242,15 @@ final class Explode implements Rollable
     const EQUALS = '=';
     const GREATER_THAN = '>';
     const LESSER_THAN = '<';
-    public function __construct(Cup $pRollable, int $pThreshold, string $pCompare);
+    public function __construct(Cup $pRollable, string $pCompare, int $pThreshold);
 }
 ```
 
 This modifier decorates a `Rollable` object by applying the one of the explode algorithm on a collection of `Rollable` objects. The constructor expects:
 
 - a `Cup` object;
-- a threshold to trigger the alogrithm;
 - a comparison operator string;
+- a threshold to trigger the alogrithm;
 
 The supported comparison operator are:
 
@@ -257,7 +269,7 @@ use Ethtezahl\DiceRoller\Modifier\Explode;
 use Ethtezahl\DiceRoller\FudgeDice;
 
 $cup = new Cup(new Dice(6), new FudgeDice(), new Dice(6), new Dice(6));
-$modifier = new Explode($cup, 3, Explode::EQUALS);
+$modifier = new Explode($cup, Explode::EQUALS, 3);
 echo $modifier; // displays (3D6+DF)!=3
 ```
 
@@ -285,8 +297,9 @@ The package comes bundles with a `Factory` class to ease `Rollable` instance cre
 |  `[dh,dl,kh,kl]z` | `dh4` | keeping or dropping the lowest or highest z dice |
 
 
-**Only 2 arithmetic modifiers can be appended to a given dice pool.**  
-*The `=` comparison sign can be omitted*
+
+- **Only 2 arithmetic modifiers can be appended to a given dice pool.**  
+- *The `=` comparison sign when using the explode modifier can be omitted*
 
 By applying these rules the `Factory` can construct the following `Rollable` object:
 
@@ -299,9 +312,8 @@ $cup = (new Factory())->newInstance('3D20+4+D4!>3/4^3');
 echo $cup->roll();
 ```
 
-if the `Factory` can not parse the submitted string a `Ethtezahl\DiceRoller\Exception` will be thrown.
-
-Last but not least if you prefer using function you can simply call the `roll_create` function defined in the `Ethtezahl\DiceRoller` namespace as follow:
+If the `Factory` is enable to parse the submitted dice annotation a `Ethtezahl\DiceRoller\Exception` will be thrown.  
+Last but not least, if you prefer using function you can simply call the `roll_create` function defined in the `Ethtezahl\DiceRoller` namespace as follow:
 
 
 ```php

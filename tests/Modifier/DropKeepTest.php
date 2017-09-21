@@ -1,10 +1,10 @@
 <?php
 namespace Ethtezahl\DiceRoller\Test\Modifier;
 
+use Ethtezahl\DiceRoller;
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\Modifier\DropKeep;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +17,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp()
     {
-        $this->cup = (new Factory())->newInstance('4d6');
+        $this->cup = DiceRoller\roll_create('4d6');
     }
 
     /**
@@ -26,7 +26,7 @@ final class DropKeepTest extends TestCase
     public function testConstructorThrows1()
     {
         $this->expectException(Exception::class);
-        new DropKeep($this->cup, 6, DropKeep::DROP_LOWEST);
+        new DropKeep($this->cup, DropKeep::DROP_LOWEST, 6);
     }
 
     /**
@@ -35,7 +35,7 @@ final class DropKeepTest extends TestCase
     public function testConstructorThrows2()
     {
         $this->expectException(Exception::class);
-        new DropKeep($this->cup, 3, 'foobar');
+        new DropKeep($this->cup, 'foobar', 3);
     }
 
     /**
@@ -47,7 +47,7 @@ final class DropKeepTest extends TestCase
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), 2, DropKeep::DROP_LOWEST);
+        ), DropKeep::DROP_LOWEST, 2);
         $this->assertSame('(2D3+D4)DL2', (string) $cup);
     }
 
@@ -65,7 +65,7 @@ final class DropKeepTest extends TestCase
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {
-        $cup = new DropKeep($this->cup, $threshold, $algo);
+        $cup = new DropKeep($this->cup, $algo, $threshold);
         $res = $cup->roll();
         $this->assertSame($min, $cup->getMinimum());
         $this->assertSame($max, $cup->getMaximum());

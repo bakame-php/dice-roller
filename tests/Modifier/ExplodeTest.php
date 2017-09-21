@@ -1,10 +1,10 @@
 <?php
 namespace Ethtezahl\DiceRoller\Test\Modifier;
 
+use Ethtezahl\DiceRoller;
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\Modifier\Explode;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +17,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp()
     {
-        $this->cup = (new Factory())->newInstance('4d6');
+        $this->cup = DiceRoller\roll_create('4d6');
     }
 
     /**
@@ -26,7 +26,7 @@ final class ExplodeTest extends TestCase
     public function testConstructorThrows()
     {
         $this->expectException(Exception::class);
-        new Explode($this->cup, 2, 'foobar');
+        new Explode($this->cup, 'foobar', 2);
     }
 
     /**
@@ -38,7 +38,7 @@ final class ExplodeTest extends TestCase
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), 3, Explode::EQUALS);
+        ), Explode::EQUALS, 3);
 
         $this->assertSame('(2D3+D4)!=3', (string) $cup);
     }
@@ -54,7 +54,7 @@ final class ExplodeTest extends TestCase
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {
-        $cup = new Explode($this->cup, $threshold, $algo);
+        $cup = new Explode($this->cup, $algo, $threshold);
         $res = $cup->roll();
         $this->assertSame($min, $cup->getMinimum());
         $this->assertSame($max, $cup->getMaximum());
