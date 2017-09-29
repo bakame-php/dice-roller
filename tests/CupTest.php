@@ -9,18 +9,32 @@ use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\FudgeDice;
 use Ethtezahl\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 /**
  * @coversDefaultClass Ethtezahl\DiceRoller\Cup
  */
 final class CupTest extends TestCase
 {
+
+    public function testConstructorThrows()
+    {
+        $this->expectException(TypeError::class);
+        new Cup(new Dice(3));
+    }
+
+    public function testConstructorThrows2()
+    {
+        $this->expectException(TypeError::class);
+        new Cup([new Dice(3), 'foo']);
+    }
+
     /**
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
-     * @covers ::roll
      * @covers ::calculate
+     * @covers ::roll
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::count
@@ -28,10 +42,10 @@ final class CupTest extends TestCase
      */
     public function testRoll()
     {
-        $cup = new Cup(
+        $cup = new Cup([
             DiceRoller\roll_create('4D10'),
             DiceRoller\roll_create('2d4')
-        );
+        ]);
         $this->assertSame(6, $cup->getMinimum());
         $this->assertSame(48, $cup->getMaximum());
         $this->assertCount(2, $cup);
@@ -49,6 +63,8 @@ final class CupTest extends TestCase
      * @covers ::filterSize
      * @covers ::getMinimum
      * @covers ::getMaximum
+     * @covers ::minimum
+     * @covers ::maximum
      * @dataProvider validNamedConstructor
      */
     public function testCreateFromDice($quantity, $sides, $className, $min, $max)

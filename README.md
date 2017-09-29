@@ -116,7 +116,7 @@ namespace Ethtezahl\DiceRoller;
 final class Cup implements Countable, IteratorAggregate, Rollable
 {
     public static function createFromDice(int $pQuantity, int|string $pSize): self;
-    public function __construct(Rollable ...$pItems);
+    public function __construct(iterable $rollables);
 }
 ```
 

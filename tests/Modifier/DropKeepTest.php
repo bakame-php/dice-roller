@@ -43,11 +43,11 @@ final class DropKeepTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new DropKeep(new Cup(
+        $cup = new DropKeep(new Cup([
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), DropKeep::DROP_LOWEST, 2);
+        ]), DropKeep::DROP_LOWEST, 2);
         $this->assertSame('(2D3+D4)DL2', (string) $cup);
     }
 

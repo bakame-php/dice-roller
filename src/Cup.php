@@ -9,6 +9,7 @@ namespace Ethtezahl\DiceRoller;
 
 use Countable;
 use IteratorAggregate;
+use TypeError;
 
 final class Cup implements Countable, IteratorAggregate, Rollable
 {
@@ -36,7 +37,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         $size = self::filterSize($pSize);
         $dice = 'f' === $size ? new FudgeDice() : new Dice($size);
 
-        return new self(...array_fill(0, $pQuantity, $dice));
+        return new self(array_fill(0, $pQuantity, $dice));
     }
 
     /**
@@ -66,11 +67,17 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * New instance
      *
-     * @param Rollable ...$pItems a list of Rollable objects
+     * @param mixed $pItems a list of Rollable objects (iterable array or Traversable object)
      */
-    public function __construct(Rollable ...$pItems)
+    public function __construct($pItems = [])
     {
-        $this->items = $pItems;
+        if (!is_array($pItems)) {
+            $pItems = iterator_to_array($pItems, false);
+        }
+
+        $this->items = array_filter($pItems, function(Rollable $item) {
+            return true;
+        });
     }
 
     /**

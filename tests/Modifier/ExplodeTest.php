@@ -34,11 +34,11 @@ final class ExplodeTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new Explode(new Cup(
+        $cup = new Explode(new Cup([
             new Dice(3),
             new Dice(3),
-            new Dice(4)
-        ), Explode::EQUALS, 3);
+            new Dice(4),
+        ]), Explode::EQUALS, 3);
 
         $this->assertSame('(2D3+D4)!=3', (string) $cup);
     }

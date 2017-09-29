@@ -44,11 +44,11 @@ final class ArithmeticTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new Arithmetic(new Cup(
+        $cup = new Arithmetic(new Cup([
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), '^', 3);
+        ]), '^', 3);
         $this->assertSame('(2D3+D4)^3', (string) $cup);
     }
 

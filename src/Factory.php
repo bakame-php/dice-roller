@@ -49,7 +49,7 @@ final class Factory
             return $this->parsePool(array_shift($parts));
         }
 
-        return new Cup(...array_map([$this, 'parsePool'], $parts));
+        return new Cup(array_map([$this, 'parsePool'], $parts));
     }
 
     /**
@@ -151,7 +151,7 @@ final class Factory
      */
     private function createComplexPool(array $pMatches): Cup
     {
-        return new Cup(...array_map([$this, 'parsePool'], $this->explode($pMatches['mixed'])));
+        return new Cup(array_map([$this, 'parsePool'], $this->explode($pMatches['mixed'])));
     }
 
     /**
