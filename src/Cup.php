@@ -184,9 +184,10 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     {
         $res = array_reduce($this->items, [$this, 'calculate'], []);
 
+        $roll = array_sum(array_column($res, 'roll'));
         $this->explain = implode(' + ', array_column($res, 'explain'));
 
-        return array_sum(array_column($res, 'roll'));
+        return $roll;
     }
 
     /**

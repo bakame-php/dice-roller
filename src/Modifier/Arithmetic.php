@@ -164,7 +164,12 @@ final class Arithmetic implements Rollable
      */
     private function exp(string $method): int
     {
-        return $this->rollable->$method() ** $this->value;
+        $roll = $this->rollable->$method();
+        if ($roll > -1) {
+            return $roll ** $this->value;
+        }
+
+        return (abs($roll) ** $this->value) * -1;
     }
 
     /**
