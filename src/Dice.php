@@ -15,44 +15,49 @@ final class Dice implements Countable, Rollable
      *
      * @var int
      */
-    private $size;
+    private $sides;
+
+    /**
+     * @var string
+     */
+    private $explain;
 
     /**
      * new instance
      *
-     * @param int $pSize side count
+     * @param int $sides side count
      *
      * @throws Exception if a Dice contains less than 2 sides
      */
-    public function __construct(int $pSize)
+    public function __construct(int $sides)
     {
-        if (2 > $pSize) {
-            throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', $pSize));
+        if (2 > $sides) {
+            throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', $sides));
         }
 
-        $this->size = $pSize;
+        $this->sides = $sides;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __toString()
     {
-        return 'D'.$this->size;
+        return 'D'.$this->sides;
     }
 
     /**
-     * Returns the side count
+     * Returns the side count.
      *
      * @return int
      */
     public function count()
     {
-        return $this->size;
+        return $this->sides;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMinimum(): int
     {
@@ -60,18 +65,28 @@ final class Dice implements Countable, Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMaximum(): int
     {
-        return $this->size;
+        return $this->sides;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function roll() : int
+    public function roll(): int
     {
-        return random_int(1, $this->size);
+        $this->explain = random_int(1, $this->sides);
+
+        return $this->explain;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function explain(): string
+    {
+        return (string) $this->explain;
     }
 }

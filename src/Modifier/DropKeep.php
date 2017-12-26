@@ -47,29 +47,34 @@ final class DropKeep implements Rollable
     private $method;
 
     /**
+     * @var string
+     */
+    private $explain;
+
+    /**
      * new instance
      *
-     * @param Cup    $pRollable
-     * @param string $pAlgo
-     * @param int    $pThreshold
+     * @param Cup    $rollable
+     * @param string $algo
+     * @param int    $threshold
      */
-    public function __construct(Cup $pRollable, string $pAlgo, int $pThreshold)
+    public function __construct(Cup $rollable, string $algo, int $threshold)
     {
-        if (count($pRollable) < $pThreshold) {
-            throw new Exception(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pRollable), $pThreshold));
+        if (count($rollable) < $threshold) {
+            throw new Exception(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($rollable), $threshold));
         }
 
-        if (!isset(self::$methodList[$pAlgo])) {
-            throw new Exception(sprintf('Unknown or unsupported sortable algorithm `%s`', $pAlgo));
+        if (!isset(self::$methodList[$algo])) {
+            throw new Exception(sprintf('Unknown or unsupported sortable algorithm `%s`', $algo));
         }
 
-        $this->rollable = $pRollable;
-        $this->threshold = $pThreshold;
-        $this->method = self::$methodList[$pAlgo];
+        $this->rollable = $rollable;
+        $this->threshold = $threshold;
+        $this->method = self::$methodList[$algo];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __toString()
     {
@@ -84,23 +89,15 @@ final class DropKeep implements Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function getMinimum(): int
+    public function explain(): string
     {
-        return $this->calculate('getMinimum');
+        return (string) $this->explain;
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getMaximum(): int
-    {
-        return $this->calculate('getMaximum');
-    }
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function roll(): int
     {
@@ -108,75 +105,118 @@ final class DropKeep implements Rollable
     }
 
     /**
-     * Computes the sum to be return
+     * Computes the sum to be return.
      *
-     * @param string $pMethod One of the Rollable method
+     * @param string $method One of the Rollable method
      *
      * @return int
      */
-    private function calculate(string $pMethod): int
+    private function calculate(string $method): int
     {
         $res = [];
+        $this->explain = '';
         foreach ($this->rollable as $rollable) {
-            $res[] = $rollable->$pMethod();
+            $res[] = [
+                'roll' => $rollable->$method(),
+                'explain' => $method === 'roll' ? $rollable->explain() : '',
+            ];
         }
 
-        return $this->{$this->method}($res);
+        $retained = $this->{$this->method}($res);
+        $res = array_sum(array_column($retained, 'roll'));
+        if ($method !== 'roll') {
+            return $res;
+        }
+
+        $explain = implode(' + ', array_column($retained, 'explain'));
+        if (strpos($explain, '+') !== false) {
+            $explain = '('.$explain.')';
+        }
+
+        $this->explain = $explain;
+
+        return $res;
     }
 
     /**
-     * Returns the drop highest value
-     *
-     * @param int[] $pSum
-     *
-     * @return int
+     * {@inheritdoc}
      */
-    private function dropHighest(array $pSum): int
+    public function getMinimum(): int
     {
-        rsort($pSum);
-
-        return array_sum(array_slice($pSum, $this->threshold));
+        return $this->calculate('getMinimum');
     }
 
     /**
-     * Returns the drop lowest value
-     *
-     * @param int[] $pSum
-     *
-     * @return int
+     * {@inheritdoc}
      */
-    private function dropLowest(array $pSum): int
+    public function getMaximum(): int
     {
-        sort($pSum);
-
-        return array_sum(array_slice($pSum, $this->threshold));
+        return $this->calculate('getMaximum');
     }
 
     /**
-     * Returns the keep highest value
+     * Returns the drop highest value.
      *
-     * @param int[] $pSum
+     * @param int[] $sum
      *
-     * @return int
+     * @return int[]
      */
-    private function keepHighest(array $pSum): int
+    private function dropHighest(array $sum): array
     {
-        rsort($pSum);
+        uasort($sum, [$this, 'drop']);
 
-        return array_sum(array_slice($pSum, 0, $this->threshold));
+        return array_slice($sum, $this->threshold);
+    }
+
+    private function drop(array $data1, array $data2): int
+    {
+        return $data1['roll'] <=> $data2['roll'];
     }
 
     /**
-     * Returns the keep lowest value
+     * Returns the drop lowest value.
      *
-     * @param int[] $pSum
+     * @param int[] $sum
      *
-     * @return int
+     * @return int[]
      */
-    private function keepLowest(array $pSum): int
+    private function dropLowest(array $sum): array
     {
-        sort($pSum);
+        uasort($sum, [$this, 'drop']);
 
-        return array_sum(array_slice($pSum, 0, $this->threshold));
+        return array_slice($sum, $this->threshold);
+    }
+
+    /**
+     * Returns the keep highest value.
+     *
+     * @param int[] $sum
+     *
+     * @return int[]
+     */
+    private function keepHighest(array $sum): array
+    {
+        uasort($sum, [$this, 'keep']);
+
+        return array_slice($sum, 0, $this->threshold);
+    }
+
+    private function keep(array $data1, array $data2): int
+    {
+        return $data2['roll'] <=> $data1['roll'];
+    }
+
+    /**
+     * Returns the keep lowest value.
+     *
+     * @param int[] $sum
+     *
+     * @return int[]
+     */
+    private function keepLowest(array $sum): array
+    {
+        uasort($sum, [$this, 'keep']);
+
+        return array_slice($sum, 0, $this->threshold);
     }
 }

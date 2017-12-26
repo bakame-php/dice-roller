@@ -1,4 +1,5 @@
 <?php
+
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\Dice;
@@ -16,6 +17,7 @@ final class DiceTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
+     * @covers ::explain
      */
     public function testSixSidedValues()
     {
@@ -28,6 +30,7 @@ final class DiceTest extends TestCase
             $test = $dice->roll();
             $this->assertGreaterThanOrEqual($dice->getMinimum(), $test);
             $this->assertLessThanOrEqual($dice->getMaximum(), $test);
+            $this->assertContains($dice->explain(), ['1', '2', '3', '4', '5', '6']);
         }
     }
 

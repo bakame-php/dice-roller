@@ -22,13 +22,13 @@ The code above will simulate the roll of two six-sided die
 <?php
 
 // First: import needed class
-use Ethtezahl\DiceRoller\Factory;
+use Ethtezahl\DiceRoller\Parser;
 
 // Factory allow us to create dice cup.
-$factory = new Factory();
+$parser = new Parser();
 
 // We create the cup that will contain the two die:
-$cup = $factory->newInstance('2D6');
+$cup = $parse('2D6');
 
 // Display the result:
 echo $cup->roll();
@@ -39,7 +39,7 @@ echo $cup->roll();
 The following expression is supported by the library:
 
 ```php
-$cup = $factory->newInstance('3D20+4+D4!>3/4^3');
+$cup = $parser->parse('3D20+4+D4!>3/4^3');
 echo $cup->roll();
 ```
 
@@ -56,6 +56,7 @@ namespace Ethtezahl\DiceRoller;
 
 interface Rollable
 {
+    public function explain(): string;
     public function getMinimum(): int;
     public function getMaximum(): int;
     public function roll(): int;
@@ -67,8 +68,9 @@ interface Rollable
 - `Rollable::getMaximum` returns the maximum value the rollable object can return during a roll;
 - `Rollable::roll` returns a value from a roll.
 - `Rollable::__toString` returns the string annotation of the Rollable object.
+- `Rollable::explain` returns the execution trace of how the last roll was executed.
 
-The package comes bundles with the following rollable objects 
+The package comes bundles with the following rollable objects
 
 | Rollable Type | Class Name |
 | ------------- | ---------- |
@@ -84,7 +86,7 @@ The package comes bundles with the following rollable objects
 
 In addition to the `Rollable` interface, the Dice type implement the `Countable` interface. The `count` method returns the dice sides count.
 
-- The `Dice` constructor unique argument is the dice sides count. A `Dice` object must have at least 2 sides otherwise a `Ethtezahl\DiceRoller\Exception` is thrown.
+- The `Dice` constructor unique argument is the dice sides count. A `Dice` object must have at least 2 sides otherwise a `Ethtezahl\DiceRoller\Exception` exception is thrown.
 - The `FludgeDice` constructor takes no argument as fudge dices are always 3 sides dices with values being `-1`, `0` or `1`.
 
 ```php
@@ -268,25 +270,26 @@ use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Modifier\Explode;
 use Ethtezahl\DiceRoller\FudgeDice;
 
-$cup = new Cup(new Dice(6), new FudgeDice(), new Dice(6), new Dice(6));
+$cup = new Cup([new Dice(6), new FudgeDice(), new Dice(6), new Dice(6)]);
 $modifier = new Explode($cup, Explode::EQUALS, 3);
 echo $modifier; // displays (3D6+DF)!=3
 ```
 
-### Factory
+### Parser
 
 ```php
 <?php
 
 namespace Ethtezahl\DiceRoller;
 
-final class Factory
+final class Parser
 {
-    public function newInstance(string $pStr): Rollable;
+    public function __invoke(string $pStr): Rollable;
+    public function parse(string $pStr): Rollable;
 }
 ```
 
-The package comes bundles with a `Factory` class to ease `Rollable` instance creation. The factory supports basic roll annotation rules in a case insentitive way:
+The package comes bundles with a `Parser` class to ease `Rollable` instance creation. The parser supports basic roll annotation rules in a case insentitive way:
 
 
 | Annotation | Examples  | Description |
@@ -301,19 +304,21 @@ The package comes bundles with a `Factory` class to ease `Rollable` instance cre
 - **Only 2 arithmetic modifiers can be appended to a given dice pool.**  
 - *The `=` comparison sign when using the explode modifier can be omitted*
 
-By applying these rules the `Factory` can construct the following `Rollable` object:
+By applying these rules the `Parser` can construct the following `Rollable` object:
 
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\Factory;
+use Ethtezahl\DiceRoller\Parser;
 
-$cup = (new Factory())->newInstance('3D20+4+D4!>3/4^3');
+$cup = (new Parser())->parse('3D20+4+D4!>3/4^3');
+//or
+$cup = (new Parser())('3D20+4+D4!>3/4^3'); //using the __invoke method
 echo $cup->roll();
 ```
 
 If the `Factory` is enable to parse the submitted dice annotation a `Ethtezahl\DiceRoller\Exception` will be thrown.  
-Last but not least, if you prefer using function you can simply call the `roll_create` function defined in the `Ethtezahl\DiceRoller` namespace as follow:
+Last but not least, if you prefer using function you can simply call the `create` function defined in the `Ethtezahl\DiceRoller` namespace as follow:
 
 
 ```php
@@ -321,7 +326,7 @@ Last but not least, if you prefer using function you can simply call the `roll_c
 
 use Ethtezahl\DiceRoller;
 
-$cup = DiceRoller\roll_create('3D20+4+D4!>3/4^3');
+$cup = DiceRoller\create('3D20+4+D4!>3/4^3');
 echo $cup->roll();
 ```
 

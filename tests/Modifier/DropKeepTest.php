@@ -1,12 +1,14 @@
 <?php
+
 namespace Ethtezahl\DiceRoller\Test\Modifier;
 
-use Ethtezahl\DiceRoller;
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Modifier\DropKeep;
+use Ethtezahl\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use function Ethtezahl\DiceRoller\create;
 
 /**
  * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\DropKeep
@@ -17,7 +19,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp()
     {
-        $this->cup = DiceRoller\roll_create('4d6');
+        $this->cup = create('4d6');
     }
 
     /**
@@ -46,9 +48,80 @@ final class DropKeepTest extends TestCase
         $cup = new DropKeep(new Cup([
             new Dice(3),
             new Dice(3),
-            new Dice(4)
+            new Dice(4),
         ]), DropKeep::DROP_LOWEST, 2);
         $this->assertSame('(2D3+D4)DL2', (string) $cup);
+    }
+
+
+    /**
+     * @covers ::roll
+     * @covers ::explain
+     * @covers \Ethtezahl\DiceRoller\Cup::explain
+     */
+    public function testExplain()
+    {
+        $dice1 = new class() implements Rollable {
+            public function getMinimum(): int
+            {
+                return 1;
+            }
+
+            public function getMaximum(): int
+            {
+                return 1;
+            }
+
+            public function roll(): int
+            {
+                return 1;
+            }
+
+            public function __toString()
+            {
+                return '1';
+            }
+
+            public function explain(): string
+            {
+                return '1';
+            }
+        };
+
+        $dice2 = new class() implements Rollable {
+            public function getMinimum(): int
+            {
+                return 2;
+            }
+
+            public function getMaximum(): int
+            {
+                return 2;
+            }
+
+            public function roll(): int
+            {
+                return 2;
+            }
+
+            public function __toString()
+            {
+                return '2';
+            }
+
+            public function explain(): string
+            {
+                return '2';
+            }
+        };
+
+        $rollables = new Cup([$dice1, clone $dice1, $dice2, clone $dice2]);
+        $cup = new DropKeep($rollables, DropKeep::DROP_LOWEST, 1);
+        $this->assertSame('', $rollables->explain());
+        $this->assertSame('', $cup->explain());
+        $this->assertSame(5, $cup->roll());
+        $this->assertSame('(1 + 2 + 2)', $cup->explain());
+        $this->assertSame('', $rollables->explain());
     }
 
     /**
@@ -56,12 +129,18 @@ final class DropKeepTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::calculate
+     * @covers ::keep
      * @covers ::keepLowest
      * @covers ::keepHighest
+     * @covers ::drop
      * @covers ::dropLowest
      * @covers ::dropHighest
      * @covers ::roll
      * @dataProvider validParametersProvider
+     * @param string $algo
+     * @param int    $threshold
+     * @param int    $min
+     * @param int    $max
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {
@@ -99,7 +178,7 @@ final class DropKeepTest extends TestCase
                 'threshold' => 3,
                 'min' => 3,
                 'max' => 18,
-            ]
+            ],
         ];
     }
 }

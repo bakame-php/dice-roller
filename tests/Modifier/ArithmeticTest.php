@@ -1,10 +1,12 @@
 <?php
+
 namespace Ethtezahl\DiceRoller\Test\Modifier;
 
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Modifier\Arithmetic;
+use Ethtezahl\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,15 +43,83 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::__toString
+     * @covers ::explain
+     * @covers ::setExplain
      */
     public function testToString()
     {
         $cup = new Arithmetic(new Cup([
             new Dice(3),
             new Dice(3),
-            new Dice(4)
+            new Dice(4),
         ]), '^', 3);
         $this->assertSame('(2D3+D4)^3', (string) $cup);
+        $this->assertSame('', $cup->explain());
+    }
+
+    /**
+     * @covers ::roll
+     * @covers ::explain
+     * @covers ::setExplain
+     * @covers \Ethtezahl\DiceRoller\Cup::explain
+     */
+    public function testExplain()
+    {
+        $dice = new class() implements Rollable {
+            public function getMinimum(): int
+            {
+                return 1;
+            }
+
+            public function getMaximum(): int
+            {
+                return 1;
+            }
+
+            public function roll(): int
+            {
+                return 1;
+            }
+
+            public function __toString()
+            {
+                return '1';
+            }
+
+            public function explain(): string
+            {
+                return '1';
+            }
+        };
+
+        $rollables = new Cup([$dice, clone $dice]);
+        $cup = new Arithmetic($rollables, '*', 3);
+        $this->assertSame('', $rollables->explain());
+        $this->assertSame('', $cup->explain());
+        $this->assertSame(6, $cup->roll());
+        $this->assertSame('(1 + 1) * 3', $cup->explain());
+        $this->assertSame('1 + 1', $rollables->explain());
+    }
+
+    /**
+     * @covers ::roll
+     * @covers ::calculate
+     * @covers ::exp
+     * @covers ::explain
+     */
+    public function testRollWithNegativeDiceValue()
+    {
+        $dice = $this->createMock(Rollable::class);
+        $dice->method('roll')
+            ->will($this->returnValue(-1));
+
+        $dice->method('explain')
+            ->will($this->returnValue('-1'));
+        ;
+
+        $cup = new Arithmetic($dice, '^', 3);
+        $this->assertSame(-1, $cup->roll());
+        $this->assertSame('-1 ^ 3', $cup->explain());
     }
 
     /**
@@ -58,7 +128,18 @@ final class ArithmeticTest extends TestCase
      * @covers ::getMaximum
      * @covers ::calculate
      * @covers ::roll
+     * @covers ::calculate
+     * @covers ::multiply
+     * @covers ::add
+     * @covers ::subs
+     * @covers ::div
+     * @covers ::exp
      * @dataProvider validParametersProvider
+     * @param string $operator
+     * @param int    $size
+     * @param int    $value
+     * @param int    $min
+     * @param int    $max
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max)
     {

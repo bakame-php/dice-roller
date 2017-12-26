@@ -9,7 +9,6 @@ namespace Ethtezahl\DiceRoller;
 
 use Countable;
 use IteratorAggregate;
-use TypeError;
 
 final class Cup implements Countable, IteratorAggregate, Rollable
 {
@@ -19,69 +18,78 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     private $items = [];
 
     /**
-     * Create a new Cup From Dice definition
+     * @var string
+     */
+    private $explain;
+
+    /**
+     * Create a new Cup From Dice definition.
      *
-     * @param int        $pQuantity Dice count
-     * @param int|string $pSize     Dice sides count
+     * @param int        $quantity Dice count
+     * @param int|string $nbSides  Dice sides count
      *
      * @throws Exception if the quantity is lesser than 1
      *
      * @return self
      */
-    public static function createFromDice(int $pQuantity, $pSize): self
+    public static function createFromDice(int $quantity, $nbSides): self
     {
-        if ($pQuantity < 1) {
-            throw new Exception(sprintf('The quantity of dice `%s` is not valid', $pQuantity));
+        if ($quantity < 1) {
+            throw new Exception(sprintf('The quantity of dice `%s` is not valid', $quantity));
         }
 
-        $size = self::filterSize($pSize);
-        $dice = 'f' === $size ? new FudgeDice() : new Dice($size);
+        $size = self::filterSize($nbSides);
+        $data = [];
+        $class = 'f' === $size ? FudgeDice::class : Dice::class;
+        for ($i = 0; $i < $quantity; ++$i) {
+            $data[] = new $class($size);
+        }
 
-        return new self(array_fill(0, $pQuantity, $dice));
+        return new self($data);
     }
 
     /**
-     * Filter the Dice Slide size
+     * Filter the Dice Slide size.
      *
-     * @param  int|string $pSize
+     * @param int|string $nbSides
      *
      * @throws Exception if the submitted size is invalid
      *
      * @return int|string
      */
-    private static function filterSize($pSize)
+    private static function filterSize($nbSides)
     {
-        $size = (int) filter_var($pSize, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
+        $size = (int) filter_var($nbSides, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
         if ($size > 1) {
             return $size;
         }
 
-        $size = strtolower((string) $pSize);
+        $size = strtolower((string) $nbSides);
         if ('f' == $size) {
             return $size;
         }
 
-        throw new Exception(sprintf('The number of dice `%s` is not valid', $pSize));
+        throw new Exception(sprintf('The number of dice `%s` is not valid', $nbSides));
     }
 
     /**
-     * New instance
+     * new instance
      *
-     * @param mixed $pItems a list of Rollable objects (iterable array or Traversable object)
+     * @param mixed $items a list of Rollable objects (iterable array or Traversable object)
      */
-    public function __construct($pItems = [])
+    public function __construct($items = [])
     {
-        if (!is_array($pItems)) {
-            $pItems = iterator_to_array($pItems, false);
+        if (!is_array($items)) {
+            $items = iterator_to_array($items, false);
         }
 
-        $this->items = array_filter($pItems, function(Rollable $item) {
+        $this->items = array_filter($items, function (Rollable $item) {
             return true;
         });
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __toString()
     {
@@ -102,7 +110,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     }
 
     /**
-     * Returns the number of Rollable objects
+     * Returns the number of Rollable objects.
      */
     public function count()
     {
@@ -110,7 +118,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getIterator()
     {
@@ -120,7 +128,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMinimum(): int
     {
@@ -128,21 +136,20 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     }
 
     /**
-     * Add the result of the Rollable::getMinimum method
-     * to the submitted sum
+     * Add the result of the Rollable::getMinimum method to the submitted sum.
      *
-     * @param int      $pSum  initial sum
-     * @param Rollable $pRollable
+     * @param int      $sum      initial sum
+     * @param Rollable $rollable
      *
      * @return int
      */
-    private function minimum(int $pSum, Rollable $pRollable): int
+    private function minimum(int $sum, Rollable $rollable): int
     {
-        return $pSum + $pRollable->getMinimum();
+        return $sum + $rollable->getMinimum();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMaximum(): int
     {
@@ -150,38 +157,59 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     }
 
     /**
-     * Add the result of the Rollable::getMaximum method
-     * to the submitted sum
+     * Add the result of the Rollable::getMaximum method to the submitted sum.
      *
-     * @param int      $pSum  initial sum
-     * @param Rollable $pRollable
+     * @param int      $sum      initial sum
+     * @param Rollable $rollable
      *
      * @return int
      */
-    private function maximum(int $pSum, Rollable $pRollable): int
+    private function maximum(int $sum, Rollable $rollable): int
     {
-        return $pSum + $pRollable->getMaximum();
+        return $sum + $rollable->getMaximum();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     */
+    public function explain(): string
+    {
+        return (string) $this->explain;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function roll(): int
     {
-        return array_reduce($this->items, [$this, 'calculate'], 0);
+        $res = array_reduce($this->items, [$this, 'calculate'], []);
+
+        $this->explain = implode(' + ', array_column($res, 'explain'));
+
+        return array_sum(array_column($res, 'roll'));
     }
 
     /**
-     * Add the result of the Rollable::roll method
-     * to the submitted sum
+     * Add the result of the Rollable::roll method to the submitted sum.
      *
-     * @param  int      $sum  initial sum
-     * @param  Rollable $item
+     * @param array    $res
+     * @param Rollable $rollable
      *
-     * @return int
+     * @return array
      */
-    private function calculate(int $pSum, Rollable $pRollable): int
+    private function calculate(array $res, Rollable $rollable): array
     {
-        return $pSum + $pRollable->roll();
+        $roll = $rollable->roll();
+        $explain = $rollable->explain();
+        if (false !== strpos($explain, '+')) {
+            $explain = '('.$explain.')';
+        }
+
+        $res[] = [
+            'roll' => $roll,
+            'explain' => $explain,
+        ];
+
+        return $res;
     }
 }

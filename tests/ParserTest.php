@@ -1,28 +1,22 @@
 <?php
+
 namespace Ethtezahl\DiceRoller\Test;
 
+use Ethtezahl\DiceRoller;
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Factory;
+use Ethtezahl\DiceRoller\Parser;
 use Ethtezahl\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
-use function Ethtezahl\DiceRoller\roll_create;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\Factory
+ * @coversDefaultClass Ethtezahl\DiceRoller\Parser
  */
-final class FactoryTest extends TestCase
+final class ParserTest extends TestCase
 {
-    private $factory;
-
-    public function setUp()
-    {
-        $this->factory = new Factory();
-    }
-
     /**
-     * @covers ::newInstance
+     * @covers ::parse
      * @covers ::explode
      * @covers ::parsePool
      * @covers ::addArithmetic
@@ -32,11 +26,12 @@ final class FactoryTest extends TestCase
      * @covers ::createSimplePool
      * @covers ::createComplexPool
      * @dataProvider invalidStringProvider
+     * @param string $expected
      */
     public function testInvalidGroupDefinition(string $expected)
     {
         $this->expectException(Exception::class);
-        roll_create($expected);
+        DiceRoller\create($expected);
     }
 
     public function invalidStringProvider()
@@ -54,7 +49,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::newInstance
+     * @covers ::parse
      * @covers ::explode
      * @covers ::parsePool
      * @covers ::addArithmetic
@@ -63,7 +58,7 @@ final class FactoryTest extends TestCase
      * @covers ::addComplexModifier
      * @covers ::createSimplePool
      * @covers ::createComplexPool
-     * @covers \Ethtezahl\DiceRoller\roll_create
+     * @covers \Ethtezahl\DiceRoller\create
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::__toString
      * @covers \Ethtezahl\DiceRoller\Dice::__toString
@@ -72,10 +67,12 @@ final class FactoryTest extends TestCase
      * @covers \Ethtezahl\DiceRoller\Modifier\DropKeep::__toString
      * @covers \Ethtezahl\DiceRoller\Modifier\Explode::__toString
      * @dataProvider validStringProvider
+     * @param string $expected
+     * @param string $toString
      */
     public function testValidParser(string $expected, string $toString)
     {
-        $cup = roll_create($expected);
+        $cup = DiceRoller\create($expected);
         $this->assertInstanceOf(Rollable::class, $cup);
         $this->assertSame($toString, (string) $cup);
     }
@@ -105,7 +102,8 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::newInstance
+     * @covers ::__invoke
+     * @covers ::parse
      * @covers ::explode
      * @covers ::parsePool
      * @covers ::addArithmetic
@@ -113,12 +111,14 @@ final class FactoryTest extends TestCase
      * @covers ::addDropKeep
      * @covers ::addComplexModifier
      * @dataProvider permissiveParserProvider
+     * @param mixed $full
+     * @param mixed $short
      */
     public function testPermissiveParser($full, $short)
     {
         $this->assertEquals(
-            roll_create($full),
-            $this->factory->newInstance($short)
+            DiceRoller\create($full),
+            (new Parser())($short)
         );
     }
 
@@ -160,7 +160,7 @@ final class FactoryTest extends TestCase
             'default explode modifier with threshold' => [
                 'full' => '1d6!=3',
                 'short' => 'D!3',
-            ]
+            ],
         ];
     }
 
@@ -171,7 +171,7 @@ final class FactoryTest extends TestCase
      */
     public function testFiveFourSidedDice()
     {
-        $group = $this->factory->newInstance('5D4');
+        $group = DiceRoller\create('5D4');
         $this->assertCount(5, $group);
         $this->assertContainsOnlyInstancesOf(Dice::class, $group);
         foreach ($group as $dice) {
@@ -186,16 +186,35 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::newInstance
+     * @covers ::parse
+     * @covers \Ethtezahl\DiceRoller\Cup::roll
+     * @covers \Ethtezahl\DiceRoller\Cup::calculate
+     * @covers \Ethtezahl\DiceRoller\Cup::explain
+     * @covers \Ethtezahl\DiceRoller\Modifier\Explode::calculate
+     */
+    public function testComplexExplain()
+    {
+        $cup = DiceRoller\create('(3DF+2D6)!=3+3DF^2');
+        $this->assertSame('', $cup->explain());
+        $cup->roll();
+        $this->assertContains('(', $cup->explain());
+    }
+
+    /**
+     * @covers ::parse
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::roll
+     * @covers \Ethtezahl\DiceRoller\Cup::explain
      */
     public function testRollWithNoDice()
     {
-        $cup = $this->factory->newInstance();
+        $cup = DiceRoller\create('');
         $this->assertCount(0, $cup);
+        $this->assertSame(0, $cup->getMinimum());
+        $this->assertSame(0, $cup->getMaximum());
         for ($i = 0; $i < 5; $i++) {
             $this->assertEquals(0, $cup->roll());
+            $this->assertEquals('', $cup->explain());
         }
     }
 
@@ -208,7 +227,7 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithSingleDice()
     {
-        $cup = $this->factory->newInstance('d8');
+        $cup = DiceRoller\create('d8');
         $this->assertCount(1, $cup);
         $this->assertContainsOnlyInstancesOf(Rollable::class, $cup);
         foreach ($cup as $dice) {
@@ -231,7 +250,7 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithDefaultDice()
     {
-        $cup = $this->factory->newInstance('d');
+        $cup = DiceRoller\create('d');
         $this->assertCount(1, $cup);
         $this->assertContainsOnlyInstancesOf(Rollable::class, $cup);
         foreach ($cup as $dice) {
@@ -249,7 +268,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::newInstance
+     * @covers ::parse
      * @covers ::parsePool
      * @covers \Ethtezahl\DiceRoller\Cup::count
      * @covers \Ethtezahl\DiceRoller\Cup::getIterator
@@ -258,18 +277,18 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithMultipleDice()
     {
-        $cup = $this->factory->newInstance('2D6+3d4');
+        $cup = DiceRoller\create('2D6+3d4');
         $this->assertCount(2, $cup);
         $res = iterator_to_array($cup, false);
         $this->assertInstanceOf(Cup::class, $res[0]);
         $this->assertCount(2, $res[0]);
-        foreach($res[0] as $dice) {
+        foreach ($res[0] as $dice) {
             $this->assertInstanceOf(Dice::class, $dice);
             $this->assertCount(6, $dice);
         }
 
         $this->assertCount(3, $res[1]);
-        foreach($res[1] as $dice) {
+        foreach ($res[1] as $dice) {
             $this->assertInstanceOf(Dice::class, $dice);
             $this->assertCount(4, $dice);
         }

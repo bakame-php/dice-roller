@@ -1,22 +1,21 @@
 <?php
+
 namespace Ethtezahl\DiceRoller\Test;
 
-use Ethtezahl\DiceRoller;
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Factory;
 use Ethtezahl\DiceRoller\FudgeDice;
 use Ethtezahl\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 use TypeError;
+use function Ethtezahl\DiceRoller\create;
 
 /**
  * @coversDefaultClass Ethtezahl\DiceRoller\Cup
  */
 final class CupTest extends TestCase
 {
-
     public function testConstructorThrows()
     {
         $this->expectException(TypeError::class);
@@ -43,8 +42,8 @@ final class CupTest extends TestCase
     public function testRoll()
     {
         $cup = new Cup([
-            DiceRoller\roll_create('4D10'),
-            DiceRoller\roll_create('2d4')
+            create('4D10'),
+            create('2d4'),
         ]);
         $this->assertSame(6, $cup->getMinimum());
         $this->assertSame(48, $cup->getMaximum());
@@ -66,6 +65,11 @@ final class CupTest extends TestCase
      * @covers ::minimum
      * @covers ::maximum
      * @dataProvider validNamedConstructor
+     * @param mixed $quantity
+     * @param mixed $sides
+     * @param mixed $className
+     * @param mixed $min
+     * @param mixed $max
      */
     public function testCreateFromDice($quantity, $sides, $className, $min, $max)
     {
@@ -121,6 +125,8 @@ final class CupTest extends TestCase
      * @covers ::createFromDice
      * @covers ::filterSize
      * @dataProvider invalidNamedConstructor
+     * @param mixed $quantity
+     * @param mixed $sides
      */
     public function testCreateFromDiceThrowsException($quantity, $sides)
     {
@@ -142,7 +148,7 @@ final class CupTest extends TestCase
             'invalid sides with wrong string' => [
                 'quantity' => 3,
                 'sides' => 'foobar',
-            ]
+            ],
         ];
     }
 }

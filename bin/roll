@@ -2,7 +2,7 @@
 <?php
 
 use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Factory;
+use Ethtezahl\DiceRoller;
 
 function getAutoloadDirectory()
 {
@@ -77,8 +77,8 @@ EOF;
 }
 
 try {
-    $str = str_replace('\\', '', trim($opts['cup']));
-    $cup = (new Factory())->newInstance($str);
+    $str = trim($opts['cup']);
+    $cup = DiceRoller\create($str);
     if (isset($opts['info'])) {
         $text = <<<EOF
 $yellow ====== ROLL INFORMATIONS =======$reset
@@ -92,7 +92,7 @@ EOF;
 echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
     for ($i = 0; $i < $opts['iteration']; ++$i) {
         $index = $i+1;
-echo "$cyan Result #$index: $reset $yellow".$cup->roll().$reset, PHP_EOL;
+echo "$cyan Result #$index: $reset $yellow".$cup->roll().$reset. " explain : $green". $cup->explain().$reset.PHP_EOL;
     }
     die(0);
 } catch (Exception $e) {

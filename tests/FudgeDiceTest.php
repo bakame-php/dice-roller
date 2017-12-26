@@ -1,4 +1,5 @@
 <?php
+
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\FudgeDice;
@@ -14,6 +15,7 @@ final class FudgeDiceTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
+     * @covers ::explain
      */
     public function testFudgeDice()
     {
@@ -25,6 +27,7 @@ final class FudgeDiceTest extends TestCase
             $test = $dice->roll();
             $this->assertGreaterThanOrEqual($dice->getMinimum(), $test);
             $this->assertLessThanOrEqual($dice->getMaximum(), $test);
+            $this->assertContains($dice->explain(), ['-1', '0', '1']);
         }
     }
 }

@@ -1,12 +1,14 @@
 <?php
+
 namespace Ethtezahl\DiceRoller\Test\Modifier;
 
-use Ethtezahl\DiceRoller;
 use Ethtezahl\DiceRoller\Cup;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\Modifier\Explode;
+use Ethtezahl\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use function Ethtezahl\DiceRoller\create;
 
 /**
  * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\Explode
@@ -17,7 +19,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp()
     {
-        $this->cup = DiceRoller\roll_create('4d6');
+        $this->cup = create('4d6');
     }
 
     /**
@@ -43,6 +45,22 @@ final class ExplodeTest extends TestCase
         $this->assertSame('(2D3+D4)!=3', (string) $cup);
     }
 
+    public function testExplain()
+    {
+        $dice = $this->createMock(Rollable::class);
+        $dice->method('roll')
+            ->will($this->onConsecutiveCalls(2, 2, 3));
+
+        $dice->method('explain')
+            ->will($this->onConsecutiveCalls('2', '2', '3'))
+        ;
+
+        $cup = new Explode(new Cup([$dice]), Explode::EQUALS, 2);
+        $this->assertSame('', $cup->explain());
+        $this->assertSame(7, $cup->roll());
+        $this->assertSame('2 + 2 + 3', $cup->explain());
+    }
+
     /**
      * @covers ::__construct
      * @covers ::getMinimum
@@ -51,6 +69,10 @@ final class ExplodeTest extends TestCase
      * @covers ::isValid
      * @covers ::roll
      * @dataProvider validParametersProvider
+     * @param string $algo
+     * @param int    $threshold
+     * @param int    $min
+     * @param int    $max
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {

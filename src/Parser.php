@@ -7,9 +7,7 @@ declare(strict_types=1);
 
 namespace Ethtezahl\DiceRoller;
 
-use Ethtezahl\DiceRoller\Modifier;
-
-final class Factory
+final class Parser
 {
     const POOL_PATTERN = ',^
         (?<dice>
@@ -36,15 +34,15 @@ final class Factory
     $,xi';
 
     /**
-     * Returns a new Cup Instance from a string pattern
+     * Returns a new Cup Instance from a string pattern.
      *
-     * @param string $pAsked
+     * @param string $str
      *
      * @return Rollable
      */
-    public function newInstance(string $pAsked = ''): Rollable
+    public function parse(string $str): Rollable
     {
-        $parts = $this->explode($pAsked);
+        $parts = $this->explode($str);
         if (1 == count($parts)) {
             return $this->parsePool(array_shift($parts));
         }
@@ -53,15 +51,29 @@ final class Factory
     }
 
     /**
-     * Explode the given string into separate parts
+     * Returns a new Cup Instance from a string pattern.
      *
-     * @param string $pStr
+     * @see Parser::parse
+     *
+     * @param string $str
+     *
+     * @return Rollable
+     */
+    public function __invoke(string $str): Rollable
+    {
+        return $this->parse($str);
+    }
+
+    /**
+     * Explodes the given string into separate parts.
+     *
+     * @param string $str
      *
      * @return string[]
      */
-    private function explode(string $pStr): array
+    private function explode(string $str): array
     {
-        $parts = explode('+', $pStr);
+        $parts = explode('+', $str);
         $res = [];
         foreach ($parts as $offset => $value) {
             if (0 == $offset) {
@@ -88,22 +100,22 @@ final class Factory
     }
 
     /**
-     * Returns a collection of equals dice
+     * Returns a collection of equals dice.
      *
-     * @param string $pStr dice configuration string
+     * @param string $str dice configuration string
      *
      * @throws Exception if the configuration string is not supported
      *
      * @return Rollable
      */
-    private function parsePool(string $pStr): Rollable
+    private function parsePool(string $str): Rollable
     {
-        if ('' == $pStr) {
+        if ('' == $str) {
             return new Cup();
         }
 
-        if (!preg_match(self::POOL_PATTERN, $pStr, $matches)) {
-            throw new Exception(sprintf('the submitted dice format `%s` is invalid or not supported', $pStr));
+        if (!preg_match(self::POOL_PATTERN, $str, $matches)) {
+            throw new Exception(sprintf('the submitted dice format `%s` is invalid or not supported', $str));
         }
 
         $method = 'createSimplePool';
@@ -120,20 +132,20 @@ final class Factory
     }
 
     /**
-     * Create a simple Uniformed Pool
+     * Creates a simple Uniformed Pool.
      *
-     * @param array $pMatches
+     * @param array $matches
      *
      * @return Cup
      */
-    private function createSimplePool(array $pMatches): Cup
+    private function createSimplePool(array $matches): Cup
     {
-        $quantity = (int) ($pMatches['quantity'] ?? 1);
+        $quantity = (int) ($matches['quantity'] ?? 1);
         if (0 == $quantity) {
             $quantity = 1;
         }
 
-        $size = $pMatches['size'] ?? '6';
+        $size = $matches['size'] ?? '6';
         $size = strtolower($size);
         if ('' == $size) {
             $size = '6';
@@ -143,98 +155,95 @@ final class Factory
     }
 
     /**
-     * Create a complex mixed Pool
+     * Creates a complex mixed Pool.
      *
-     * @param array $pMatches
+     * @param array $matches
      *
      * @return Cup
      */
-    private function createComplexPool(array $pMatches): Cup
+    private function createComplexPool(array $matches): Cup
     {
-        return new Cup(array_map([$this, 'parsePool'], $this->explode($pMatches['mixed'])));
+        return new Cup(array_map([$this, 'parsePool'], $this->explode($matches['mixed'])));
     }
 
     /**
-     * Decorate the Rollable object with the DropKeep or the Explode Modifier
+     * Decorates the Rollable object with the DropKeep or the Explode Modifier.
      *
-     * @param array $pMatches
-     * @param Cup   $pRollable
+     * @param array $matches
+     * @param Cup   $rollable
      *
      * @return Rollable
      */
-    private function addComplexModifier(array $pMatches, Cup $pRollable): Rollable
+    private function addComplexModifier(array $matches, Cup $rollable): Rollable
     {
-        if ('' == $pMatches['algo']) {
-            return $pRollable;
-        }
-
-        $type = strtolower($pMatches['type']);
-        if (0 !== strpos($type, '!')) {
-            return $this->addDropKeep($type, $pMatches, $pRollable);
-        }
-
-        return $this->addExplode(substr($type, 1), $pMatches, $pRollable);
-    }
-
-    /**
-     * Decorate the Rollable object with the SortModifer modifier
-     *
-     * @param string $algo
-     * @param array  $pMatches
-     *
-     * @param Cup $pRollable
-     */
-    private function addDropKeep(string $algo, array $pMatches, Cup $pRollable): Rollable
-    {
-        $threshold = $pMatches['threshold'] ?? 1;
-
-        return new Modifier\DropKeep($pRollable, $algo, (int) $threshold);
-    }
-
-    /**
-     * Decorate the Rollable object with the ExplodeModifier modifier
-     *
-     * @param string $algo
-     * @param array  $pMatches
-     *
-     * @param Cup $pRollable
-     */
-    private function addExplode(string $compare, array $pMatches, Cup $pRollable): Rollable
-    {
-        if ('' == $compare) {
-            $compare = Modifier\Explode::EQUALS;
-            $threshold = $pMatches['threshold'] ?? -1;
-
-            return new Modifier\Explode($pRollable, $compare, (int) $threshold);
-        }
-
-        if (isset($pMatches['threshold'])) {
-            return new Modifier\Explode($pRollable, $compare, (int) $pMatches['threshold']);
-
-        }
-
-        throw new Exception(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $pMatches['algo']));
-    }
-
-    /**
-     * Decorate the Rollable object with up to 2 ArithmeticModifier
-     *
-     * @param array    $pMatches
-     * @param Rollable $pRollable
-     *
-     * @return Rollable
-     */
-    private function addArithmetic(array $pMatches, Rollable $pRollable): Rollable
-    {
-        if (!isset($pMatches['math1'])) {
-            return $pRollable;
-        }
-
-        $rollable = new Modifier\Arithmetic($pRollable, $pMatches['operator1'], (int) $pMatches['value1']);
-        if (!isset($pMatches['math2'])) {
+        if ('' == $matches['algo']) {
             return $rollable;
         }
 
-        return new Modifier\Arithmetic($rollable, $pMatches['operator2'], (int) $pMatches['value2']);
+        $type = strtolower($matches['type']);
+        if (0 !== strpos($type, '!')) {
+            return $this->addDropKeep($type, $matches, $rollable);
+        }
+
+        return $this->addExplode(substr($type, 1), $matches, $rollable);
+    }
+
+    /**
+     * Decorates the Rollable object with the SortModifer modifier.
+     *
+     * @param string $algo
+     * @param array  $matches
+     * @param Cup    $rollable
+     */
+    private function addDropKeep(string $algo, array $matches, Cup $rollable): Rollable
+    {
+        $threshold = $matches['threshold'] ?? 1;
+
+        return new Modifier\DropKeep($rollable, $algo, (int) $threshold);
+    }
+
+    /**
+     * Decorates the Rollable object with the ExplodeModifier modifier.
+     *
+     * @param string $compare
+     * @param array  $matches
+     * @param Cup    $rollable
+     */
+    private function addExplode(string $compare, array $matches, Cup $rollable): Rollable
+    {
+        if ('' == $compare) {
+            $compare = Modifier\Explode::EQUALS;
+            $threshold = $matches['threshold'] ?? -1;
+
+            return new Modifier\Explode($rollable, $compare, (int) $threshold);
+        }
+
+        if (isset($matches['threshold'])) {
+            return new Modifier\Explode($rollable, $compare, (int) $matches['threshold']);
+        }
+
+        throw new Exception(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $matches['algo']));
+    }
+
+    /**
+     * Decorates the Rollable object with up to 2 ArithmeticModifier.
+     *
+     * @param array    $matches
+     * @param Rollable $rollable
+     *
+     * @return Rollable
+     */
+    private function addArithmetic(array $matches, Rollable $rollable): Rollable
+    {
+        if (!isset($matches['math1'])) {
+            return $rollable;
+        }
+
+        $rollable = new Modifier\Arithmetic($rollable, $matches['operator1'], (int) $matches['value1']);
+        if (!isset($matches['math2'])) {
+            return $rollable;
+        }
+
+        return new Modifier\Arithmetic($rollable, $matches['operator2'], (int) $matches['value2']);
     }
 }

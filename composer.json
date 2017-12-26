@@ -15,6 +15,7 @@
         "php": ">=7.0"
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.0",
         "phpunit/phpunit": "^6.2"
     },
     "autoload": {
@@ -29,7 +30,9 @@
         "files": ["src/functions_include.php"]
     },
     "scripts": {
-        "phpunit": "phpunit --coverage-text"
+        "test": "phpunit --coverage-text; php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
+        "phpunit": "phpunit --coverage-text",
+        "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;"
     },
     "bin": [
         "bin/roll"

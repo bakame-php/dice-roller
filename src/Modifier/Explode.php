@@ -5,8 +5,6 @@
  */
 declare(strict_types=1);
 
-namespace Ethtezahl\DiceRoller;
-
 namespace Ethtezahl\DiceRoller\Modifier;
 
 use Ethtezahl\DiceRoller\Cup;
@@ -27,42 +25,47 @@ final class Explode implements Rollable
     private $rollable;
 
     /**
-     * The threshold to apply the explosion to
+     * The threshold.
      *
      * @var int
      */
     private $threshold = -1;
 
     /**
-     * The comparison to use to apply the explosion to
+     * The comparison to use.
      *
      * @var string
      */
     private $compare;
 
     /**
+     * @var string
+     */
+    private $explain;
+
+    /**
      * new instance
      *
-     * @param Cup    $pRollable
-     * @param string $pCompare
-     * @param int    $pThreshold
+     * @param Cup    $rollable
+     * @param string $compare
+     * @param int    $threshold
      */
-    public function __construct(Cup $pRollable, string $pCompare, int $pThreshold)
+    public function __construct(Cup $rollable, string $compare, int $threshold)
     {
-        $this->rollable = $pRollable;
-        if (-1 != $pThreshold) {
-            $this->threshold = $pThreshold;
+        $this->rollable = $rollable;
+        if (-1 != $threshold) {
+            $this->threshold = $threshold;
         }
 
-        if (!in_array($pCompare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
-            throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $pCompare));
+        if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
+            throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
         }
 
-        $this->compare = $pCompare;
+        $this->compare = $compare;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __toString()
     {
@@ -86,7 +89,15 @@ final class Explode implements Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     */
+    public function explain(): string
+    {
+        return (string) $this->explain;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getMinimum(): int
     {
@@ -94,7 +105,7 @@ final class Explode implements Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMaximum(): int
     {
@@ -102,11 +113,12 @@ final class Explode implements Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function roll() : int
+    public function roll(): int
     {
         $sum = 0;
+        $this->explain = '';
         foreach ($this->rollable as $innerRoll) {
             $sum = $this->calculate($sum, $innerRoll);
         }
@@ -115,43 +127,55 @@ final class Explode implements Rollable
     }
 
     /**
-     * Add the result of the Rollable::roll method
-     * to the submitted sum
+     * Add the result of the Rollable::roll method to the submitted sum.
      *
-     * @param int      $pSum  initial sum
-     * @param Rollable $pRollable
+     * @param int      $sum
+     * @param Rollable $rollable
      *
      * @return int
      */
-    private function calculate(int $pSum, Rollable $pRollable): int
+    private function calculate(int $sum, Rollable $rollable): int
     {
-        $threshold = $this->threshold === -1 ? $pRollable->getMaximum() : $this->threshold;
+        $explain = [];
+        $threshold = $this->threshold === -1 ? $rollable->getMaximum() : $this->threshold;
         do {
-            $res = $pRollable->roll();
-            $pSum += $res;
+            $res = $rollable->roll();
+            $sum += $res;
+            $str = $rollable->explain();
+            if (false !== strpos($str, '+')) {
+                $str = '('.$str.')';
+            }
+            $explain[] = $str;
         } while ($this->isValid($res, $threshold));
 
-        return $pSum;
+        $explain = implode(' + ', $explain);
+        if ('' !== $this->explain) {
+            $explain = ' + '.$explain;
+        }
+
+        $this->explain .= $explain;
+
+        return $sum;
     }
 
     /**
-     * Returns whether we should call the rollable again
+     * Returns whether we should call the rollable again.
      *
      * @param int $pResult
-     * @param int $pThreshold
+     * @param int $threshold
      *
      * @return bool
      */
-    private function isValid(int $pResult, int $pThreshold): bool
+    private function isValid(int $pResult, int $threshold): bool
     {
         if (self::EQUALS == $this->compare) {
-            return $pResult === $pThreshold;
+            return $pResult === $threshold;
         }
 
         if (self::GREATER_THAN === $this->compare) {
-            return $pResult > $pThreshold;
+            return $pResult > $threshold;
         }
 
-        return $pResult < $pThreshold;
+        return $pResult < $threshold;
     }
 }

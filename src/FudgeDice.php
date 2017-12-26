@@ -12,7 +12,12 @@ use Countable;
 final class FudgeDice implements Countable, Rollable
 {
     /**
-     * @inheritdoc
+     * @var string
+     */
+    private $explain;
+
+    /**
+     * {@inheritdoc}
      */
     public function __toString()
     {
@@ -30,7 +35,7 @@ final class FudgeDice implements Countable, Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMinimum(): int
     {
@@ -38,7 +43,7 @@ final class FudgeDice implements Countable, Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getMaximum(): int
     {
@@ -46,10 +51,21 @@ final class FudgeDice implements Countable, Rollable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     */
+    public function explain(): string
+    {
+        return (string) $this->explain;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function roll(): int
     {
-        return random_int(-1, 1);
+        $res = random_int(-1, 1);
+        $this->explain = (string) $res;
+
+        return $res;
     }
 }
