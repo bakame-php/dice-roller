@@ -1,10 +1,8 @@
-# RPG Dice Roller
+# Dice Roller
 
 ## Concept.
 
-I wanted to code a program which create stats for pre-rolled characters for rpg "Call of Cthulhu".
-I needed a library that can simulate and give result of a roll of multiple dice (sometimes with a different number of sides).
-So I created this library, to make these rolls.
+A simple Dice Roller implemented in PHP
 
 ## System Requirements
 
@@ -12,7 +10,7 @@ You need **PHP >= 7.0.0** but the latest stable version of PHP is recommended.
 
 ## Installation
 
-composer require ethtezahl/dice-roller
+composer require bakame-php/dice-roller
 
 ## Basic usage
 
@@ -21,14 +19,11 @@ The code above will simulate the roll of two six-sided die
 ```php
 <?php
 
-// First: import needed class
-use Ethtezahl\DiceRoller\Parser;
-
-// Factory allow us to create dice cup.
-$parser = new Parser();
+// First: import needed namespace
+use Bakame\DiceRoller;
 
 // We create the cup that will contain the two die:
-$cup = $parse('2D6');
+$cup = DiceRoller\create('2D6');
 
 // Display the result:
 echo $cup->roll();
@@ -39,8 +34,9 @@ echo $cup->roll();
 The following expression is supported by the library:
 
 ```php
-$cup = $parser->parse('3D20+4+D4!>3/4^3');
-echo $cup->roll();
+$cup = DiceRoller\create('3D20+4+D4!>3/4^3');
+echo $cup->roll();     // returns 48
+echo $cup->getTrace(); // returns ((20 + 8 + 16) + 4) + 3 / 4 ^ 3
 ```
 
 ## Documentation
@@ -52,7 +48,7 @@ Any object that can be rolled MUST implements the `Rollable` interface. Typicall
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller;
+namespace Bakame\DiceRoller;
 
 interface Rollable
 {
@@ -74,20 +70,20 @@ The package comes bundles with the following rollable objects
 
 | Rollable Type | Class Name |
 | ------------- | ---------- |
-| Dice          | `Ethtezahl\DiceRoller\Dice` |
-| Dice          | `Ethtezahl\DiceRoller\FudgeDice` |
-| Dice          | `Ethtezahl\DiceRoller\PercentileDice` |
-| Dice          | `Ethtezahl\DiceRoller\CustomDice` |
-| Collection    | `Ethtezahl\DiceRoller\Cup` |
-| Modifier      | `Ethtezahl\DiceRoller\Modifier\Arithmetic` |
-| Modifier      | `Ethtezahl\DiceRoller\Modifier\Explode` |
-| Modifier      | `Ethtezahl\DiceRoller\Modifier\DropKeep` |
+| Dice          | `Bakame\DiceRoller\Dice` |
+| Dice          | `Bakame\DiceRoller\FudgeDice` |
+| Dice          | `Bakame\DiceRoller\PercentileDice` |
+| Dice          | `Bakame\DiceRoller\CustomDice` |
+| Collection    | `Bakame\DiceRoller\Cup` |
+| Modifier      | `Bakame\DiceRoller\Modifier\Arithmetic` |
+| Modifier      | `Bakame\DiceRoller\Modifier\Explode` |
+| Modifier      | `Bakame\DiceRoller\Modifier\DropKeep` |
 
 ### Dices
 
 In addition to the `Rollable` interface, the Dice type implement the `Countable` interface. The `count` method returns the dice sides count.
 
- A `Dice` type object must have at least 2 sides otherwise a `Ethtezahl\DiceRoller\Exception` exception is thrown.
+ A `Dice` type object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception` exception is thrown.
 
 - The `Dice` constructor unique argument is the dice sides count.
 - The `CustomDice` constructor takes a variadic argument which represents the dice side values.
@@ -97,10 +93,10 @@ In addition to the `Rollable` interface, the Dice type implement the `Countable`
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\CustomDice;
-use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\FudgeDice;
-use Ethtezahl\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\FudgeDice;
+use Bakame\DiceRoller\PercentileDice;
 
 $basic = new Dice(3);
 echo $basic;    // 'D3';
@@ -130,39 +126,42 @@ A `Cup` is a collection of `Rollable` objects. This means that a `Cup` can conta
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller;
+namespace Bakame\DiceRoller;
 
 final class Cup implements Countable, IteratorAggregate, Rollable
 {
-    public static function createFromDice(int $pQuantity, int|string $pSize): self;
+    public static function createFromRollable(int $pQuantity, Rollable $rollable): self;
     public function __construct(Rollable ...$rollables);
     public function withRollable(Rollable $rollable);
 }
 ```
 
-The `Cup::createFromDice` named constructor enables creating uniformed `Cup` object which contains only 1 type of simple rollable objects (ie: `CustomDice` or `Dice` or `FludgeDice` or `PercentileDice`).
+The `Cup::createFromRollable` named constructor enables creating uniformed `Cup` object which contains only 1 type of rollable objects.
 
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\Cup;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\Cup;
 
-echo Cup::createFromDice(3, 5);              // displays 3D5
-echo Cup::createFromDice(4, '%');            // displays 4D%
-echo Cup::createFromDice(2, '[1, 2, 2, 4]'); // displays 2D[1,2,2,4]
-echo Cup::createFromDice(1, 'f');            // displays DF
+echo Cup::createFromRollable(3, new Dice(5));                // displays 3D5
+echo Cup::createFromRollable(4, new PercentileDice());       // displays 4D%
+echo Cup::createFromRollable(2, new CustomDice(1, 2, 2, 4)); // displays 2D[1,2,2,4]
+echo Cup::createFromRollable(1, new FudgeDice());            // displays DF
 ```
 
-A Cup created using `createFromDice` must contain at least 1 `Rollable` object otherwise a `Ethtezahl\DiceRoller\Exception` is thrown.
+A Cup created using `createFromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception` is thrown.
 
 When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\Cup;
+use Bakame\DiceRoller\Cup;
 
-foreach (Cup::createFromDice(3, 5) as $rollable) {
+foreach (Cup::createFromRollable(3, new Dice(5)) as $rollable) {
     echo $rollable; // will always return D5
 }
 ```
@@ -176,7 +175,7 @@ Sometimes you may want to modify the outcome of a roll. The library comes bundle
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller\Modifier;
+namespace Bakame\DiceRoller\Modifier;
 
 final class Arithmetic implements Rollable
 {
@@ -194,17 +193,18 @@ The modifier supports the following operators:
 - `/` division;
 - `^` exponentiation;
 
-The value given must be a positive integer or 0. If the value or the operator are not valid a `Ethtezahl\DiceRoller\Exception` will be thrown.
+The value given must be a positive integer or 0. If the value or the operator are not valid a `Bakame\DiceRoller\Exception` will be thrown.
 
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\Modifier\Arithmetic;
-use Ethtezahl\DiceRoller\Dice;
+use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\Dice;
 
 $modifier = new Arithmetic(new Dice(6), '*', 3);
-echo $modifier; // displays D6*3;
-$modifier->roll(); //may return 4*3 = 12
+echo $modifier;        // displays D6*3;
+$modifier->roll();     //may return 12
+$modifier->getTrace(); //may return 4 * 3
 ```
 
 #### The DropKeep Modifier
@@ -212,7 +212,7 @@ $modifier->roll(); //may return 4*3 = 12
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller\Modifier;
+namespace Bakame\DiceRoller\Modifier;
 
 final class DropKeep implements Rollable
 {
@@ -239,15 +239,17 @@ The supported algorithms are:
 
 The `$pThreshold` MUST be lower or equals to the total numbers of rollable items in the `Cup` object.
 
-If the algorithm or the threshold are not valid a `Ethtezahl\DiceRoller\Exception` will be thrown.
+If the algorithm or the threshold are not valid a `Bakame\DiceRoller\Exception` will be thrown.
 
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\Modifier\DropKeep;
-use Ethtezahl\DiceRoller\Cup;
+use Bakame\DiceRoller\Modifier\DropKeep;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
 
-$modifier = new DropKeep(Cup::createFromDice(4, 6), DropKeep::DROP_HIGHEST, 3);
+$cup = Cup::createFromRollable(4, new Dice(6));
+$modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
 echo $modifier; // displays '4D6DH3'
 ```
 
@@ -256,7 +258,7 @@ echo $modifier; // displays '4D6DH3'
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller\Modifier;
+namespace Bakame\DiceRoller\Modifier;
 
 final class Explode implements Rollable
 {
@@ -279,17 +281,17 @@ The supported comparison operator are:
 - `>` or `Explode::GREATER_THAN` explodes if any inner rollable roll result is greater than the `$pThreshold`;
 - `<` or `Explode::LESSER_THAN` explodes if any inner rollable roll result is lesser than the `$pThreshold`;
 
-If the comparison operator is not recognized a `Ethtezahl\DiceRoller\Exception` will be thrown.
+If the comparison operator is not recognized a `Bakame\DiceRoller\Exception` will be thrown.
 
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\Modifier\Explode;
-use Ethtezahl\DiceRoller\FudgeDice;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\FudgeDice;
 
-$cup = new Cup([new Dice(6), new FudgeDice(), new Dice(6), new Dice(6)]);
+$cup = new Cup(new Dice(6), new FudgeDice(), new Dice(6), new Dice(6));
 $modifier = new Explode($cup, Explode::EQUALS, 3);
 echo $modifier; // displays (3D6+DF)!=3
 ```
@@ -299,7 +301,7 @@ echo $modifier; // displays (3D6+DF)!=3
 ```php
 <?php
 
-namespace Ethtezahl\DiceRoller;
+namespace Bakame\DiceRoller;
 
 final class Parser
 {
@@ -313,11 +315,13 @@ The package comes bundles with a `Parser` class to ease `Rollable` instance crea
 
 | Annotation | Examples  | Description |
 | ---------- | -------- | -------- |
-|  `NDX`     |  `3D4` |  create a dice pool where `N` represents the number of dices and `X` the number of sides. If you want a fudgeDice `X` must be equal to `F` otherwise `X` must be an integer equal or greater than 2. If `X` is omitted this means you are requesting a 6 sides basic dice. If `N` is omitted this means that you are requestion a single dice. |
+|  `NDX`     |  `3D4` |  create a dice pool where `N` represents the number of dices and `X` the number of sides. If `X` is omitted this means you are requesting a 6 sides basic dice. If `N` is omitted this means that you are requestion a single dice. |
+|  `NDF`     |  `3DF` |  create a dice pool where `N` represents the number of fudge dices. If `N` is omitted this means that you are requestion a single fugde dice. |
+|  `ND%`     |  `3D%` |  create a dice pool where `N` represents the number of percentile dices. If `N` is omitted this means that you are requestion a single percentile dice. |
+|  `ND[x,x,x,x,...]`     |  `2D[1,2,2,5]` |  create a dice pool where `N` represents the number of custom dices and `x` the value of a specific dice side. The number of `x` represents the side count. If `N` is omitted this means that you are requestion a single custome dice. a Custom dice must contain at least 2 sides. |
 | `oc`       | `^3`| where `o` represents the supported operators (`+`, `-`, `*`, `/`, `^`) and `c` a positive integer |
 |  `!oc`     | `!>3` | an explode modifier where `o` represents one of the supported comparision operator (`>`, `<`, `=`)  and `c` a positive integer |
 |  `[dh,dl,kh,kl]z` | `dh4` | keeping or dropping the lowest or highest z dice |
-
 
 
 - **Only 2 arithmetic modifiers can be appended to a given dice pool.**  
@@ -328,26 +332,26 @@ By applying these rules the `Parser` can construct the following `Rollable` obje
 ```php
 <?php
 
-use Ethtezahl\DiceRoller\Parser;
+use Bakame\DiceRoller\Parser;
 
 $cup = (new Parser())->parse('3D20+4+D4!>3/4^3');
 //or
 $cup = (new Parser())('3D20+4+D4!>3/4^3'); //using the __invoke method
+
 echo $cup->roll();
 ```
 
-If the `Factory` is enable to parse the submitted dice annotation a `Ethtezahl\DiceRoller\Exception` will be thrown.  
-Last but not least, if you prefer using function you can simply call the `create` function defined in the `Ethtezahl\DiceRoller` namespace as follow:
+If the `Parser` is not able to parse the submitted dice annotation a `Bakame\DiceRoller\Exception` will be thrown.  
+Last but not least, if you prefer using function you can simply call the `create` function defined in the `Bakame\DiceRoller` namespace as follow:
 
 
 ```php
 <?php
 
-use Ethtezahl\DiceRoller;
+use Bakame\DiceRoller;
 
 $cup = DiceRoller\create('3D20+4+D4!>3/4^3');
 echo $cup->roll();
 ```
-
 
 **Happy Coding!**
