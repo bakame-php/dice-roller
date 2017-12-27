@@ -179,6 +179,12 @@ namespace Bakame\DiceRoller\Modifier;
 
 final class Arithmetic implements Rollable
 {
+    const ADDITION = '+';
+    const SUBSTRACTION = '-';
+    const MULTIPLICATION = '*';
+    const DIVISION = '/';
+    const EXPONENTIATION = '^';
+
     public function __construct(Rollable $rollable, string $operator, int $value);
 }
 ```
@@ -187,11 +193,11 @@ This modifier decorates a `Rollable` object by applying an arithmetic operation 
 
 The modifier supports the following operators:
 
-- `+` addition;
-- `-` substraction;
-- `*` multiplication;
-- `/` division;
-- `^` exponentiation;
+- `+` or `Arithmetic::ADDITION`;
+- `-` or `Arithmetic::SUBSTRACTION`;
+- `*` or `Arithmetic::MULTIPLICATION`;
+- `/` or `Arithmetic::DIVISION`;
+- `^` or `Arithmetic::EXPONENTIATION`;
 
 The value given must be a positive integer or 0. If the value or the operator are not valid a `Bakame\DiceRoller\Exception` will be thrown.
 
@@ -201,7 +207,7 @@ The value given must be a positive integer or 0. If the value or the operator ar
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Dice;
 
-$modifier = new Arithmetic(new Dice(6), '*', 3);
+$modifier = new Arithmetic(new Dice(6), Arithmetic::MULTIPLICATION, 3);
 echo $modifier;        // displays D6*3;
 $modifier->roll();     //may return 12
 $modifier->getTrace(); //may return 4 * 3
@@ -220,6 +226,7 @@ final class DropKeep implements Rollable
     const DROP_LOWEST = 'dl';
     const KEEP_HIGHEST = 'kh';
     const KEEP_LOWEST = 'kl';
+
     public function __construct(Cup $pRollable, string $pAlgo, int $pThreshold);
 }
 ```
@@ -305,8 +312,8 @@ namespace Bakame\DiceRoller;
 
 final class Parser
 {
-    public function __invoke(string $pStr): Rollable;
-    public function parse(string $pStr): Rollable;
+    public function __invoke(string $annotation): Rollable;
+    public function parse(string $annotation): Rollable;
 }
 ```
 
