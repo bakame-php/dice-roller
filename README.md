@@ -121,7 +121,7 @@ count($fudge);       // returns 100
 
 ### Dices Collection
 
-A `Cup` is a collection of `Rollable` objects. This means that a `Cup` can contains multiple dices but others `Cup` objects as well. Once a `Cup` is instantiated there are no method to alter its properties.
+A `Cup` is a collection of `Rollable` objects. This means that a `Cup` can contains multiple dices but others `Cup` objects as well.
 
 ```php
 <?php
@@ -164,6 +164,23 @@ use Bakame\DiceRoller\Cup;
 foreach (Cup::createFromRollable(3, new Dice(5)) as $rollable) {
     echo $rollable; // will always return D5
 }
+```
+
+Once a `Cup` is instantiated there are no method to alter its properties. However the `Cup::withRollable` method enables you to build complex `Cup` object using the builder. The method will always returns a new `Cup` object but with the added `Rollable` object while maintaining the state of the current `Cup` object.
+
+
+```php
+<?php
+
+use Bakame\DiceRoller\Cup;
+
+$cup = Cup::createFromRollable(3, new Dice(5));
+count($cup); //returns 3 the number of dices
+echo $cup;   //returns 3D5
+
+$alt_cup = $cup->withRollable(new FugdeDice());
+count($alt_cup); //returns 4 the number of dices
+echo $alt_cup;   //returns 3D5+DF
 ```
 
 ### Roll Modifiers
