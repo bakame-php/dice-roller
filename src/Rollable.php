@@ -4,7 +4,7 @@
  * @author Bertrand Andres
  */
 
-namespace Ethtezahl\DiceRoller;
+namespace Bakame\DiceRoller;
 
 interface Rollable
 {

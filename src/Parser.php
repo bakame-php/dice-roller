@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Ethtezahl\DiceRoller;
+namespace Bakame\DiceRoller;
 
 final class Parser
 {
@@ -147,11 +147,11 @@ final class Parser
 
         $size = $matches['size'] ?? '6';
         $size = strtolower($size);
-        if ('' == $size) {
+        if ('' === $size) {
             $size = '6';
         }
 
-        return Cup::createFromDice($quantity, $size);
+        return Cup::createFromDiceDefinition($quantity, $size);
     }
 
     /**

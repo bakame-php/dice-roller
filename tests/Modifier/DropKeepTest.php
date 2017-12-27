@@ -1,17 +1,17 @@
 <?php
 
-namespace Ethtezahl\DiceRoller\Test\Modifier;
+namespace Bakame\DiceRoller\Test\Modifier;
 
-use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Modifier\DropKeep;
-use Ethtezahl\DiceRoller\Rollable;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Modifier\DropKeep;
+use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
-use function Ethtezahl\DiceRoller\create;
+use function Bakame\DiceRoller\create;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\DropKeep
+ * @coversDefaultClass Bakame\DiceRoller\Modifier\DropKeep
  */
 final class DropKeepTest extends TestCase
 {
@@ -57,7 +57,7 @@ final class DropKeepTest extends TestCase
     /**
      * @covers ::roll
      * @covers ::getTrace
-     * @covers \Ethtezahl\DiceRoller\Cup::getTrace
+     * @covers \Bakame\DiceRoller\Cup::getTrace
      */
     public function testGetTrace()
     {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Ethtezahl\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test;
 
-use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\Exception;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\Dice
+ * @coversDefaultClass Bakame\DiceRoller\Dice
  */
 final class DiceTest extends TestCase
 {

@@ -1,17 +1,17 @@
 <?php
 
-namespace Ethtezahl\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test;
 
-use Ethtezahl\DiceRoller;
-use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Parser;
-use Ethtezahl\DiceRoller\Rollable;
+use Bakame\DiceRoller;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Parser;
+use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\Parser
+ * @coversDefaultClass Bakame\DiceRoller\Parser
  */
 final class ParserTest extends TestCase
 {
@@ -58,14 +58,14 @@ final class ParserTest extends TestCase
      * @covers ::addComplexModifier
      * @covers ::createSimplePool
      * @covers ::createComplexPool
-     * @covers \Ethtezahl\DiceRoller\create
-     * @covers \Ethtezahl\DiceRoller\Cup::count
-     * @covers \Ethtezahl\DiceRoller\Cup::__toString
-     * @covers \Ethtezahl\DiceRoller\Dice::__toString
-     * @covers \Ethtezahl\DiceRoller\FudgeDice::__toString
-     * @covers \Ethtezahl\DiceRoller\Modifier\Arithmetic::__toString
-     * @covers \Ethtezahl\DiceRoller\Modifier\DropKeep::__toString
-     * @covers \Ethtezahl\DiceRoller\Modifier\Explode::__toString
+     * @covers \Bakame\DiceRoller\create
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::__toString
+     * @covers \Bakame\DiceRoller\Dice::__toString
+     * @covers \Bakame\DiceRoller\FudgeDice::__toString
+     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::__toString
+     * @covers \Bakame\DiceRoller\Modifier\DropKeep::__toString
+     * @covers \Bakame\DiceRoller\Modifier\Explode::__toString
      * @dataProvider validStringProvider
      * @param string $expected
      * @param string $toString
@@ -165,9 +165,9 @@ final class ParserTest extends TestCase
     }
 
     /**
-     * @covers \Ethtezahl\DiceRoller\Rollable
-     * @covers \Ethtezahl\DiceRoller\Cup::count
-     * @covers \Ethtezahl\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Rollable
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
      */
     public function testFiveFourSidedDice()
     {
@@ -187,10 +187,10 @@ final class ParserTest extends TestCase
 
     /**
      * @covers ::parse
-     * @covers \Ethtezahl\DiceRoller\Cup::roll
-     * @covers \Ethtezahl\DiceRoller\Cup::calculate
-     * @covers \Ethtezahl\DiceRoller\Cup::getTrace
-     * @covers \Ethtezahl\DiceRoller\Modifier\Explode::calculate
+     * @covers \Bakame\DiceRoller\Cup::roll
+     * @covers \Bakame\DiceRoller\Cup::calculate
+     * @covers \Bakame\DiceRoller\Cup::getTrace
+     * @covers \Bakame\DiceRoller\Modifier\Explode::calculate
      */
     public function testComplexExplain()
     {
@@ -202,9 +202,9 @@ final class ParserTest extends TestCase
 
     /**
      * @covers ::parse
-     * @covers \Ethtezahl\DiceRoller\Cup::count
-     * @covers \Ethtezahl\DiceRoller\Cup::roll
-     * @covers \Ethtezahl\DiceRoller\Cup::getTrace
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::roll
+     * @covers \Bakame\DiceRoller\Cup::getTrace
      */
     public function testRollWithNoDice()
     {
@@ -220,10 +220,10 @@ final class ParserTest extends TestCase
 
     /**
      * @covers ::parsePool
-     * @covers \Ethtezahl\DiceRoller\Cup::count
-     * @covers \Ethtezahl\DiceRoller\Cup::getIterator
-     * @covers \Ethtezahl\DiceRoller\Rollable
-     * @covers \Ethtezahl\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Rollable
+     * @covers \Bakame\DiceRoller\Dice::count
      */
     public function testRollWithSingleDice()
     {
@@ -243,10 +243,10 @@ final class ParserTest extends TestCase
 
     /**
      * @covers ::parsePool
-     * @covers \Ethtezahl\DiceRoller\Cup::count
-     * @covers \Ethtezahl\DiceRoller\Cup::getIterator
-     * @covers \Ethtezahl\DiceRoller\Rollable
-     * @covers \Ethtezahl\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Rollable
+     * @covers \Bakame\DiceRoller\Dice::count
      */
     public function testRollWithDefaultDice()
     {
@@ -270,10 +270,10 @@ final class ParserTest extends TestCase
     /**
      * @covers ::parse
      * @covers ::parsePool
-     * @covers \Ethtezahl\DiceRoller\Cup::count
-     * @covers \Ethtezahl\DiceRoller\Cup::getIterator
-     * @covers \Ethtezahl\DiceRoller\Rollable
-     * @covers \Ethtezahl\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Rollable
+     * @covers \Bakame\DiceRoller\Dice::count
      */
     public function testRollWithMultipleDice()
     {

@@ -1,16 +1,16 @@
 <?php
 
-namespace Ethtezahl\DiceRoller\Test\Modifier;
+namespace Bakame\DiceRoller\Test\Modifier;
 
-use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Modifier\Arithmetic;
-use Ethtezahl\DiceRoller\Rollable;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\Arithmetic
+ * @coversDefaultClass Bakame\DiceRoller\Modifier\Arithmetic
  */
 final class ArithmeticTest extends TestCase
 {
@@ -61,7 +61,7 @@ final class ArithmeticTest extends TestCase
      * @covers ::roll
      * @covers ::getTrace
      * @covers ::setTrace
-     * @covers \Ethtezahl\DiceRoller\Cup::getTrace
+     * @covers \Bakame\DiceRoller\Cup::getTrace
      */
     public function testGetTrace()
     {

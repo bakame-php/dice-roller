@@ -1,12 +1,12 @@
 <?php
 
-namespace Ethtezahl\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test;
 
-use Ethtezahl\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\PercentileDice;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\PercentileDice
+ * @coversDefaultClass Bakame\DiceRoller\PercentileDice
  */
 final class PercentileDiceTest extends TestCase
 {

@@ -1,20 +1,20 @@
 <?php
 
-namespace Ethtezahl\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test;
 
-use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\CustomDice;
-use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\FudgeDice;
-use Ethtezahl\DiceRoller\PercentileDice;
-use Ethtezahl\DiceRoller\Rollable;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\FudgeDice;
+use Bakame\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 use TypeError;
-use function Ethtezahl\DiceRoller\create;
+use function Bakame\DiceRoller\create;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\Cup
+ * @coversDefaultClass Bakame\DiceRoller\Cup
  */
 final class CupTest extends TestCase
 {
@@ -62,11 +62,9 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::createFromDice
-     * @covers ::createFromFudgeDice
-     * @covers ::createFromPercentileDice
-     * @covers ::createFromCustomDice
-     * @covers ::createFromSidedDice
+     * @covers ::createFromDiceDefinition
+     * @covers ::parseDefinition
+     * @covers ::createFromRollable
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::minimum
@@ -78,9 +76,9 @@ final class CupTest extends TestCase
      * @param mixed $min
      * @param mixed $max
      */
-    public function testCreateFromDice($quantity, $sides, $className, $min, $max)
+    public function testCreateFromDiceDefinition($quantity, $sides, $className, $min, $max)
     {
-        $cup = Cup::createFromDice($quantity, $sides);
+        $cup = Cup::createFromDiceDefinition($quantity, $sides);
         $this->assertCount($quantity, $cup);
         $this->assertContainsOnlyInstancesOf($className, $cup);
         $this->assertSame($min, $cup->getMinimum());
@@ -143,15 +141,17 @@ final class CupTest extends TestCase
     }
 
     /**
-     * @covers ::createFromDice
+     * @covers ::createFromDiceDefinition
+     * @covers ::createFromRollable
+     * @covers ::parseDefinition
      * @dataProvider invalidNamedConstructor
      * @param mixed $quantity
      * @param mixed $definition
      */
-    public function testCreateFromDiceThrowsException($quantity, $definition)
+    public function testCreateFromDiceDefinitionThrowsException($quantity, $definition)
     {
         $this->expectException(Exception::class);
-        Cup::createFromDice($quantity, $definition);
+        Cup::createFromDiceDefinition($quantity, $definition);
     }
 
     public function invalidNamedConstructor()

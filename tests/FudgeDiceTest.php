@@ -1,12 +1,12 @@
 <?php
 
-namespace Ethtezahl\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test;
 
-use Ethtezahl\DiceRoller\FudgeDice;
+use Bakame\DiceRoller\FudgeDice;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\FudgeDice
+ * @coversDefaultClass Bakame\DiceRoller\FudgeDice
  */
 final class FudgeDiceTest extends TestCase
 {

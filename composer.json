@@ -3,11 +3,15 @@
     "type": "library",
     "description": "RPG rolling dice simulation",
     "keywords": ["dice", "roll", "rpg"],
-    "homepage": "https://github.com/Ethtezahl/dice-roller",
+    "homepage": "https://github.com/bakame-php/dice-roller",
     "license": "MIT",
     "authors": [
         {
             "name": "Bertrand Andres",
+            "role": "Developer"
+        },
+        {
+            "name": "Ignace Nyamagana Butera",
             "role": "Developer"
         }
     ],
@@ -20,12 +24,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Ethtezahl\\DiceRoller\\": "src"
+            "Bakame\\DiceRoller\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Ethtezahl\\DiceRoller\\Test\\": "test"
+            "Bakame\\DiceRoller\\Test\\": "test"
         },
         "files": ["src/functions_include.php"]
     },

@@ -83,7 +83,6 @@ The package comes bundles with the following rollable objects
 | Modifier      | `Ethtezahl\DiceRoller\Modifier\Explode` |
 | Modifier      | `Ethtezahl\DiceRoller\Modifier\DropKeep` |
 
-
 ### Dices
 
 In addition to the `Rollable` interface, the Dice type implement the `Countable` interface. The `count` method returns the dice sides count.
@@ -137,7 +136,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
 {
     public static function createFromDice(int $pQuantity, int|string $pSize): self;
     public function __construct(Rollable ...$rollables);
-    public function withRollable(Rollable $rollables);
+    public function withRollable(Rollable $rollable);
 }
 ```
 

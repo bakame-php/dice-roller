@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Ethtezahl\DiceRoller;
+namespace Bakame\DiceRoller;
 
 use Countable;
 

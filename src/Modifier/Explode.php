@@ -5,11 +5,11 @@
  */
 declare(strict_types=1);
 
-namespace Ethtezahl\DiceRoller\Modifier;
+namespace Bakame\DiceRoller\Modifier;
 
-use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Rollable;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Rollable;
 
 final class Explode implements Rollable
 {

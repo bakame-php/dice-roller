@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Ethtezahl\DiceRoller;
+namespace Bakame\DiceRoller;
 
 use Countable;
 use IteratorAggregate;
@@ -30,112 +30,74 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      * @param int    $quantity   Dice count
      * @param string $definition Dice definition
      *
-     * @throws Exception if the quantity is lesser than 1
-     *
      * @return self
      */
-    public static function createFromDice(int $quantity, string $definition): self
+    public static function createFromDiceDefinition(int $quantity, string $definition): self
     {
-        if ($quantity < 1) {
-            throw new Exception(sprintf('The quantity of dice `%s` is not valid', $quantity));
+        return self::createFromRollable($quantity, self::parseDefinition($definition));
+    }
+
+    /**
+     * Parse Rollable definition
+     *
+     * @param string $definition
+     *
+     * @throws Exception If the defintion can not be parsed
+     *
+     * @return Rollable
+     */
+    private static function parseDefinition(string $definition): Rollable
+    {
+        if (false !== ($size = filter_var($definition, FILTER_VALIDATE_INT))) {
+            return new Dice($size);
         }
 
-        $size = (int) filter_var($definition, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
-        if ($size > 1) {
-            return self::createFromSidedDice($quantity, $size);
-        }
-
-        $definition = strtolower((string) $definition);
+        $definition = strtolower($definition);
         if ('f' === $definition) {
-            return self::createFromFudgeDice($quantity);
+            return new FudgeDice();
         }
 
         if ('%' === $definition) {
-            return self::createFromPercentileDice($quantity);
+            return new PercentileDice();
         }
 
         if ('][' === substr($definition.$definition, strlen($definition) - 1, 2)) {
-            $sideValues = explode(',', substr($definition, 1, -1));
-            $sideValues = filter_var($sideValues, FILTER_VALIDATE_INT, ['flags' => FILTER_REQUIRE_ARRAY]);
+            $sides = explode(',', substr($definition, 1, -1));
+            $sides = filter_var($sides, FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
 
-            return self::createFromCustomDice($quantity, $sideValues);
+            return new CustomDice(...$sides);
         }
 
         throw new Exception(sprintf('The dice definition `%s` is invalid or not supported', $definition));
     }
 
     /**
-     * Create a new Cup containing only Sided Dices
+     * Create a new Cup containing only on type of Rollable object
      *
-     * @param int $quantity
-     * @param int $size
+     * @param int      $quantity
+     * @param Rollable $rollable
      *
-     * @return self
-     */
-    public static function createFromSidedDice(int $quantity, int $size): self
-    {
-        $data = [];
-        for ($i = 0; $i < $quantity; ++$i) {
-            $data[] = new Dice($size);
-        }
-
-        return new self(...$data);
-    }
-
-    /**
-     * Create a new Cup containing only Fudge Dices
-     *
-     * @param int $quantity
+     * @throws Exception if the quantity is lesser than 0
      *
      * @return self
      */
-    public static function createFromFudgeDice(int $quantity): self
+    public static function createFromRollable(int $quantity, Rollable $rollable): self
     {
-        $data = [];
-        for ($i = 0; $i < $quantity; ++$i) {
-            $data[] = new FudgeDice();
+        if ($quantity < 1) {
+            throw new Exception(sprintf('The quantity of dice `%s` is not valid', $quantity));
         }
 
-        return new self(...$data);
+        $cup = new self();
+        $cup->items[] = $rollable;
+        for ($i = 0; $i < $quantity - 1; ++$i) {
+            $cup->items[] = clone $rollable;
+        }
+
+        return $cup;
     }
 
     /**
-     * Create a new Cup containing only Percentile Dices
-     *
-     * @param int $quantity
-     *
-     * @return self
-     */
-    public static function createFromPercentileDice(int $quantity): self
-    {
-        $data = [];
-        for ($i = 0; $i < $quantity; ++$i) {
-            $data[] = new PercentileDice();
-        }
-
-        return new self(...$data);
-    }
-
-    /**
-     * Create a new Cup containing only custome sided Dices
-     *
-     * @param int $quantity
-     * @param int $sidesValues
-     *
-     * @return self
-     */
-    public static function createFromCustomDice(int $quantity, array $sidesValues): self
-    {
-        $data = [];
-        for ($i = 0; $i < $quantity; ++$i) {
-            $data[] = new CustomDice(...$sidesValues);
-        }
-
-        return new self(...$data);
-    }
-
-    /**
-     * new instance
+     * New instance
      *
      * @param mixed $items a list of Rollable objects (iterable array or Traversable object)
      */
@@ -157,10 +119,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function withRollable(Rollable $rollable): self
     {
-        $cup = new self();
-        foreach ($this->items as $value) {
-            $cup->items[] = clone $value;
-        }
+        $cup = clone $this;
         $cup->items[] = $rollable;
 
         return $cup;
@@ -171,20 +130,16 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
-
         $parts = array_map(function (Rollable $rollable) {
             return (string) $rollable;
         }, $this->items);
-
-        $parts = array_filter($parts, function (string $value) {
-            return '' !== $value;
-        });
 
         $pool = array_count_values($parts);
         array_walk($pool, function (&$value, $offset) {
             $value = $value > 1 ? $value.$offset : $offset;
         });
+
+        $this->trace = '';
 
         return implode('+', $pool);
     }

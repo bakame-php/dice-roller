@@ -1,17 +1,17 @@
 <?php
 
-namespace Ethtezahl\DiceRoller\Test\Modifier;
+namespace Bakame\DiceRoller\Test\Modifier;
 
-use Ethtezahl\DiceRoller\Cup;
-use Ethtezahl\DiceRoller\Dice;
-use Ethtezahl\DiceRoller\Exception;
-use Ethtezahl\DiceRoller\Modifier\Explode;
-use Ethtezahl\DiceRoller\Rollable;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
-use function Ethtezahl\DiceRoller\create;
+use function Bakame\DiceRoller\create;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\Modifier\Explode
+ * @coversDefaultClass Bakame\DiceRoller\Modifier\Explode
  */
 final class ExplodeTest extends TestCase
 {
