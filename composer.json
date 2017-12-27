@@ -1,5 +1,5 @@
 {
-    "name": "ethtezahl/dice-roller",
+    "name": "bakame-php/dice-roller",
     "type": "library",
     "description": "RPG rolling dice simulation",
     "keywords": ["dice", "roll", "rpg"],

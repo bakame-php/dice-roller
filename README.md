@@ -10,7 +10,9 @@ You need **PHP >= 7.0.0** but the latest stable version of PHP is recommended.
 
 ## Installation
 
-composer require bakame-php/dice-roller
+```bash
+$ composer require bakame-php/dice-roller
+```
 
 ## Basic usage
 
