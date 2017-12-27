@@ -110,7 +110,7 @@ final class Parser
      */
     private function parsePool(string $str): Rollable
     {
-        if ('' == $str) {
+        if ('' === $str) {
             return new Cup();
         }
 
@@ -164,6 +164,28 @@ final class Parser
     private function createComplexPool(array $matches): Cup
     {
         return new Cup(...array_map([$this, 'parsePool'], $this->explode($matches['mixed'])));
+    }
+
+    /**
+     * Decorates the Rollable object with up to 2 ArithmeticModifier.
+     *
+     * @param array    $matches
+     * @param Rollable $rollable
+     *
+     * @return Rollable
+     */
+    private function addArithmetic(array $matches, Rollable $rollable): Rollable
+    {
+        if (!isset($matches['math1'])) {
+            return $rollable;
+        }
+
+        $rollable = new Modifier\Arithmetic($rollable, $matches['operator1'], (int) $matches['value1']);
+        if (!isset($matches['math2'])) {
+            return $rollable;
+        }
+
+        return new Modifier\Arithmetic($rollable, $matches['operator2'], (int) $matches['value2']);
     }
 
     /**
@@ -223,27 +245,5 @@ final class Parser
         }
 
         throw new Exception(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $matches['algo']));
-    }
-
-    /**
-     * Decorates the Rollable object with up to 2 ArithmeticModifier.
-     *
-     * @param array    $matches
-     * @param Rollable $rollable
-     *
-     * @return Rollable
-     */
-    private function addArithmetic(array $matches, Rollable $rollable): Rollable
-    {
-        if (!isset($matches['math1'])) {
-            return $rollable;
-        }
-
-        $rollable = new Modifier\Arithmetic($rollable, $matches['operator1'], (int) $matches['value1']);
-        if (!isset($matches['math2'])) {
-            return $rollable;
-        }
-
-        return new Modifier\Arithmetic($rollable, $matches['operator2'], (int) $matches['value2']);
     }
 }

@@ -1,8 +1,8 @@
 # Dice Roller
 
-## Concept.
+A simple Dice Roller implemented in PHP.
 
-A simple Dice Roller implemented in PHP
+This is a fork of [Ethtezahl/Dice-Roller](https://github.com/Ethtezahl/dice-roller)
 
 ## System Requirements
 
@@ -21,14 +21,11 @@ The code above will simulate the roll of two six-sided die
 ```php
 <?php
 
-// First: import needed namespace
 use Bakame\DiceRoller;
 
-// We create the cup that will contain the two die:
 $cup = DiceRoller\create('2D6');
-
-// Display the result:
 echo $cup->roll();
+echo $cup->getTrace();
 ```
 
 ## Advanced use: with multiple types of dices and modifiers

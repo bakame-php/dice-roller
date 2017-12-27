@@ -71,9 +71,9 @@ final class FudgeDice implements Countable, Rollable
      */
     public function roll(): int
     {
-        $res = random_int(-1, 1);
-        $this->trace = (string) $res;
+        $roll = random_int(-1, 1);
+        $this->trace = (string) $roll;
 
-        return $res;
+        return $roll;
     }
 }

@@ -19,7 +19,22 @@ final class CustomDice implements Countable, Rollable
     /**
      * @var int[]
      */
-    private $sideValues = [];
+    private $values = [];
+
+    /**
+     * New instance
+     *
+     * @param int ...$values
+     */
+    public function __construct(int ...$values)
+    {
+        if (2 > count($values)) {
+            throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', count($values)));
+        }
+
+        $this->trace = '';
+        $this->values = $values;
+    }
 
     /**
      * {@inheritdoc}
@@ -28,23 +43,7 @@ final class CustomDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return 'D['.implode(',', $this->sideValues).']';
-    }
-
-    /**
-     * New instance
-     *
-     * @param int ..$sideValue
-     * @param int... $sideValues
-     */
-    public function __construct(int ...$sideValues)
-    {
-        if (2 > count($sideValues)) {
-            throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', count($sideValues)));
-        }
-
-        $this->trace = '';
-        $this->sideValues = $sideValues;
+        return 'D['.implode(',', $this->values).']';
     }
 
     /**
@@ -56,7 +55,7 @@ final class CustomDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return count($this->sideValues);
+        return count($this->values);
     }
 
     /**
@@ -66,7 +65,7 @@ final class CustomDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return min($this->sideValues);
+        return min($this->values);
     }
 
     /**
@@ -76,7 +75,7 @@ final class CustomDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return max($this->sideValues);
+        return max($this->values);
     }
 
     /**
@@ -92,8 +91,8 @@ final class CustomDice implements Countable, Rollable
      */
     public function roll(): int
     {
-        $index = random_int(1, count($this->sideValues) - 1);
-        $roll  = $this->sideValues[$index];
+        $index = random_int(1, count($this->values) - 1);
+        $roll = $this->values[$index];
         $this->trace = (string) $roll;
 
         return $roll;
