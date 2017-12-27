@@ -9,7 +9,7 @@ namespace Ethtezahl\DiceRoller;
 
 use Countable;
 
-final class FudgeDice implements Countable, Rollable
+final class PercentileDice implements Countable, Rollable
 {
     /**
      * @var string
@@ -23,7 +23,7 @@ final class FudgeDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return 'DF';
+        return 'D%';
     }
 
     /**
@@ -35,7 +35,7 @@ final class FudgeDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return 3;
+        return 100;
     }
 
     /**
@@ -45,7 +45,7 @@ final class FudgeDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return -1;
+        return 1;
     }
 
     /**
@@ -55,7 +55,7 @@ final class FudgeDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return 1;
+        return 100;
     }
 
     /**
@@ -71,7 +71,7 @@ final class FudgeDice implements Countable, Rollable
      */
     public function roll(): int
     {
-        $res = random_int(-1, 1);
+        $res = random_int(1, 100);
         $this->trace = (string) $res;
 
         return $res;

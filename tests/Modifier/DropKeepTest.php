@@ -45,21 +45,21 @@ final class DropKeepTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new DropKeep(new Cup([
+        $cup = new DropKeep(new Cup(
             new Dice(3),
             new Dice(3),
-            new Dice(4),
-        ]), DropKeep::DROP_LOWEST, 2);
+            new Dice(4)
+        ), DropKeep::DROP_LOWEST, 2);
         $this->assertSame('(2D3+D4)DL2', (string) $cup);
     }
 
 
     /**
      * @covers ::roll
-     * @covers ::explain
-     * @covers \Ethtezahl\DiceRoller\Cup::explain
+     * @covers ::getTrace
+     * @covers \Ethtezahl\DiceRoller\Cup::getTrace
      */
-    public function testExplain()
+    public function testGetTrace()
     {
         $dice1 = new class() implements Rollable {
             public function getMinimum(): int
@@ -82,7 +82,7 @@ final class DropKeepTest extends TestCase
                 return '1';
             }
 
-            public function explain(): string
+            public function getTrace(): string
             {
                 return '1';
             }
@@ -109,19 +109,19 @@ final class DropKeepTest extends TestCase
                 return '2';
             }
 
-            public function explain(): string
+            public function getTrace(): string
             {
                 return '2';
             }
         };
 
-        $rollables = new Cup([$dice1, clone $dice1, $dice2, clone $dice2]);
+        $rollables = new Cup($dice1, clone $dice1, $dice2, clone $dice2);
         $cup = new DropKeep($rollables, DropKeep::DROP_LOWEST, 1);
-        $this->assertSame('', $rollables->explain());
-        $this->assertSame('', $cup->explain());
+        $this->assertSame('', $rollables->getTrace());
+        $this->assertSame('', $cup->getTrace());
         $this->assertSame(5, $cup->roll());
-        $this->assertSame('(1 + 2 + 2)', $cup->explain());
-        $this->assertSame('', $rollables->explain());
+        $this->assertSame('(1 + 2 + 2)', $cup->getTrace());
+        $this->assertSame('', $rollables->getTrace());
     }
 
     /**
@@ -129,7 +129,6 @@ final class DropKeepTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::calculate
-     * @covers ::keep
      * @covers ::keepLowest
      * @covers ::keepHighest
      * @covers ::drop

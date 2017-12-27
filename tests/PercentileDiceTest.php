@@ -2,16 +2,17 @@
 
 namespace Ethtezahl\DiceRoller\Test;
 
-use Ethtezahl\DiceRoller\FudgeDice;
+use Ethtezahl\DiceRoller\PercentileDice;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Ethtezahl\DiceRoller\FudgeDice
+ * @coversDefaultClass Ethtezahl\DiceRoller\PercentileDice
  */
-final class FudgeDiceTest extends TestCase
+final class PercentileDiceTest extends TestCase
 {
     /**
      * @covers ::count
+     * @covers ::__toString
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
@@ -19,16 +20,16 @@ final class FudgeDiceTest extends TestCase
      */
     public function testFudgeDice()
     {
-        $dice = new FudgeDice();
-        $this->assertCount(3, $dice);
-        $this->assertSame(1, $dice->getMaximum());
-        $this->assertSame(-1, $dice->getMinimum());
+        $dice = new PercentileDice();
+        $this->assertCount(100, $dice);
+        $this->assertSame(100, $dice->getMaximum());
+        $this->assertSame(1, $dice->getMinimum());
+        $this->assertSame('D%', (string) $dice);
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
-            $this->assertContains($dice->getTrace(), ['-1', '0', '1']);
+            $this->assertSame($dice->getTrace(), (string) $test);
             $this->assertGreaterThanOrEqual($dice->getMinimum(), $test);
             $this->assertLessThanOrEqual($dice->getMaximum(), $test);
-            $this->assertSame('', $dice->getTrace());
         }
     }
 }

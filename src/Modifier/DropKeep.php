@@ -18,7 +18,7 @@ final class DropKeep implements Rollable
     const KEEP_HIGHEST = 'kh';
     const KEEP_LOWEST = 'kl';
 
-    private static $methodList = [
+    const OPERATOR = [
         self::DROP_HIGHEST => 'dropHighest',
         self::DROP_LOWEST => 'dropLowest',
         self::KEEP_HIGHEST => 'keepHighest',
@@ -49,7 +49,7 @@ final class DropKeep implements Rollable
     /**
      * @var string
      */
-    private $explain;
+    private $trace;
 
     /**
      * new instance
@@ -64,13 +64,14 @@ final class DropKeep implements Rollable
             throw new Exception(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($rollable), $threshold));
         }
 
-        if (!isset(self::$methodList[$algo])) {
+        if (!isset(self::OPERATOR[$algo])) {
             throw new Exception(sprintf('Unknown or unsupported sortable algorithm `%s`', $algo));
         }
 
         $this->rollable = $rollable;
         $this->threshold = $threshold;
-        $this->method = self::$methodList[$algo];
+        $this->method = self::OPERATOR[$algo];
+        $this->trace = '';
     }
 
     /**
@@ -78,22 +79,23 @@ final class DropKeep implements Rollable
      */
     public function __toString()
     {
+        $this->trace = '';
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }
 
         return $str
-            .strtoupper(array_search($this->method, self::$methodList))
+            .strtoupper(array_search($this->method, self::OPERATOR))
             .$this->threshold;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function explain(): string
+    public function getTrace(): string
     {
-        return (string) $this->explain;
+        return $this->trace;
     }
 
     /**
@@ -114,11 +116,11 @@ final class DropKeep implements Rollable
     private function calculate(string $method): int
     {
         $res = [];
-        $this->explain = '';
+        $this->trace = '';
         foreach ($this->rollable as $rollable) {
             $res[] = [
                 'roll' => $rollable->$method(),
-                'explain' => $method === 'roll' ? $rollable->explain() : '',
+                'trace' => $method === 'roll' ? $rollable->getTrace() : '',
             ];
         }
 
@@ -128,12 +130,12 @@ final class DropKeep implements Rollable
             return $res;
         }
 
-        $explain = implode(' + ', array_column($retained, 'explain'));
-        if (strpos($explain, '+') !== false) {
-            $explain = '('.$explain.')';
+        $trace = implode(' + ', array_column($retained, 'trace'));
+        if (strpos($trace, '+') !== false) {
+            $trace = '('.$trace.')';
         }
 
-        $this->explain = $explain;
+        $this->trace = $trace;
 
         return $res;
     }
@@ -196,14 +198,10 @@ final class DropKeep implements Rollable
      */
     private function keepHighest(array $sum): array
     {
-        uasort($sum, [$this, 'keep']);
+        uasort($sum, [$this, 'drop']);
+        rsort($sum);
 
         return array_slice($sum, 0, $this->threshold);
-    }
-
-    private function keep(array $data1, array $data2): int
-    {
-        return $data2['roll'] <=> $data1['roll'];
     }
 
     /**
@@ -215,7 +213,8 @@ final class DropKeep implements Rollable
      */
     private function keepLowest(array $sum): array
     {
-        uasort($sum, [$this, 'keep']);
+        uasort($sum, [$this, 'drop']);
+        rsort($sum);
 
         return array_slice($sum, 0, $this->threshold);
     }

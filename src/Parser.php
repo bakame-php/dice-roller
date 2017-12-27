@@ -11,11 +11,11 @@ final class Parser
 {
     const POOL_PATTERN = ',^
         (?<dice>
-            (?<simple>(?<quantity>\d*)d(?<size>\d+|F)?) # simple dice pattern
+            (?<simple>(?<quantity>\d*)d(?<size>\d+|f|\%|\[.*?\])?) # simple dice pattern
             |
-            (?<complex>\((?<mixed>.+)\))                # complex dice pattern
+            (?<complex>\((?<mixed>.+)\))                           # complex dice pattern
         )
-        (?<modifier>.*)?                                # modifier pattern
+        (?<modifier>.*)?                                           # modifier pattern
     $,xi';
 
     const MODIFIER_PATTERN = ',^
@@ -47,7 +47,7 @@ final class Parser
             return $this->parsePool(array_shift($parts));
         }
 
-        return new Cup(array_map([$this, 'parsePool'], $parts));
+        return new Cup(...array_map([$this, 'parsePool'], $parts));
     }
 
     /**
@@ -163,7 +163,7 @@ final class Parser
      */
     private function createComplexPool(array $matches): Cup
     {
-        return new Cup(array_map([$this, 'parsePool'], $this->explode($matches['mixed'])));
+        return new Cup(...array_map([$this, 'parsePool'], $this->explode($matches['mixed'])));
     }
 
     /**

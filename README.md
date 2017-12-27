@@ -56,7 +56,7 @@ namespace Ethtezahl\DiceRoller;
 
 interface Rollable
 {
-    public function explain(): string;
+    public function getTrace(): string;
     public function getMinimum(): int;
     public function getMaximum(): int;
     public function roll(): int;
@@ -68,7 +68,7 @@ interface Rollable
 - `Rollable::getMaximum` returns the maximum value the rollable object can return during a roll;
 - `Rollable::roll` returns a value from a roll.
 - `Rollable::__toString` returns the string annotation of the Rollable object.
-- `Rollable::explain` returns the execution trace of how the last roll was executed.
+- `Rollable::getTrace` returns the execution trace of how the last roll was executed.
 
 The package comes bundles with the following rollable objects
 
@@ -76,6 +76,8 @@ The package comes bundles with the following rollable objects
 | ------------- | ---------- |
 | Dice          | `Ethtezahl\DiceRoller\Dice` |
 | Dice          | `Ethtezahl\DiceRoller\FudgeDice` |
+| Dice          | `Ethtezahl\DiceRoller\PercentileDice` |
+| Dice          | `Ethtezahl\DiceRoller\CustomDice` |
 | Collection    | `Ethtezahl\DiceRoller\Cup` |
 | Modifier      | `Ethtezahl\DiceRoller\Modifier\Arithmetic` |
 | Modifier      | `Ethtezahl\DiceRoller\Modifier\Explode` |
@@ -86,24 +88,40 @@ The package comes bundles with the following rollable objects
 
 In addition to the `Rollable` interface, the Dice type implement the `Countable` interface. The `count` method returns the dice sides count.
 
-- The `Dice` constructor unique argument is the dice sides count. A `Dice` object must have at least 2 sides otherwise a `Ethtezahl\DiceRoller\Exception` exception is thrown.
+ A `Dice` type object must have at least 2 sides otherwise a `Ethtezahl\DiceRoller\Exception` exception is thrown.
+
+- The `Dice` constructor unique argument is the dice sides count.
+- The `CustomDice` constructor takes a variadic argument which represents the dice side values.
 - The `FludgeDice` constructor takes no argument as fudge dices are always 3 sides dices with values being `-1`, `0` or `1`.
+- The `PercentileDice` constructor takes no argument as percentile dices are always 100 sides dices with values between `1` and `100`.
 
 ```php
 <?php
 
+use Ethtezahl\DiceRoller\CustomDice;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\FudgeDice;
+use Ethtezahl\DiceRoller\PercentileDice;
 
 $basic = new Dice(3);
 echo $basic;    // 'D3';
-$basic->roll(); // may return 1,2 or 3
+$basic->roll(); // may return 1, 2 or 3
 count($basic);  // returns 3
+
+$custom = new CustomDice(3, 2, 1, 1);
+echo $custom;    // 'D[3,2,1,1]';
+$custom->roll(); // may return 1, 2 or 3
+count($custom);  // returns 4
 
 $fugde = new FudgeDice();
 echo $fudge;    // displays 'DF'
 $fudge->roll(); // may return -1, 0, or 1
 count($fudge);  // returns 3
+
+$percentile = new PercentileDice();
+echo $percentile;    // displays 'D%'
+$percentile->roll(); // returns a value between 1 and 100
+count($fudge);       // returns 100
 ```
 
 ### Dices Collection
@@ -118,25 +136,27 @@ namespace Ethtezahl\DiceRoller;
 final class Cup implements Countable, IteratorAggregate, Rollable
 {
     public static function createFromDice(int $pQuantity, int|string $pSize): self;
-    public function __construct(iterable $rollables);
+    public function __construct(Rollable ...$rollables);
+    public function withRollable(Rollable $rollables);
 }
 ```
 
-The `Cup::createFromDice` named constructor enables creating uniformed `Cup` object which contains only 1 type of simple rollable objects (ie: `Dice` or `FludgeDice`).
+The `Cup::createFromDice` named constructor enables creating uniformed `Cup` object which contains only 1 type of simple rollable objects (ie: `CustomDice` or `Dice` or `FludgeDice` or `PercentileDice`).
 
 ```php
 <?php
 
 use Ethtezahl\DiceRoller\Cup;
 
-echo Cup::createFromDice(3, 5);   // displays 3D5
-echo Cup::createFromDice(4, 'F'); // displays 4DF
-echo Cup::createFromDice(2, 'f'); // displays 2DF
+echo Cup::createFromDice(3, 5);              // displays 3D5
+echo Cup::createFromDice(4, '%');            // displays 4D%
+echo Cup::createFromDice(2, '[1, 2, 2, 4]'); // displays 2D[1,2,2,4]
+echo Cup::createFromDice(1, 'f');            // displays DF
 ```
 
 A Cup created using `createFromDice` must contain at least 1 `Rollable` object otherwise a `Ethtezahl\DiceRoller\Exception` is thrown.
 
-Where iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
+When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
 ```php
 <?php

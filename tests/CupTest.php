@@ -3,9 +3,11 @@
 namespace Ethtezahl\DiceRoller\Test;
 
 use Ethtezahl\DiceRoller\Cup;
+use Ethtezahl\DiceRoller\CustomDice;
 use Ethtezahl\DiceRoller\Dice;
 use Ethtezahl\DiceRoller\Exception;
 use Ethtezahl\DiceRoller\FudgeDice;
+use Ethtezahl\DiceRoller\PercentileDice;
 use Ethtezahl\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 use TypeError;
@@ -16,16 +18,21 @@ use function Ethtezahl\DiceRoller\create;
  */
 final class CupTest extends TestCase
 {
-    public function testConstructorThrows()
+    public function testConstructorThrowsTypeError()
     {
         $this->expectException(TypeError::class);
-        new Cup(new Dice(3));
+        new Cup(new Dice(3), 'foo');
     }
 
-    public function testConstructorThrows2()
+    /**
+     * @covers ::__construct
+     * @covers ::withRollable
+     */
+    public function testWithRollable()
     {
-        $this->expectException(TypeError::class);
-        new Cup([new Dice(3), 'foo']);
+        $cup = new Cup(new FudgeDice());
+        $altCup = $cup->withRollable(new CustomDice(-1, 1, -1));
+        $this->assertNotEquals($cup, $altCup);
     }
 
     /**
@@ -41,10 +48,7 @@ final class CupTest extends TestCase
      */
     public function testRoll()
     {
-        $cup = new Cup([
-            create('4D10'),
-            create('2d4'),
-        ]);
+        $cup = new Cup(create('4D10'), create('2d4'));
         $this->assertSame(6, $cup->getMinimum());
         $this->assertSame(48, $cup->getMaximum());
         $this->assertCount(2, $cup);
@@ -59,7 +63,10 @@ final class CupTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::createFromDice
-     * @covers ::filterSize
+     * @covers ::createFromFudgeDice
+     * @covers ::createFromPercentileDice
+     * @covers ::createFromCustomDice
+     * @covers ::createFromSidedDice
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::minimum
@@ -118,20 +125,33 @@ final class CupTest extends TestCase
                 'min' => -4,
                 'max' => 4,
             ],
+            'percentile dice' => [
+                'quantity' => 2,
+                'sides' => '%',
+                'className' => PercentileDice::class,
+                'min' => 2,
+                'max' => 200,
+            ],
+            'custom dice' => [
+                'quantity' => 2,
+                'sides' => '[1,2,2,3,5]',
+                'className' => CustomDice::class,
+                'min' => 2,
+                'max' => 10,
+            ],
         ];
     }
 
     /**
      * @covers ::createFromDice
-     * @covers ::filterSize
      * @dataProvider invalidNamedConstructor
      * @param mixed $quantity
-     * @param mixed $sides
+     * @param mixed $definition
      */
-    public function testCreateFromDiceThrowsException($quantity, $sides)
+    public function testCreateFromDiceThrowsException($quantity, $definition)
     {
         $this->expectException(Exception::class);
-        Cup::createFromDice($quantity, $sides);
+        Cup::createFromDice($quantity, $definition);
     }
 
     public function invalidNamedConstructor()
@@ -139,15 +159,27 @@ final class CupTest extends TestCase
         return [
             'invalid quantity' => [
                 'quantity' => -1,
-                'sides' => 3,
+                'definition' => '3',
             ],
             'invalid sides' => [
                 'quantity' => 2,
-                'sides' => 1,
+                'definition' => '1',
             ],
             'invalid sides with wrong string' => [
                 'quantity' => 3,
-                'sides' => 'foobar',
+                'definition' => 'foobar',
+            ],
+            'invalid fudge definition' => [
+                'quantity' => 3,
+                'definition' => 'ff',
+            ],
+            'invalid percentile definition' => [
+                'quantity' => 3,
+                'definition' => '%f',
+            ],
+            'invalid custome dice definition' => [
+                'quantity' => 3,
+                'definition' => '1,2,3,foo',
             ],
         ];
     }

@@ -34,13 +34,13 @@ interface Rollable
     public function roll(): int;
 
     /**
-     * Returns information about how the Rollable has executed the last roll.
+     * Returns the last roll stack trace.
      *
      * If no roll was performed this method MUST return an empty string
      *
      * @return string
      */
-    public function explain(): string;
+    public function getTrace(): string;
 
     /**
      * Returns the string representation of the

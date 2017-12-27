@@ -44,7 +44,14 @@ final class Arithmetic implements Rollable
     /**
      * @var string
      */
-    private $explain;
+    private $trace;
+
+    /**
+     * The method name associated with a given algo
+     *
+     * @var string
+     */
+    private $method;
 
     /**
      * new instance
@@ -68,8 +75,10 @@ final class Arithmetic implements Rollable
         }
 
         $this->operator = $operator;
+        $this->method = self::OPERATOR[$operator];
         $this->rollable = $rollable;
         $this->value = $value;
+        $this->trace = '';
     }
 
     /**
@@ -77,6 +86,8 @@ final class Arithmetic implements Rollable
      */
     public function __toString()
     {
+        $this->trace = '';
+
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
@@ -88,9 +99,9 @@ final class Arithmetic implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function explain(): string
+    public function getTrace(): string
     {
-        return (string) $this->explain;
+        return $this->trace;
     }
 
     /**
@@ -100,7 +111,7 @@ final class Arithmetic implements Rollable
     {
         $roll = $this->calculate('roll');
 
-        $this->setExplain();
+        $this->setTrace();
 
         return $roll;
     }
@@ -114,7 +125,7 @@ final class Arithmetic implements Rollable
      */
     private function calculate(string $method): int
     {
-        return $this->{self::OPERATOR[$this->operator]}($method);
+        return $this->{$this->method}($method);
     }
 
     /**
@@ -175,14 +186,14 @@ final class Arithmetic implements Rollable
     /**
      * {@inheritdoc}
      */
-    private function setExplain()
+    private function setTrace()
     {
-        $str = $this->rollable->explain();
+        $str = $this->rollable->getTrace();
         if (strpos($str, '+') !== false) {
             $str = '('.$str.')';
         }
 
-        $this->explain = $str.' '.$this->operator.' '.$this->value;
+        $this->trace = $str.' '.$this->operator.' '.$this->value;
     }
 
     /**

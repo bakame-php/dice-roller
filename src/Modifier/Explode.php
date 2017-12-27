@@ -41,7 +41,7 @@ final class Explode implements Rollable
     /**
      * @var string
      */
-    private $explain;
+    private $trace;
 
     /**
      * new instance
@@ -62,6 +62,7 @@ final class Explode implements Rollable
         }
 
         $this->compare = $compare;
+        $this->trace = '';
     }
 
     /**
@@ -69,6 +70,7 @@ final class Explode implements Rollable
      */
     public function __toString()
     {
+        $this->trace = '';
         $prefix = '!';
         if (self::EQUALS != $this->compare ||
             (self::EQUALS == $this->compare && -1 != $this->threshold)
@@ -91,9 +93,9 @@ final class Explode implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function explain(): string
+    public function getTrace(): string
     {
-        return (string) $this->explain;
+        return $this->trace;
     }
 
     /**
@@ -101,6 +103,7 @@ final class Explode implements Rollable
      */
     public function getMinimum(): int
     {
+        $this->trace = '';
         return $this->rollable->getMinimum();
     }
 
@@ -109,6 +112,7 @@ final class Explode implements Rollable
      */
     public function getMaximum(): int
     {
+        $this->trace = '';
         return PHP_INT_MAX;
     }
 
@@ -118,7 +122,7 @@ final class Explode implements Rollable
     public function roll(): int
     {
         $sum = 0;
-        $this->explain = '';
+        $this->trace = '';
         foreach ($this->rollable as $innerRoll) {
             $sum = $this->calculate($sum, $innerRoll);
         }
@@ -136,24 +140,24 @@ final class Explode implements Rollable
      */
     private function calculate(int $sum, Rollable $rollable): int
     {
-        $explain = [];
+        $trace = [];
         $threshold = $this->threshold === -1 ? $rollable->getMaximum() : $this->threshold;
         do {
             $res = $rollable->roll();
             $sum += $res;
-            $str = $rollable->explain();
+            $str = $rollable->getTrace();
             if (false !== strpos($str, '+')) {
                 $str = '('.$str.')';
             }
-            $explain[] = $str;
+            $trace[] = $str;
         } while ($this->isValid($res, $threshold));
 
-        $explain = implode(' + ', $explain);
-        if ('' !== $this->explain) {
-            $explain = ' + '.$explain;
+        $trace = implode(' + ', $trace);
+        if ('' !== $this->trace) {
+            $trace = ' + '.$trace;
         }
 
-        $this->explain .= $explain;
+        $this->trace .= $trace;
 
         return $sum;
     }

@@ -9,12 +9,17 @@ namespace Ethtezahl\DiceRoller;
 
 use Countable;
 
-final class FudgeDice implements Countable, Rollable
+final class CustomDice implements Countable, Rollable
 {
     /**
      * @var string
      */
     private $trace;
+
+    /**
+     * @var int[]
+     */
+    private $sideValues = [];
 
     /**
      * {@inheritdoc}
@@ -23,7 +28,23 @@ final class FudgeDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return 'DF';
+        return 'D['.implode(',', $this->sideValues).']';
+    }
+
+    /**
+     * New instance
+     *
+     * @param int ..$sideValue
+     * @param int... $sideValues
+     */
+    public function __construct(int ...$sideValues)
+    {
+        if (2 > count($sideValues)) {
+            throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', count($sideValues)));
+        }
+
+        $this->trace = '';
+        $this->sideValues = $sideValues;
     }
 
     /**
@@ -35,7 +56,7 @@ final class FudgeDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return 3;
+        return count($this->sideValues);
     }
 
     /**
@@ -45,7 +66,7 @@ final class FudgeDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return -1;
+        return min($this->sideValues);
     }
 
     /**
@@ -55,7 +76,7 @@ final class FudgeDice implements Countable, Rollable
     {
         $this->trace = '';
 
-        return 1;
+        return max($this->sideValues);
     }
 
     /**
@@ -71,9 +92,10 @@ final class FudgeDice implements Countable, Rollable
      */
     public function roll(): int
     {
-        $res = random_int(-1, 1);
-        $this->trace = (string) $res;
+        $index = random_int(1, count($this->sideValues) - 1);
+        $roll  = $this->sideValues[$index];
+        $this->trace = (string) $roll;
 
-        return $res;
+        return $roll;
     }
 }

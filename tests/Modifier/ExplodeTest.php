@@ -36,29 +36,29 @@ final class ExplodeTest extends TestCase
      */
     public function testToString()
     {
-        $cup = new Explode(new Cup([
+        $cup = new Explode(new Cup(
             new Dice(3),
             new Dice(3),
-            new Dice(4),
-        ]), Explode::EQUALS, 3);
+            new Dice(4)
+        ), Explode::EQUALS, 3);
 
         $this->assertSame('(2D3+D4)!=3', (string) $cup);
     }
 
-    public function testExplain()
+    public function testGetTrace()
     {
         $dice = $this->createMock(Rollable::class);
         $dice->method('roll')
             ->will($this->onConsecutiveCalls(2, 2, 3));
 
-        $dice->method('explain')
+        $dice->method('getTrace')
             ->will($this->onConsecutiveCalls('2', '2', '3'))
         ;
 
-        $cup = new Explode(new Cup([$dice]), Explode::EQUALS, 2);
-        $this->assertSame('', $cup->explain());
+        $cup = new Explode(new Cup($dice), Explode::EQUALS, 2);
+        $this->assertSame('', $cup->getTrace());
         $this->assertSame(7, $cup->roll());
-        $this->assertSame('2 + 2 + 3', $cup->explain());
+        $this->assertSame('2 + 2 + 3', $cup->getTrace());
     }
 
     /**

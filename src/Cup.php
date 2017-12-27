@@ -20,56 +20,118 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * @var string
      */
-    private $explain;
+    private $trace;
 
     /**
      * Create a new Cup From Dice definition.
      *
-     * @param int        $quantity Dice count
-     * @param int|string $nbSides  Dice sides count
+     * The returned Cup object will contain only one type of Rollable object.
+     *
+     * @param int    $quantity   Dice count
+     * @param string $definition Dice definition
      *
      * @throws Exception if the quantity is lesser than 1
      *
      * @return self
      */
-    public static function createFromDice(int $quantity, $nbSides): self
+    public static function createFromDice(int $quantity, string $definition): self
     {
         if ($quantity < 1) {
             throw new Exception(sprintf('The quantity of dice `%s` is not valid', $quantity));
         }
 
-        $size = self::filterSize($nbSides);
-        $data = [];
-        $class = 'f' === $size ? FudgeDice::class : Dice::class;
-        for ($i = 0; $i < $quantity; ++$i) {
-            $data[] = new $class($size);
+        $size = (int) filter_var($definition, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
+        if ($size > 1) {
+            return self::createFromSidedDice($quantity, $size);
         }
 
-        return new self($data);
+        $definition = strtolower((string) $definition);
+        if ('f' === $definition) {
+            return self::createFromFudgeDice($quantity);
+        }
+
+        if ('%' === $definition) {
+            return self::createFromPercentileDice($quantity);
+        }
+
+        if ('][' === substr($definition.$definition, strlen($definition) - 1, 2)) {
+            $sideValues = explode(',', substr($definition, 1, -1));
+            $sideValues = filter_var($sideValues, FILTER_VALIDATE_INT, ['flags' => FILTER_REQUIRE_ARRAY]);
+
+            return self::createFromCustomDice($quantity, $sideValues);
+        }
+
+        throw new Exception(sprintf('The dice definition `%s` is invalid or not supported', $definition));
     }
 
     /**
-     * Filter the Dice Slide size.
+     * Create a new Cup containing only Sided Dices
      *
-     * @param int|string $nbSides
+     * @param int $quantity
+     * @param int $size
      *
-     * @throws Exception if the submitted size is invalid
-     *
-     * @return int|string
+     * @return self
      */
-    private static function filterSize($nbSides)
+    public static function createFromSidedDice(int $quantity, int $size): self
     {
-        $size = (int) filter_var($nbSides, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
-        if ($size > 1) {
-            return $size;
+        $data = [];
+        for ($i = 0; $i < $quantity; ++$i) {
+            $data[] = new Dice($size);
         }
 
-        $size = strtolower((string) $nbSides);
-        if ('f' == $size) {
-            return $size;
+        return new self(...$data);
+    }
+
+    /**
+     * Create a new Cup containing only Fudge Dices
+     *
+     * @param int $quantity
+     *
+     * @return self
+     */
+    public static function createFromFudgeDice(int $quantity): self
+    {
+        $data = [];
+        for ($i = 0; $i < $quantity; ++$i) {
+            $data[] = new FudgeDice();
         }
 
-        throw new Exception(sprintf('The number of dice `%s` is not valid', $nbSides));
+        return new self(...$data);
+    }
+
+    /**
+     * Create a new Cup containing only Percentile Dices
+     *
+     * @param int $quantity
+     *
+     * @return self
+     */
+    public static function createFromPercentileDice(int $quantity): self
+    {
+        $data = [];
+        for ($i = 0; $i < $quantity; ++$i) {
+            $data[] = new PercentileDice();
+        }
+
+        return new self(...$data);
+    }
+
+    /**
+     * Create a new Cup containing only custome sided Dices
+     *
+     * @param int $quantity
+     * @param int $sidesValues
+     *
+     * @return self
+     */
+    public static function createFromCustomDice(int $quantity, array $sidesValues): self
+    {
+        $data = [];
+        for ($i = 0; $i < $quantity; ++$i) {
+            $data[] = new CustomDice(...$sidesValues);
+        }
+
+        return new self(...$data);
     }
 
     /**
@@ -77,15 +139,31 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      *
      * @param mixed $items a list of Rollable objects (iterable array or Traversable object)
      */
-    public function __construct($items = [])
+    public function __construct(Rollable ...$items)
     {
-        if (!is_array($items)) {
-            $items = iterator_to_array($items, false);
-        }
+        $this->items = $items;
+        $this->trace = '';
+    }
 
-        $this->items = array_filter($items, function (Rollable $item) {
-            return true;
-        });
+    /**
+     * Return an instance with the added Rollable object.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified Rollable object.
+     *
+     * @param Rollable $rollable
+     *
+     * @return self
+     */
+    public function withRollable(Rollable $rollable): self
+    {
+        $cup = new self();
+        foreach ($this->items as $value) {
+            $cup->items[] = clone $value;
+        }
+        $cup->items[] = $rollable;
+
+        return $cup;
     }
 
     /**
@@ -93,6 +171,8 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function __toString()
     {
+        $this->trace = '';
+
         $parts = array_map(function (Rollable $rollable) {
             return (string) $rollable;
         }, $this->items);
@@ -114,6 +194,8 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function count()
     {
+        $this->trace = '';
+
         return count($this->items);
     }
 
@@ -122,6 +204,8 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getIterator()
     {
+        $this->trace = '';
+
         foreach ($this->items as $rollable) {
             yield $rollable;
         }
@@ -132,6 +216,8 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getMinimum(): int
     {
+        $this->trace = '';
+
         return array_reduce($this->items, [$this, 'minimum'], 0);
     }
 
@@ -153,6 +239,8 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getMaximum(): int
     {
+        $this->trace = '';
+
         return array_reduce($this->items, [$this, 'maximum'], 0);
     }
 
@@ -172,9 +260,9 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * {@inheritdoc}
      */
-    public function explain(): string
+    public function getTrace(): string
     {
-        return (string) $this->explain;
+        return $this->trace;
     }
 
     /**
@@ -185,7 +273,14 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         $res = array_reduce($this->items, [$this, 'calculate'], []);
 
         $roll = array_sum(array_column($res, 'roll'));
-        $this->explain = implode(' + ', array_column($res, 'explain'));
+
+        $this->trace = implode(' + ', array_map(function (string $value) {
+            if (false !== strpos($value, '+')) {
+                return '('.$value.')';
+            }
+
+            return $value;
+        }, array_column($res, 'trace')));
 
         return $roll;
     }
@@ -201,14 +296,11 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     private function calculate(array $res, Rollable $rollable): array
     {
         $roll = $rollable->roll();
-        $explain = $rollable->explain();
-        if (false !== strpos($explain, '+')) {
-            $explain = '('.$explain.')';
-        }
+        $trace = $rollable->getTrace();
 
         $res[] = [
             'roll' => $roll,
-            'explain' => $explain,
+            'trace' => $trace,
         ];
 
         return $res;

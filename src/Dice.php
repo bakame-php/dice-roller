@@ -20,7 +20,7 @@ final class Dice implements Countable, Rollable
     /**
      * @var string
      */
-    private $explain;
+    private $trace;
 
     /**
      * new instance
@@ -35,6 +35,7 @@ final class Dice implements Countable, Rollable
             throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', $sides));
         }
 
+        $this->trace = '';
         $this->sides = $sides;
     }
 
@@ -43,6 +44,8 @@ final class Dice implements Countable, Rollable
      */
     public function __toString()
     {
+        $this->trace = '';
+
         return 'D'.$this->sides;
     }
 
@@ -53,6 +56,8 @@ final class Dice implements Countable, Rollable
      */
     public function count()
     {
+        $this->trace = '';
+
         return $this->sides;
     }
 
@@ -61,6 +66,8 @@ final class Dice implements Countable, Rollable
      */
     public function getMinimum(): int
     {
+        $this->trace = '';
+
         return 1;
     }
 
@@ -69,6 +76,8 @@ final class Dice implements Countable, Rollable
      */
     public function getMaximum(): int
     {
+        $this->trace = '';
+
         return $this->sides;
     }
 
@@ -77,16 +86,17 @@ final class Dice implements Countable, Rollable
      */
     public function roll(): int
     {
-        $this->explain = random_int(1, $this->sides);
+        $roll = random_int(1, $this->sides);
+        $this->trace = (string) $roll;
 
-        return $this->explain;
+        return $roll;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function explain(): string
+    public function getTrace(): string
     {
-        return (string) $this->explain;
+        return $this->trace;
     }
 }
