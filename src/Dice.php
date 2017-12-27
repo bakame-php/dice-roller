@@ -1,9 +1,15 @@
 <?php
-namespace Ethtezahl\DiceRoller;
+/**
+ * It's a dice-cup: you put your die in the cup, you shake it and then you get the result.
+ * @author Bertrand Andres
+ */
+declare(strict_types=1);
 
-use OutOfRangeException;
+namespace Bakame\DiceRoller;
 
-final class Dice
+use Countable;
+
+final class Dice implements Countable, Rollable
 {
     /**
      *
@@ -12,24 +18,85 @@ final class Dice
     private $sides;
 
     /**
-     * @param int number of sides of your dice.
-     * @throws OutOfRangeException if param given is 1 or less
+     * @var string
      */
-    public function __construct(int $pSides)
+    private $trace;
+
+    /**
+     * new instance
+     *
+     * @param int $sides side count
+     *
+     * @throws Exception if a Dice contains less than 2 sides
+     */
+    public function __construct(int $sides)
     {
-        if (1 >= $pSides) {
-            throw new OutOfRangeException('Your dice must have at least 2 sides.');
+        if (2 > $sides) {
+            throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', $sides));
         }
 
-        $this->sides = $pSides;
+        $this->trace = '';
+        $this->sides = $sides;
     }
 
     /**
-     * You roll the dice and get the result.
+     * {@inheritdoc}
+     */
+    public function __toString()
+    {
+        $this->trace = '';
+
+        return 'D'.$this->sides;
+    }
+
+    /**
+     * Returns the side count.
+     *
      * @return int
      */
-    public function roll() : int
+    public function count()
     {
-        return mt_rand(1, $this->sides);
+        $this->trace = '';
+
+        return $this->sides;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMinimum(): int
+    {
+        $this->trace = '';
+
+        return 1;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMaximum(): int
+    {
+        $this->trace = '';
+
+        return $this->sides;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function roll(): int
+    {
+        $roll = random_int(1, $this->sides);
+        $this->trace = (string) $roll;
+
+        return $roll;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTrace(): string
+    {
+        return $this->trace;
     }
 }

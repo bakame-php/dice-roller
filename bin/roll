@@ -1,0 +1,109 @@
+#!/usr/bin/env php
+<?php
+
+use Ethtezahl\DiceRoller\Exception;
+use Ethtezahl\DiceRoller;
+
+function getAutoloadDirectory()
+{
+    $dir = dirname(__DIR__).'/vendor';
+    if (is_dir($dir)) {
+        return $dir;
+    }
+
+    $dir = __DIR__.'../../../../vendor';
+    if (is_dir($dir)) {
+        return $dir;
+    }
+
+    return null;
+}
+
+/**
+ * CLI colors
+ */
+$cyan = chr(27)."[36m";
+$green = chr(27)."[32m";
+$reset = chr(27)."[0m";
+$redbg = chr(27)."[41m";
+$yellow = chr(27)."[33m";
+
+$dir = getAutoloadDirectory();
+if (null === $dir) {
+    $text = <<<EOF
+$redbg
+    You must set up the project dependencies, using composer
+    run composer install
+$reset
+EOF;
+    echo $text, PHP_EOL, PHP_EOL;
+    die(1);
+}
+
+require $dir.'/autoload.php';
+
+$opts = filter_var_array(
+    array_replace(
+        ['iteration' => 1],
+        getopt("", ['cup::', 'iteration::', 'help', 'info'])
+    ),
+    [
+        'cup' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
+        'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
+        'help' => FILTER_VALIDATE_BOOLEAN,
+        'info' => FILTER_VALIDATE_BOOLEAN,
+    ]
+);
+
+if ((!isset($opts['cup']) && !isset($opts['help'])) || isset($opts['help'])) {
+    $script = basename(__FILE__);
+    $text = <<<EOF
+$yellow
+Ethtezahl\DiceRoller v1.0 $reset
+
+It's a dice-cup: you put your die in the cup, you shake it and then you get the result.
+=====
+
+Simple Usage:
+
+$yellow php ./$script --cup=2D3 --iteration=3 --info $reset
+
+$green--cup$reset       submit the dice string annotation
+$green--iteration$reset submit the number of time the dices must be roll ({$yellow}default:$reset 1)
+$green--help$reset      show the following help message
+EOF;
+    echo $text, PHP_EOL, PHP_EOL;
+    die(0);
+}
+
+try {
+    $str = trim($opts['cup']);
+    $cup = DiceRoller\create($str);
+    if (isset($opts['info'])) {
+        $text = <<<EOF
+$yellow ====== ROLL INFORMATIONS =======$reset
+$green Dice annotation:$reset $yellow{$cup}$reset
+$green Minimum Roll:$reset $yellow{$cup->getMinimum()}$reset
+$green Maximum Roll:$reset $yellow{$cup->getMaximum()}$reset
+EOF;
+    echo $text, PHP_EOL, PHP_EOL;
+    }
+
+echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
+    for ($i = 0; $i < $opts['iteration']; ++$i) {
+        $index = $i+1;
+echo "$cyan Result #$index: $reset $yellow".$cup->roll().$reset. " explain : $green". $cup->explain().$reset.PHP_EOL;
+    }
+    die(0);
+} catch (Exception $e) {
+        $text = <<<EOF
+
+The submitted dice annotation $yellow$str$reset could not be parsed$reset
+The Parser issue the following error:
+
+$redbg {$e->getMessage()} $reset
+
+EOF;
+    echo $text, PHP_EOL, PHP_EOL;
+    die(65);
+}

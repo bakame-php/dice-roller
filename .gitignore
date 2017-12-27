@@ -1,4 +1,6 @@
+.idea
 build
-vendor
 composer.lock
-
+docs/_site
+vendor
+/nbproject/private/
