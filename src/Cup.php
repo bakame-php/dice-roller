@@ -94,13 +94,12 @@ final class Cup implements Countable, IteratorAggregate, Rollable
             throw new Exception(sprintf('The quantity of dice `%s` is not valid', $quantity));
         }
 
-        $cup = new self();
-        $cup->items[] = $rollable;
+        $items = [$rollable];
         for ($i = 0; $i < $quantity - 1; ++$i) {
-            $cup->items[] = clone $rollable;
+            $items[] = clone $rollable;
         }
 
-        return $cup;
+        return new self(...$items);
     }
 
     /**
@@ -165,9 +164,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         }, $this->items);
 
         $pool = array_count_values($parts);
-
-        unset($pool['0']);
-
         array_walk($pool, function (&$value, $offset) {
             $value = $value > 1 ? $value.$offset : $offset;
         });
