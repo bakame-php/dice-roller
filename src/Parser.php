@@ -246,9 +246,9 @@ final class Parser
     {
         if ('' == $compare) {
             $compare = Explode::EQUALS;
-            $threshold = $matches['threshold'] ?? -1;
+            $threshold = isset($matches['threshold']) ? (int) $matches['threshold'] : null;
 
-            return new Explode($rollable, $compare, (int) $threshold);
+            return new Explode($rollable, $compare, $threshold);
         }
 
         if (isset($matches['threshold'])) {

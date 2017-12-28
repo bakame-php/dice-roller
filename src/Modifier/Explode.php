@@ -34,9 +34,9 @@ final class Explode implements Rollable
     /**
      * The threshold.
      *
-     * @var int
+     * @var int|null
      */
-    private $threshold = -1;
+    private $threshold;
 
     /**
      * The comparison to use.
@@ -53,23 +53,45 @@ final class Explode implements Rollable
     /**
      * new instance
      *
-     * @param Cup    $rollable
-     * @param string $compare
-     * @param int    $threshold
+     * @param Cup      $rollable
+     * @param string   $compare
+     * @param int|null $threshold
      */
-    public function __construct(Cup $rollable, string $compare, int $threshold)
+    public function __construct(Cup $rollable, string $compare, int $threshold = null)
     {
+        $this->trace = '';
         $this->rollable = $rollable;
-        if (-1 != $threshold) {
-            $this->threshold = $threshold;
-        }
+        $this->threshold = $threshold;
 
         if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
             throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
         }
 
         $this->compare = $compare;
-        $this->trace = '';
+        $this->validate();
+    }
+
+    /**
+     * Validate the modifier state
+     *
+     * @throws Exception if the Modifier is in invalid state
+     */
+    private function validate()
+    {
+        $min = $this->rollable->getMinimum();
+        $max = $this->rollable->getMaximum();
+        $threshold = $this->threshold ?? $max;
+        if (self::GREATER_THAN === $this->compare && $threshold <= $min) {
+            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
+        }
+
+        if (self::LESSER_THAN === $this->compare && $threshold >= $max) {
+            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
+        }
+
+        if (self::EQUALS === $this->compare && $threshold === $max && $min === $max) {
+            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
+        }
     }
 
     /**
@@ -80,12 +102,12 @@ final class Explode implements Rollable
         $this->trace = '';
         $prefix = '!';
         if (self::EQUALS != $this->compare ||
-            (self::EQUALS == $this->compare && -1 != $this->threshold)
+            (self::EQUALS == $this->compare && null != $this->threshold)
         ) {
             $prefix .= $this->compare;
         }
 
-        if (-1 !== $this->threshold) {
+        if (null !== $this->threshold) {
             $prefix .= $this->threshold;
         }
 
@@ -148,7 +170,7 @@ final class Explode implements Rollable
     private function calculate(int $sum, Rollable $rollable): int
     {
         $trace = [];
-        $threshold = $this->threshold === -1 ? $rollable->getMaximum() : $this->threshold;
+        $threshold = $this->threshold ?? $rollable->getMaximum();
         do {
             $res = $rollable->roll();
             $sum += $res;
@@ -172,21 +194,21 @@ final class Explode implements Rollable
     /**
      * Returns whether we should call the rollable again.
      *
-     * @param int $pResult
+     * @param int $result
      * @param int $threshold
      *
      * @return bool
      */
-    private function isValid(int $pResult, int $threshold): bool
+    private function isValid(int $result, int $threshold): bool
     {
         if (self::EQUALS == $this->compare) {
-            return $pResult === $threshold;
+            return $result === $threshold;
         }
 
         if (self::GREATER_THAN === $this->compare) {
-            return $pResult > $threshold;
+            return $result > $threshold;
         }
 
-        return $pResult < $threshold;
+        return $result < $threshold;
     }
 }

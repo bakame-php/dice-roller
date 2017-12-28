@@ -2,13 +2,14 @@
 
 namespace Bakame\DiceRoller\Test\Modifier;
 
+use Bakame\DiceRoller;
 use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\CustomDice;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception;
 use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
-use function Bakame\DiceRoller\create;
 
 /**
  * @coversDefaultClass Bakame\DiceRoller\Modifier\Explode
@@ -19,17 +20,52 @@ final class ExplodeTest extends TestCase
 
     public function setUp()
     {
-        $this->cup = create('4d6');
+        $this->cup = DiceRoller\create('4d6');
     }
 
     /**
+     * @dataProvider provideInvalidProperties
+     *
      * @covers ::__construct
+     * @covers ::validate
+     *
+     * @param Cup    $cup
+     * @param string $compare
+     * @param int    $threshold
      */
-    public function testConstructorThrows()
+    public function testConstructorThrows(Cup $cup, string $compare, int $threshold)
     {
         $this->expectException(Exception::class);
-        new Explode($this->cup, 'foobar', 2);
+        new Explode($cup, $compare, $threshold);
     }
+
+    public function provideInvalidProperties()
+    {
+        $cup = DiceRoller\create('4d6');
+        return [
+            'invalid comparion' => [
+                'cup' => $cup,
+                'compare' => 'foobar',
+                'threshold' => 6,
+            ],
+            'greater than invalid threshold' => [
+                'cup' => $cup,
+                'compare' => Explode::GREATER_THAN,
+                'threshold' => 2,
+            ],
+            'lesser than invalid threshold' => [
+                'cup' => $cup,
+                'compare' => Explode::LESSER_THAN,
+                'threshold' => 32,
+            ],
+            'equals invalid threshold' => [
+                'cup' => new Cup(new CustomDice(1, 1, 1)),
+                'compare' => Explode::EQUALS,
+                'threshold' => 1,
+            ],
+        ];
+    }
+
 
     /**
      * @covers ::__toString
@@ -94,13 +130,13 @@ final class ExplodeTest extends TestCase
                 'max' => PHP_INT_MAX,
             ],
             'greater than' => [
-                'algo' => Explode::LESSER_THAN,
-                'threshold' => 2,
+                'algo' => Explode::GREATER_THAN,
+                'threshold' => 5,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
             ],
             'lesser than' => [
-                'algo' => Explode::GREATER_THAN,
+                'algo' => Explode::LESSER_THAN,
                 'threshold' => 2,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
