@@ -27,7 +27,7 @@ final class ExplodeTest extends TestCase
      * @dataProvider provideInvalidProperties
      *
      * @covers ::__construct
-     * @covers ::isValidCup
+     * @covers ::isValidCollection
      * @covers ::isValidRollable
      *
      * @param Cup    $cup
@@ -72,19 +72,36 @@ final class ExplodeTest extends TestCase
         ];
     }
 
-
     /**
+     * @dataProvider provideExplodingModifier
+     *
      * @covers ::__toString
+     * @covers ::getAnnotationSuffix
+     *
+     * @param Explode $roll
+     * @param string  $annotation
      */
-    public function testToString()
+    public function testToString(Explode $roll, string $annotation)
     {
-        $cup = new Explode(new Cup(
-            new Dice(3),
-            new Dice(3),
-            new Dice(4)
-        ), Explode::EQUALS, 3);
+        $this->assertSame($annotation, (string) $roll);
+    }
 
-        $this->assertSame('(2D3+D4)!=3', (string) $cup);
+    public function provideExplodingModifier()
+    {
+        return [
+            [
+                'roll' => new Explode(new Cup(new Dice(3), new Dice(3), new Dice(4)), Explode::EQUALS, 3),
+                'annotation' => '(2D3+D4)!=3',
+            ],
+            [
+                'roll' => new Explode(DiceRoller\create('4d[-1,-1,-1]'), Explode::GREATER_THAN, 1),
+                'annotation' => '4D[-1,-1,-1]!>1',
+            ],
+            [
+                'roll' => new Explode(DiceRoller\create('4d6'), Explode::EQUALS, 1),
+                'annotation' => '4D6!',
+            ],
+        ];
     }
 
     public function testGetTrace()

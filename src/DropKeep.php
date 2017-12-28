@@ -60,6 +60,9 @@ final class DropKeep implements Rollable
      * @param Cup    $rollable
      * @param string $algo
      * @param int    $threshold
+     *
+     * @throws Exception if the algorithm is not recognized
+     * @throws Exception if the Cup is not valid
      */
     public function __construct(Cup $rollable, string $algo, int $threshold)
     {

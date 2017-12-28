@@ -52,32 +52,35 @@ final class Explode implements Rollable
      * @param Cup      $rollable
      * @param string   $compare
      * @param int|null $threshold
+     *
+     * @throws Exception if the comparator is not recognized
+     * @throws Exception if the Cup is not valid
      */
     public function __construct(Cup $rollable, string $compare, int $threshold = null)
     {
-        $this->trace = '';
-        $this->rollable = $rollable;
-        $this->threshold = $threshold;
-
         if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
             throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
         }
-
         $this->compare = $compare;
-        if (!$this->isValidCup()) {
+        $this->threshold = $threshold;
+        if (!$this->isValidCollection($rollable)) {
             throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
         }
+        $this->rollable = $rollable;
+        $this->trace = '';
     }
 
     /**
-     * Tells whether the current cup can be used
+     * Tells whether the Rollable collection can be used
+     *
+     * @param Cup $collection
      *
      * @return bool
      */
-    private function isValidCup(): bool
+    private function isValidCollection(Cup $collection): bool
     {
         $state = false;
-        foreach ($this->rollable as $rollable) {
+        foreach ($collection as $rollable) {
             $state = $this->isValidRollable($rollable);
             if (!$state) {
                 return $state;
@@ -118,23 +121,26 @@ final class Explode implements Rollable
     public function __toString()
     {
         $this->trace = '';
-        $prefix = '!';
-        if (self::EQUALS != $this->compare ||
-            (self::EQUALS === $this->compare && null !== $this->threshold)
-        ) {
-            $prefix .= $this->compare;
-        }
-
-        if (null !== $this->threshold) {
-            $prefix .= $this->threshold;
-        }
-
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }
 
-        return $str.$prefix;
+        return $str.'!'.$this->getAnnotationSuffix();
+    }
+
+    /**
+     * Return the modifier dice annotation.
+     *
+     * @return string
+     */
+    private function getAnnotationSuffix()
+    {
+        if (self::EQUALS === $this->compare && in_array($this->threshold, [null, 1], true)) {
+            return '';
+        }
+
+        return $this->compare.$this->threshold;
     }
 
     /**
