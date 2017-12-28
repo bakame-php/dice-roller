@@ -26,21 +26,27 @@ The code above will simulate the roll of two six-sided die
 ```php
 <?php
 
-use Bakame\DiceRoller;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
 
-$cup = DiceRoller\create('2D6');
-echo $cup->roll();
-echo $cup->getTrace();
+$cup = (new Cup())
+    ->withRollable(new Dice(6))
+    ->withRillable(new Dice(6))
+;
+echp $cup;             // returns 2D6
+echo $cup->roll();     // returns 8
+echo $cup->getTrace(); // returns 3 + 5
 ```
 
-## Advanced use: with multiple types of dices and modifiers
+## Advanced use
 
-The following expression is supported by the library:
+Use the library expression parser to simulate the roll of two six-sided die
 
 ```php
-$cup = DiceRoller\create('3D20+4+D4!>3/4^3');
-echo $cup->roll();     // returns 48
-echo $cup->getTrace(); // returns ((20 + 8 + 16) + 4) + 3 / 4 ^ 3
+$cup = DiceRoller\create('2DF');
+echp $cup;             // returns 2D6
+echo $cup->roll();     // returns 6
+echo $cup->getTrace(); // returns 4 + 2
 ```
 
 ## Documentation

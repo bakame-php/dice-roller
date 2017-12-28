@@ -137,6 +137,10 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function __toString()
     {
+        if (0 == count($this->items)) {
+            return '0';
+        }
+
         $parts = array_map(function (Rollable $rollable) {
             return (string) $rollable;
         }, $this->items);
@@ -232,7 +236,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function roll(): int
     {
-        $res = array_reduce($this->items, [$this, 'calculate'], []);
+        $res = array_reduce($this->items, [$this, 'calculate'], ['roll' => [0], 'trace' => ['']]);
 
         $roll = array_sum(array_column($res, 'roll'));
 

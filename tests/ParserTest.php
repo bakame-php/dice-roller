@@ -73,14 +73,13 @@ final class ParserTest extends TestCase
     public function testValidParser(string $expected, string $toString)
     {
         $cup = DiceRoller\create($expected);
-        $this->assertInstanceOf(Rollable::class, $cup);
         $this->assertSame($toString, (string) $cup);
     }
 
     public function validStringProvider()
     {
         return [
-            'empty cup' => ['', ''],
+            'empty cup' => ['', '0'],
             'simple' => ['2D3', '2D3'],
             'empty nb dice' => ['d3', 'D3'],
             'empty nb sides' => ['3d', '3D6'],
