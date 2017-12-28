@@ -54,7 +54,7 @@ echo $cup->getTrace(); // returns 4 + 2
 
 ### Rollable
 
-Any object that can be rolled MUST implements the `Rollable` interface. Typically, dices, collection and modifiers all implement this interface.
+To be rollable, objects MUST implements the `Bakame\DiceRoller\Rollable` interface.
 
 ```php
 <?php
@@ -74,32 +74,29 @@ interface Rollable
 - `Rollable::getMinimum` returns the minimum value the rollable object can return during a roll;
 - `Rollable::getMaximum` returns the maximum value the rollable object can return during a roll;
 - `Rollable::roll` returns a value from a roll.
-- `Rollable::__toString` returns the string annotation of the Rollable object.
 - `Rollable::getTrace` returns the execution trace of how the last roll was executed.
-
-The package comes bundles with the following rollable objects
-
-| Rollable Type | Class Name |
-| ------------- | ---------- |
-| Dice          | `Bakame\DiceRoller\Dice` |
-| Dice          | `Bakame\DiceRoller\FudgeDice` |
-| Dice          | `Bakame\DiceRoller\PercentileDice` |
-| Dice          | `Bakame\DiceRoller\CustomDice` |
-| Collection    | `Bakame\DiceRoller\Cup` |
-| Modifier      | `Bakame\DiceRoller\Modifier\Arithmetic` |
-| Modifier      | `Bakame\DiceRoller\Modifier\Explode` |
-| Modifier      | `Bakame\DiceRoller\Modifier\DropKeep` |
+- `Rollable::__toString` returns the string annotation of the Rollable object.
 
 ### Dices
 
-In addition to the `Rollable` interface, the Dice type implement the `Countable` interface. The `count` method returns the dice sides count.
+In addition to the `Rollable` interface, all dices objects implement the `Countable` interface. The `count` method returns the dice sides count.
 
- A `Dice` type object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception` exception is thrown.
+A `Dice` must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception` exception is thrown.
+
+The following dice type object are bundled in the library:
+
+| Class Name |  Definition |
+| ---------- | ---------- |
+| `Bakame\DiceRoller\Dice`| classic die |
+| `Bakame\DiceRoller\FudgeDice` | 3 sided die with side values being `-1`, `0` and `1`. |
+| `Bakame\DiceRoller\PercentileDice` | 100 sided die with values between `1` and `100`. |
+| `Bakame\DiceRoller\CustomDice` | die with custom side values |
+
+#### Object Constructors
 
 - The `Dice` constructor unique argument is the dice sides count.
 - The `CustomDice` constructor takes a variadic argument which represents the dice side values.
-- The `FludgeDice` constructor takes no argument as fudge dices are always 3 sides dices with values being `-1`, `0` or `1`.
-- The `PercentileDice` constructor takes no argument as percentile dices are always 100 sides dices with values between `1` and `100`.
+- The `FludgeDice` and `PercentileDice` constructor takes no argument.
 
 ```php
 <?php
@@ -130,9 +127,9 @@ $percentile->roll(); // returns a value between 1 and 100
 count($fudge);       // returns 100
 ```
 
-### Dices Collection
+### Grouping Rollable objects
 
-A `Cup` is a collection of `Rollable` objects. This means that a `Cup` can contains multiple dices but others `Cup` objects as well.
+A `Bakame\DiceRoller\Cup` is a collection of `Bakame\DiceRoller\Rollable` objects. This means that a `Cup` can contains different type of dices but others `Cup` objects as well.
 
 ```php
 <?php
@@ -141,21 +138,22 @@ namespace Bakame\DiceRoller;
 
 final class Cup implements Countable, IteratorAggregate, Rollable
 {
-    public static function createFromRollable(int $pQuantity, Rollable $rollable): self;
     public function __construct(Rollable ...$rollables);
-    public function withRollable(Rollable $rollable);
+    public static function createFromRollable(int $pQuantity, Rollable $rollable): self;
+    public function withRollable(Rollable $rollable): self
 }
 ```
 
-The `Cup::createFromRollable` named constructor enables creating uniformed `Cup` objects which contains only 1 type of rollable objects.
+The `Cup::createFromRollable` named constructor enables creating uniformed `Cup` objects which contains only 1 type of rollable object.
 
 ```php
 <?php
 
 use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\CustomDice;
 use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\FudgeDice;
 use Bakame\DiceRoller\PercentileDice;
-use Bakame\DiceRoller\Cup;
 
 echo Cup::createFromRollable(3, new Dice(5));                // displays 3D5
 echo Cup::createFromRollable(4, new PercentileDice());       // displays 4D%
@@ -163,7 +161,7 @@ echo Cup::createFromRollable(2, new CustomDice(1, 2, 2, 4)); // displays 2D[1,2,
 echo Cup::createFromRollable(1, new FudgeDice());            // displays DF
 ```
 
-A Cup created using `createFromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception` is thrown.
+A `Cup` created using `createFromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception` is thrown.
 
 When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
@@ -193,6 +191,9 @@ $alt_cup = $cup->withRollable(new FugdeDice());
 count($alt_cup); //returns 4 the number of dices
 echo $alt_cup;   //returns 3D5+DF
 ```
+
+** WARNING: a `Cup` object can be empty but adding an empty `Cup` object using any setter method is not possible. The emtpy `Cup` object will be filtered out.**
+
 
 ### Roll Modifiers
 
@@ -236,9 +237,7 @@ use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Dice;
 
 $modifier = new Arithmetic(new Dice(6), Arithmetic::MULTIPLICATION, 3);
-echo $modifier;        // displays D6*3;
-$modifier->roll();     //may return 12
-$modifier->getTrace(); //may return 4 * 3
+echo $modifier;  // displays D6*3;
 ```
 
 #### The DropKeep Modifier
@@ -331,7 +330,7 @@ $modifier = new Explode($cup, Explode::EQUALS, 3);
 echo $modifier; // displays (3D6+DF)!=3
 ```
 
-### Parser
+### Parsing Dice notation
 
 ```php
 <?php
@@ -377,7 +376,7 @@ echo $cup->roll();
 ```
 
 If the `Parser` is not able to parse the submitted dice annotation a `Bakame\DiceRoller\Exception` will be thrown.  
-Last but not least, if you prefer using function you can simply call the `create` function defined in the `Bakame\DiceRoller` namespace as follow:
+Last but not least, if you prefer using functions you can call the `create` function alias defined in the `Bakame\DiceRoller` namespace as follow:
 
 
 ```php

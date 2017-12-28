@@ -27,7 +27,7 @@ final class ExplodeTest extends TestCase
      * @dataProvider provideInvalidProperties
      *
      * @covers ::__construct
-     * @covers ::validate
+     * @covers ::validState
      *
      * @param Cup    $cup
      * @param string $compare

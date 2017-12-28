@@ -68,30 +68,32 @@ final class Explode implements Rollable
         }
 
         $this->compare = $compare;
-        $this->validate();
+        if (!$this->validState()) {
+            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
+        }
     }
 
     /**
-     * Validate the modifier state
+     * Tells whether the current object is in valid state
      *
-     * @throws Exception if the Modifier is in invalid state
+     * @return bool
      */
-    private function validate()
+    private function validState(): bool
     {
         $min = $this->rollable->getMinimum();
         $max = $this->rollable->getMaximum();
         $threshold = $this->threshold ?? $max;
-        if (self::GREATER_THAN === $this->compare && $threshold <= $min) {
-            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
+
+        if (self::GREATER_THAN === $this->compare) {
+            return $threshold > $min;
         }
 
-        if (self::LESSER_THAN === $this->compare && $threshold >= $max) {
-            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
+        if (self::LESSER_THAN === $this->compare) {
+            $threshold = $this->threshold ?? $min;
+            return $threshold < $max;
         }
 
-        if (self::EQUALS === $this->compare && $threshold === $max && $min === $max) {
-            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
-        }
+        return $min !== $max || $threshold !== $max;
     }
 
     /**
@@ -102,7 +104,7 @@ final class Explode implements Rollable
         $this->trace = '';
         $prefix = '!';
         if (self::EQUALS != $this->compare ||
-            (self::EQUALS == $this->compare && null != $this->threshold)
+            (self::EQUALS === $this->compare && null !== $this->threshold)
         ) {
             $prefix .= $this->compare;
         }
