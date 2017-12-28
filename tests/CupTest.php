@@ -79,7 +79,7 @@ final class CupTest extends TestCase
      * @param int      $quantity
      * @param Rollable $template
      */
-    public function testCreateFromDiceDefinition(int $quantity, Rollable $template)
+    public function testCreateFromRollable(int $quantity, Rollable $template)
     {
         $cup = Cup::createFromRollable($quantity, $template);
         $this->assertCount($quantity, $cup);
@@ -113,5 +113,19 @@ final class CupTest extends TestCase
     {
         $this->expectException(Exception::class);
         Cup::createFromRollable(0, new FudgeDice());
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::createFromRollable
+     * @covers ::withRollable
+     * @covers ::isValid
+     */
+    public function testCreateFromRollableReturnsEmptyCollection()
+    {
+        $cup = Cup::createFromRollable(12, new Cup());
+        $alt_cup = $cup->withRollable(new Cup());
+        $this->assertCount(0, $cup);
+        $this->assertSame($cup, $alt_cup);
     }
 }

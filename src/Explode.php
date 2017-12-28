@@ -64,20 +64,40 @@ final class Explode implements Rollable
         }
 
         $this->compare = $compare;
-        if (!$this->validState()) {
+        if (!$this->isValidCup()) {
             throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
         }
     }
 
     /**
-     * Tells whether the current object is in valid state
+     * Tells whether the current cup can be used
      *
      * @return bool
      */
-    private function validState(): bool
+    private function isValidCup(): bool
     {
-        $min = $this->rollable->getMinimum();
-        $max = $this->rollable->getMaximum();
+        $state = false;
+        foreach ($this->rollable as $rollable) {
+            $state = $this->isValidRollable($rollable);
+            if (!$state) {
+                return $state;
+            }
+        }
+
+        return $state;
+    }
+
+    /**
+     * Tells whether a Rollable object is in valid state
+     *
+     * @param Rollable $rollable
+     *
+     * @return bool
+     */
+    private function isValidRollable(Rollable $rollable): bool
+    {
+        $min = $rollable->getMinimum();
+        $max = $rollable->getMaximum();
         $threshold = $this->threshold ?? $max;
 
         if (self::GREATER_THAN === $this->compare) {

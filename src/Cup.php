@@ -45,6 +45,10 @@ final class Cup implements Countable, IteratorAggregate, Rollable
             throw new Exception(sprintf('The quantity of dice `%s` is not valid', $quantity));
         }
 
+        if (!self::isValid($rollable)) {
+            return new self();
+        }
+
         $items = [$rollable];
         for ($i = 0; $i < $quantity - 1; ++$i) {
             $items[] = clone $rollable;
@@ -61,17 +65,17 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function __construct(Rollable ...$items)
     {
         $this->trace = '';
-        $this->items = array_filter($items, [$this, 'filterEmptyCup']);
+        $this->items = array_filter($items, [$this, 'isValid']);
     }
 
     /**
-     * Filter Out empty Cup object
+     * Tell whether the submitted Rollable can be added to the collection
      *
      * @param Rollable $rollable
      *
      * @return bool
      */
-    private function filterEmptyCup(Rollable $rollable): bool
+    private static function isValid(Rollable $rollable): bool
     {
         return !$rollable instanceof self || count($rollable) > 0;
     }
@@ -88,7 +92,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function withRollable(Rollable $rollable): self
     {
-        $items = array_filter(array_merge($this->items, [$rollable]), [$this, 'filterEmptyCup']);
+        $items = array_filter(array_merge($this->items, [$rollable]), [$this, 'isValid']);
         if ($items === $this->items) {
             return $this;
         }

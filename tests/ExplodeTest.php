@@ -27,7 +27,8 @@ final class ExplodeTest extends TestCase
      * @dataProvider provideInvalidProperties
      *
      * @covers ::__construct
-     * @covers ::validState
+     * @covers ::isValidCup
+     * @covers ::isValidRollable
      *
      * @param Cup    $cup
      * @param string $compare
@@ -51,17 +52,22 @@ final class ExplodeTest extends TestCase
             'greater than invalid threshold' => [
                 'cup' => $cup,
                 'compare' => Explode::GREATER_THAN,
-                'threshold' => 2,
+                'threshold' => 0,
             ],
             'lesser than invalid threshold' => [
                 'cup' => $cup,
                 'compare' => Explode::LESSER_THAN,
-                'threshold' => 32,
+                'threshold' => 7,
             ],
             'equals invalid threshold' => [
                 'cup' => new Cup(new CustomDice(1, 1, 1)),
                 'compare' => Explode::EQUALS,
                 'threshold' => 1,
+            ],
+            'empty cup object' => [
+                'cup' => new Cup(),
+                'compare' => Explode::EQUALS,
+                'threshold' => 2,
             ],
         ];
     }
