@@ -156,13 +156,43 @@ final class Parser
             $quantity = 1;
         }
 
-        $size = $matches['size'] ?? '6';
-        $size = strtolower($size);
-        if ('' === $size) {
-            $size = '6';
+        $definition = $matches['size'] ?? '6';
+        $definition = strtolower($definition);
+        if ('' === $definition) {
+            $definition = '6';
         }
 
-        return Cup::createFromDiceDefinition($quantity, $size);
+        return Cup::createFromRollable($quantity, $this->parseDefinition($definition));
+    }
+
+    /**
+     * Parse Rollable definition
+     *
+     * @param string $definition
+     *
+     * @throws Exception If the defintion is not parsable
+     *
+     * @return Rollable
+     */
+    private function parseDefinition(string $definition): Rollable
+    {
+        if (false !== ($size = filter_var($definition, FILTER_VALIDATE_INT))) {
+            return new Dice($size);
+        }
+
+        $definition = strtolower($definition);
+        if ('f' === $definition) {
+            return new FudgeDice();
+        }
+
+        if ('%' === $definition) {
+            return new PercentileDice();
+        }
+
+        $sides = explode(',', substr($definition, 1, -1));
+        $sides = filter_var($sides, FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
+
+        return new CustomDice(...$sides);
     }
 
     /**

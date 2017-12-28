@@ -26,7 +26,6 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::filterRollables
      * @covers ::withRollable
      */
     public function testWithRollable()
@@ -38,7 +37,6 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::filterRollables
      * @covers ::withRollable
      */
     public function testWithRollableReturnsSameInstance()
@@ -75,27 +73,17 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::createFromDiceDefinition
-     * @covers ::parseDefinition
      * @covers ::createFromRollable
-     * @covers ::getMinimum
-     * @covers ::getMaximum
-     * @covers ::minimum
-     * @covers ::maximum
      * @dataProvider validNamedConstructor
-     * @param mixed $quantity
-     * @param mixed $sides
-     * @param mixed $className
-     * @param mixed $min
-     * @param mixed $max
+     *
+     * @param int      $quantity
+     * @param Rollable $template
      */
-    public function testCreateFromDiceDefinition($quantity, $sides, $className, $min, $max)
+    public function testCreateFromDiceDefinition(int $quantity, Rollable $template)
     {
-        $cup = Cup::createFromDiceDefinition($quantity, $sides);
+        $cup = Cup::createFromRollable($quantity, $template);
         $this->assertCount($quantity, $cup);
-        $this->assertContainsOnlyInstancesOf($className, $cup);
-        $this->assertSame($min, $cup->getMinimum());
-        $this->assertSame($max, $cup->getMaximum());
+        $this->assertContainsOnlyInstancesOf(get_class($template), $cup);
     }
 
     public function validNamedConstructor()
@@ -103,97 +91,27 @@ final class CupTest extends TestCase
         return [
             'basic dice' => [
                 'quantity' => 2,
-                'sides' => 6,
-                'className' => Dice::class,
-                'min' => 2,
-                'max' => 12,
+                'template' => new Dice(6),
             ],
             'fudge dice' => [
-                'quantity' => 2,
-                'sides' => 'F',
-                'className' => FudgeDice::class,
-                'min' => -2,
-                'max' => 2,
-            ],
-            'fudge dice case insensitive' => [
-                'quantity' => 2,
-                'sides' => 'f',
-                'className' => FudgeDice::class,
-                'min' => -2,
-                'max' => 2,
-            ],
-            'multiple basic dice' => [
-                'quantity' => 4,
-                'sides' => 3,
-                'className' => Dice::class,
-                'min' => 4,
-                'max' => 12,
-            ],
-            'multipe fudge dice' => [
-                'quantity' => 4,
-                'sides' => 'f',
-                'className' => FudgeDice::class,
-                'min' => -4,
-                'max' => 4,
+                'quantity' => 3,
+                'template' => new FudgeDice(),
             ],
             'percentile dice' => [
-                'quantity' => 2,
-                'sides' => '%',
-                'className' => PercentileDice::class,
-                'min' => 2,
-                'max' => 200,
+                'quantity' => 4,
+                'template' => new PercentileDice(),
+
             ],
             'custom dice' => [
-                'quantity' => 2,
-                'sides' => '[1,2,2,3,5]',
-                'className' => CustomDice::class,
-                'min' => 2,
-                'max' => 10,
+                'quantity' => 5,
+                'template' => new CustomDice(1, 2, 2, 3, 5),
             ],
         ];
     }
 
-    /**
-     * @covers ::createFromDiceDefinition
-     * @covers ::createFromRollable
-     * @covers ::parseDefinition
-     * @dataProvider invalidNamedConstructor
-     * @param mixed $quantity
-     * @param mixed $definition
-     */
-    public function testCreateFromDiceDefinitionThrowsException($quantity, $definition)
+    public function testCreateFromRollableThrowsException()
     {
         $this->expectException(Exception::class);
-        Cup::createFromDiceDefinition($quantity, $definition);
-    }
-
-    public function invalidNamedConstructor()
-    {
-        return [
-            'invalid quantity' => [
-                'quantity' => -1,
-                'definition' => '3',
-            ],
-            'invalid sides' => [
-                'quantity' => 2,
-                'definition' => '1',
-            ],
-            'invalid sides with wrong string' => [
-                'quantity' => 3,
-                'definition' => 'foobar',
-            ],
-            'invalid fudge definition' => [
-                'quantity' => 3,
-                'definition' => 'ff',
-            ],
-            'invalid percentile definition' => [
-                'quantity' => 3,
-                'definition' => '%f',
-            ],
-            'invalid custome dice definition' => [
-                'quantity' => 3,
-                'definition' => '1,2,3,foo',
-            ],
-        ];
+        Cup::createFromRollable(0, new FudgeDice());
     }
 }

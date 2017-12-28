@@ -24,6 +24,7 @@ final class ParserTest extends TestCase
      * @covers ::addDropKeep
      * @covers ::addComplexModifier
      * @covers ::createSimplePool
+     * @covers ::parseDefinition
      * @covers ::createComplexPool
      * @dataProvider invalidStringProvider
      * @param string $expected
@@ -45,6 +46,7 @@ final class ParserTest extends TestCase
             'invalid complex cup' => ['(3DF+2D6)*3+3F^2'],
             'invalid complex cup 2' => ['(3DFoobar+2D6)*3+3DF^2'],
             'invalid complex cup 3' => ['()*3'],
+            'invalid custom dice' => ['3dss'],
         ];
     }
 
@@ -57,6 +59,7 @@ final class ParserTest extends TestCase
      * @covers ::addDropKeep
      * @covers ::addComplexModifier
      * @covers ::createSimplePool
+     * @covers ::parseDefinition
      * @covers ::createComplexPool
      * @covers \Bakame\DiceRoller\create
      * @covers \Bakame\DiceRoller\Cup::count
@@ -97,6 +100,8 @@ final class ParserTest extends TestCase
             'add drop lowest modifier' => ['4d6dl2',  '4D6DL2'],
             'add drop highest modifier' => ['4d6dh3', '4D6DH3'],
             'complex mixed cup' => ['(3DF+2D6)*3+3DF^2', '(3DF+2D6)*3+3DF^2'],
+            'percentile dice' => ['3d%', '3D%'],
+            'custom dice' => ['2d[1,2,34]', '2D[1,2,34]'],
         ];
     }
 
@@ -105,6 +110,7 @@ final class ParserTest extends TestCase
      * @covers ::parse
      * @covers ::explode
      * @covers ::parsePool
+     * @covers ::parseDefinition
      * @covers ::addArithmetic
      * @covers ::addExplode
      * @covers ::addDropKeep
@@ -135,6 +141,10 @@ final class ParserTest extends TestCase
             'default fudge dice size' => [
                 'full' => '1dF',
                 'short' => 'df',
+            ],
+            'default percentile dice size' => [
+                'full' => '1d%',
+                'short' => 'd%',
             ],
             'default keep lowest modifier' => [
                 'full' => '2d3kl1',

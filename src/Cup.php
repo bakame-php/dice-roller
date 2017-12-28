@@ -30,55 +30,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     private $trace;
 
     /**
-     * Create a new Cup From Dice definition.
-     *
-     * The returned Cup object will contain only one type of Rollable object.
-     *
-     * @param int    $quantity   Dice count
-     * @param string $definition Dice definition
-     *
-     * @return self
-     */
-    public static function createFromDiceDefinition(int $quantity, string $definition): self
-    {
-        return self::createFromRollable($quantity, self::parseDefinition($definition));
-    }
-
-    /**
-     * Parse Rollable definition
-     *
-     * @param string $definition
-     *
-     * @throws Exception If the defintion is not parsable
-     *
-     * @return Rollable
-     */
-    private static function parseDefinition(string $definition): Rollable
-    {
-        if (false !== ($size = filter_var($definition, FILTER_VALIDATE_INT))) {
-            return new Dice($size);
-        }
-
-        $definition = strtolower($definition);
-        if ('f' === $definition) {
-            return new FudgeDice();
-        }
-
-        if ('%' === $definition) {
-            return new PercentileDice();
-        }
-
-        if ('][' === substr($definition.$definition, strlen($definition) - 1, 2)) {
-            $sides = explode(',', substr($definition, 1, -1));
-            $sides = filter_var($sides, FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
-
-            return new CustomDice(...$sides);
-        }
-
-        throw new Exception(sprintf('The dice definition `%s` is invalid or not supported', $definition));
-    }
-
-    /**
      * Create a new Cup containing only on type of Rollable object
      *
      * @param int      $quantity
@@ -110,20 +61,19 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function __construct(Rollable ...$items)
     {
         $this->trace = '';
-        $this->items = $this->filterRollables($items);
+        $this->items = array_filter($items, [$this, 'filterEmptyCup']);
     }
 
     /**
-     * Filter Rollables to remove empty Cup object
+     * Filter Out empty Cup object
      *
-     * @param  Rollable[] $rollables
-     * @return Rollable[]
+     * @param Rollable $rollable
+     *
+     * @return bool
      */
-    private function filterRollables(array $rollables): array
+    private function filterEmptyCup(Rollable $rollable): bool
     {
-        return array_filter($rollables, function (Rollable $rollable): bool {
-            return !$rollable instanceof Cup || count($rollable) > 0;
-        });
+        return !$rollable instanceof self || count($rollable) > 0;
     }
 
     /**
@@ -138,7 +88,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function withRollable(Rollable $rollable): self
     {
-        $items = $this->filterRollables(array_merge($this->items, [$rollable]));
+        $items = array_filter(array_merge($this->items, [$rollable]), [$this, 'filterEmptyCup']);
         if ($items === $this->items) {
             return $this;
         }

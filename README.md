@@ -79,11 +79,11 @@ interface Rollable
 
 ### Dices
 
-In addition to the `Rollable` interface, all dices objects implement the `Countable` interface. The `count` method returns the dice sides count.
+In addition to the `Rollable` interface, all dices objects implement the `Countable` interface. The `count` method returns the die sides count.
 
-A `Dice` must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception` exception is thrown.
+A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception` exception is thrown.
 
-The following dice type object are bundled in the library:
+The following die type are bundled in the library:
 
 | Class Name |  Definition |
 | ---------- | ---------- |
@@ -127,9 +127,9 @@ $percentile->roll(); // returns a value between 1 and 100
 count($fudge);       // returns 100
 ```
 
-### Grouping Rollable objects
+### Rollable collection
 
-A `Bakame\DiceRoller\Cup` is a collection of `Bakame\DiceRoller\Rollable` objects. This means that a `Cup` can contains different type of dices but others `Cup` objects as well.
+A `Bakame\DiceRoller\Cup` is a collection of `Rollable` objects with also implements the `Rollable` interface. As such, a `Cup` can contains any type of dices but others `Cup` objects as well.
 
 ```php
 <?php
