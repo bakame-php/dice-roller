@@ -14,10 +14,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Modifier\Arithmetic;
-use Bakame\DiceRoller\Modifier\DropKeep;
-use Bakame\DiceRoller\Modifier\Explode;
-
 final class Parser
 {
     const POOL_PATTERN = ',^

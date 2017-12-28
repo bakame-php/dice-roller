@@ -66,9 +66,9 @@ final class ParserTest extends TestCase
      * @covers \Bakame\DiceRoller\Cup::__toString
      * @covers \Bakame\DiceRoller\Dice::__toString
      * @covers \Bakame\DiceRoller\FudgeDice::__toString
-     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::__toString
-     * @covers \Bakame\DiceRoller\Modifier\DropKeep::__toString
-     * @covers \Bakame\DiceRoller\Modifier\Explode::__toString
+     * @covers \Bakame\DiceRoller\Arithmetic::__toString
+     * @covers \Bakame\DiceRoller\DropKeep::__toString
+     * @covers \Bakame\DiceRoller\Explode::__toString
      * @dataProvider validStringProvider
      * @param string $expected
      * @param string $toString
@@ -199,7 +199,7 @@ final class ParserTest extends TestCase
      * @covers \Bakame\DiceRoller\Cup::roll
      * @covers \Bakame\DiceRoller\Cup::calculate
      * @covers \Bakame\DiceRoller\Cup::getTrace
-     * @covers \Bakame\DiceRoller\Modifier\Explode::calculate
+     * @covers \Bakame\DiceRoller\Explode::calculate
      */
     public function testComplexExplain()
     {

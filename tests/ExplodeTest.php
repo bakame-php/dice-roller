@@ -7,12 +7,12 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDice;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\Explode;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Modifier\Explode
+ * @coversDefaultClass Bakame\DiceRoller\Explode
  */
 final class ExplodeTest extends TestCase
 {

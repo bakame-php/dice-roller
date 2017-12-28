@@ -2,16 +2,16 @@
 
 namespace Bakame\DiceRoller\Test\Modifier;
 
+use Bakame\DiceRoller;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\DropKeep;
 use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
-use function Bakame\DiceRoller\create;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Modifier\DropKeep
+ * @coversDefaultClass Bakame\DiceRoller\DropKeep
  */
 final class DropKeepTest extends TestCase
 {
@@ -19,7 +19,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp()
     {
-        $this->cup = create('4d6');
+        $this->cup = DiceRoller\create('4d6');
     }
 
     /**

@@ -2,15 +2,15 @@
 
 namespace Bakame\DiceRoller\Test\Modifier;
 
+use Bakame\DiceRoller\Arithmetic;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Modifier\Arithmetic
+ * @coversDefaultClass Bakame\DiceRoller\Arithmetic
  */
 final class ArithmeticTest extends TestCase
 {

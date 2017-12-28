@@ -12,11 +12,7 @@
 */
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Modifier;
-
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Rollable;
+namespace Bakame\DiceRoller;
 
 final class Explode implements Rollable
 {

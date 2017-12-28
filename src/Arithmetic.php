@@ -12,10 +12,7 @@
 */
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Modifier;
-
-use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Rollable;
+namespace Bakame\DiceRoller;
 
 final class Arithmetic implements Rollable
 {

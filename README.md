@@ -204,7 +204,7 @@ Sometimes you may want to modify the outcome of a roll. The library comes bundle
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Modifier;
+namespace Bakame\DiceRoller;
 
 final class Arithmetic implements Rollable
 {
@@ -233,7 +233,7 @@ The value given must be a positive integer or 0. If the value or the operator ar
 ```php
 <?php
 
-use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\Arithmetic;
 use Bakame\DiceRoller\Dice;
 
 $modifier = new Arithmetic(new Dice(6), Arithmetic::MULTIPLICATION, 3);
@@ -245,7 +245,7 @@ echo $modifier;  // displays D6*3;
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Modifier;
+namespace Bakame\DiceRoller;
 
 final class DropKeep implements Rollable
 {
@@ -278,9 +278,9 @@ If the algorithm or the threshold are not valid a `Bakame\DiceRoller\Exception` 
 ```php
 <?php
 
-use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\DropKeep;
 
 $cup = Cup::createFromRollable(4, new Dice(6));
 $modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
@@ -292,7 +292,7 @@ echo $modifier; // displays '4D6DH3'
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Modifier;
+namespace Bakame\DiceRoller;
 
 final class Explode implements Rollable
 {
@@ -322,7 +322,7 @@ If the comparison operator is not recognized a `Bakame\DiceRoller\Exception` wil
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\Explode;
 use Bakame\DiceRoller\FudgeDice;
 
 $cup = new Cup(new Dice(6), new FudgeDice(), new Dice(6), new Dice(6));
