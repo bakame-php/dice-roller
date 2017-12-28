@@ -213,7 +213,7 @@ final class ParserTest extends TestCase
         $this->assertSame(0, $cup->getMaximum());
         for ($i = 0; $i < 5; $i++) {
             $this->assertEquals(0, $cup->roll());
-            $this->assertEquals('', $cup->getTrace());
+            $this->assertEquals('0', $cup->getTrace());
         }
     }
 

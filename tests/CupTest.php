@@ -26,6 +26,7 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::filterRollables
      * @covers ::withRollable
      */
     public function testWithRollable()
@@ -33,6 +34,18 @@ final class CupTest extends TestCase
         $cup = new Cup(new FudgeDice());
         $altCup = $cup->withRollable(new CustomDice(-1, 1, -1));
         $this->assertNotEquals($cup, $altCup);
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::filterRollables
+     * @covers ::withRollable
+     */
+    public function testWithRollableReturnsSameInstance()
+    {
+        $cup = new Cup(new FudgeDice());
+        $altCup = $cup->withRollable(new Cup());
+        $this->assertSame($cup, $altCup);
     }
 
     /**

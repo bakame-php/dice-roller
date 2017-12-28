@@ -49,7 +49,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      *
      * @param string $definition
      *
-     * @throws Exception If the defintion can not be parsed
+     * @throws Exception If the defintion is not parsable
      *
      * @return Rollable
      */
@@ -110,8 +110,21 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function __construct(Rollable ...$items)
     {
-        $this->items = $items;
         $this->trace = '';
+        $this->items = $this->filterRollables($items);
+    }
+
+    /**
+     * Filter Rollables to remove empty Cup object
+     *
+     * @param  Rollable[] $rollables
+     * @return Rollable[]
+     */
+    private function filterRollables(array $rollables): array
+    {
+        return array_filter($rollables, function (Rollable $rollable): bool {
+            return !$rollable instanceof Cup || count($rollable) > 0;
+        });
     }
 
     /**
@@ -126,8 +139,13 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function withRollable(Rollable $rollable): self
     {
-        $cup = clone $this;
-        $cup->items[] = $rollable;
+        $items = $this->filterRollables(array_merge($this->items, [$rollable]));
+        if ($items === $this->items) {
+            return $this;
+        }
+
+        $cup = new self();
+        $cup->items = $items;
 
         return $cup;
     }
@@ -137,6 +155,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function __toString()
     {
+        $this->trace = '';
         if (0 == count($this->items)) {
             return '0';
         }
@@ -146,11 +165,12 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         }, $this->items);
 
         $pool = array_count_values($parts);
+
+        unset($pool['0']);
+
         array_walk($pool, function (&$value, $offset) {
             $value = $value > 1 ? $value.$offset : $offset;
         });
-
-        $this->trace = '';
 
         return implode('+', $pool);
     }
@@ -236,10 +256,14 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function roll(): int
     {
-        $res = array_reduce($this->items, [$this, 'calculate'], ['roll' => [0], 'trace' => ['']]);
+        if (0 === count($this->items)) {
+            $this->trace = '0';
 
+            return 0;
+        }
+
+        $res = array_reduce($this->items, [$this, 'calculate'], []);
         $roll = array_sum(array_column($res, 'roll'));
-
         $this->trace = implode(' + ', array_map(function (string $value) {
             if (false !== strpos($value, '+')) {
                 return '('.$value.')';
@@ -261,12 +285,9 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     private function calculate(array $res, Rollable $rollable): array
     {
-        $roll = $rollable->roll();
-        $trace = $rollable->getTrace();
-
         $res[] = [
-            'roll' => $roll,
-            'trace' => $trace,
+            'roll' => $rollable->roll(),
+            'trace' => $rollable->getTrace(),
         ];
 
         return $res;

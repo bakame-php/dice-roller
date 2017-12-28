@@ -14,6 +14,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\Modifier\DropKeep;
+use Bakame\DiceRoller\Modifier\Explode;
+
 final class Parser
 {
     const POOL_PATTERN = ',^
@@ -43,13 +47,13 @@ final class Parser
     /**
      * Returns a new Cup Instance from a string pattern.
      *
-     * @param string $str
+     * @param string $expression
      *
      * @return Rollable
      */
-    public function parse(string $str): Rollable
+    public function parse(string $expression): Rollable
     {
-        $parts = $this->explode($str);
+        $parts = $this->explode($expression);
         if (1 == count($parts)) {
             return $this->parsePool(array_shift($parts));
         }
@@ -62,13 +66,13 @@ final class Parser
      *
      * @see Parser::parse
      *
-     * @param string $str
+     * @param string $expression
      *
      * @return Rollable
      */
-    public function __invoke(string $str): Rollable
+    public function __invoke(string $expression): Rollable
     {
-        return $this->parse($str);
+        return $this->parse($expression);
     }
 
     /**
@@ -187,12 +191,12 @@ final class Parser
             return $rollable;
         }
 
-        $rollable = new Modifier\Arithmetic($rollable, $matches['operator1'], (int) $matches['value1']);
+        $rollable = new Arithmetic($rollable, $matches['operator1'], (int) $matches['value1']);
         if (!isset($matches['math2'])) {
             return $rollable;
         }
 
-        return new Modifier\Arithmetic($rollable, $matches['operator2'], (int) $matches['value2']);
+        return new Arithmetic($rollable, $matches['operator2'], (int) $matches['value2']);
     }
 
     /**
@@ -228,7 +232,7 @@ final class Parser
     {
         $threshold = $matches['threshold'] ?? 1;
 
-        return new Modifier\DropKeep($rollable, $algo, (int) $threshold);
+        return new DropKeep($rollable, $algo, (int) $threshold);
     }
 
     /**
@@ -241,14 +245,14 @@ final class Parser
     private function addExplode(string $compare, array $matches, Cup $rollable): Rollable
     {
         if ('' == $compare) {
-            $compare = Modifier\Explode::EQUALS;
+            $compare = Explode::EQUALS;
             $threshold = $matches['threshold'] ?? -1;
 
-            return new Modifier\Explode($rollable, $compare, (int) $threshold);
+            return new Explode($rollable, $compare, (int) $threshold);
         }
 
         if (isset($matches['threshold'])) {
-            return new Modifier\Explode($rollable, $compare, (int) $matches['threshold']);
+            return new Explode($rollable, $compare, (int) $matches['threshold']);
         }
 
         throw new Exception(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $matches['algo']));

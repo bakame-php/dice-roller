@@ -29,10 +29,7 @@ The code above will simulate the roll of two six-sided die
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
 
-$cup = (new Cup())
-    ->withRollable(new Dice(6))
-    ->withRillable(new Dice(6))
-;
+$cup = new Cup(new Dice(6), new Dice(6));
 echp $cup;             // returns 2D6
 echo $cup->roll();     // returns 8
 echo $cup->getTrace(); // returns 3 + 5
@@ -43,7 +40,11 @@ echo $cup->getTrace(); // returns 3 + 5
 Use the library expression parser to simulate the roll of two six-sided die
 
 ```php
-$cup = DiceRoller\create('2DF');
+<?php
+
+use Bakame\DiceRoller;
+
+$cup = DiceRoller\create('2D6');
 echp $cup;             // returns 2D6
 echo $cup->roll();     // returns 6
 echo $cup->getTrace(); // returns 4 + 2
@@ -146,7 +147,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
 }
 ```
 
-The `Cup::createFromRollable` named constructor enables creating uniformed `Cup` object which contains only 1 type of rollable objects.
+The `Cup::createFromRollable` named constructor enables creating uniformed `Cup` objects which contains only 1 type of rollable objects.
 
 ```php
 <?php
@@ -176,7 +177,7 @@ foreach (Cup::createFromRollable(3, new Dice(5)) as $rollable) {
 }
 ```
 
-Once a `Cup` is instantiated there are no method to alter its properties. However the `Cup::withRollable` method enables you to build complex `Cup` object using the builder. The method will always returns a new `Cup` object but with the added `Rollable` object while maintaining the state of the current `Cup` object.
+Once a `Cup` is instantiated there are no method to alter its properties. However the `Cup::withRollable` method enables you to build complex `Cup` object using the builder pattern. The method will always returns a new `Cup` object but with the added `Rollable` object while maintaining the state of the current `Cup` object.
 
 
 ```php

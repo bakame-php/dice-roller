@@ -17,18 +17,17 @@ namespace Bakame\DiceRoller;
 /**
  * Returns a new Cup Instance from a string pattern.
  *
- * @param string $pAsked
- * @param string $pStr
+ * @param string $expression
  *
  * @throws Exception if an error occurs while parsing the dice notation string
  *
  * @return Rollable
  */
-function create(string $pStr): Rollable
+function create(string $expression): Rollable
 {
     static $parser;
 
     $parser = $parser ?? new Parser();
 
-    return $parser($pStr);
+    return $parser($expression);
 }
