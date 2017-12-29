@@ -47,6 +47,16 @@ final class Explode implements Rollable
     private $trace;
 
     /**
+     * @var array
+     */
+    private $stack;
+
+    /**
+     * @var array
+     */
+    private $inner_stack;
+
+    /**
      * new instance
      *
      * @param Cup      $rollable
@@ -68,6 +78,7 @@ final class Explode implements Rollable
         }
         $this->rollable = $rollable;
         $this->trace = '';
+        $this->stack = [];
     }
 
     /**
@@ -121,6 +132,7 @@ final class Explode implements Rollable
     public function __toString()
     {
         $this->trace = '';
+        $this->stack = [];
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
@@ -146,7 +158,15 @@ final class Explode implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
+    public function getTrace(): array
+    {
+        return $this->stack;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTraceAsString(): string
     {
         return $this->trace;
     }
@@ -157,6 +177,8 @@ final class Explode implements Rollable
     public function getMinimum(): int
     {
         $this->trace = '';
+        $this->stack = [];
+
         return $this->rollable->getMinimum();
     }
 
@@ -166,6 +188,8 @@ final class Explode implements Rollable
     public function getMaximum(): int
     {
         $this->trace = '';
+        $this->stack = [];
+
         return PHP_INT_MAX;
     }
 
@@ -176,10 +200,19 @@ final class Explode implements Rollable
     {
         $sum = 0;
         $this->trace = '';
+        $this->inner_stack = [];
         foreach ($this->rollable as $innerRoll) {
             $sum = $this->calculate($sum, $innerRoll);
         }
 
+        $this->stack = [
+            'class' => get_class($this),
+            'roll' => $sum,
+            'compare' => $this->compare,
+            'threshold' => $this->threshold,
+            'inner_stack' => $this->inner_stack,
+        ];
+        $this->inner_stack = [];
         return $sum;
     }
 
@@ -198,11 +231,12 @@ final class Explode implements Rollable
         do {
             $res = $rollable->roll();
             $sum += $res;
-            $str = $rollable->getTrace();
+            $str = $rollable->getTraceAsString();
             if (false !== strpos($str, '+')) {
                 $str = '('.$str.')';
             }
             $trace[] = $str;
+            $this->inner_stack[] = $rollable->getTrace();
         } while ($this->isValid($res, $threshold));
 
         $trace = implode(' + ', $trace);

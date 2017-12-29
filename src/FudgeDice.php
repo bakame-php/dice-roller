@@ -19,16 +19,16 @@ use Countable;
 final class FudgeDice implements Countable, Rollable
 {
     /**
-     * @var string
+     * @var array
      */
-    private $trace;
+    private $stack = [];
 
     /**
      * {@inheritdoc}
      */
     public function __toString()
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return 'DF';
     }
@@ -40,7 +40,7 @@ final class FudgeDice implements Countable, Rollable
      */
     public function count()
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return 3;
     }
@@ -50,7 +50,7 @@ final class FudgeDice implements Countable, Rollable
      */
     public function getMinimum(): int
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return -1;
     }
@@ -60,7 +60,7 @@ final class FudgeDice implements Countable, Rollable
      */
     public function getMaximum(): int
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return 1;
     }
@@ -68,9 +68,17 @@ final class FudgeDice implements Countable, Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
+    public function getTrace(): array
     {
-        return $this->trace;
+        return $this->stack;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTraceAsString(): string
+    {
+        return $this->stack['roll'] ?? '';
     }
 
     /**
@@ -79,7 +87,10 @@ final class FudgeDice implements Countable, Rollable
     public function roll(): int
     {
         $roll = random_int(-1, 1);
-        $this->trace = (string) $roll;
+        $this->stack = [
+            'class' => get_class($this),
+            'roll' => (string) $roll,
+        ];
 
         return $roll;
     }

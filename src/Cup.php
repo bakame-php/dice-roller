@@ -27,6 +27,11 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * @var string
      */
+    private $stack;
+
+    /**
+     * @var string
+     */
     private $trace;
 
     /**
@@ -65,6 +70,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function __construct(Rollable ...$items)
     {
         $this->trace = '';
+        $this->stack = [];
         $this->items = array_filter($items, [$this, 'isValid']);
     }
 
@@ -109,6 +115,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function __toString()
     {
         $this->trace = '';
+        $this->stack = [];
         if (0 == count($this->items)) {
             return '0';
         }
@@ -131,6 +138,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function count()
     {
         $this->trace = '';
+        $this->stack = [];
 
         return count($this->items);
     }
@@ -141,6 +149,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function getIterator()
     {
         $this->trace = '';
+        $this->stack = [];
 
         foreach ($this->items as $rollable) {
             yield $rollable;
@@ -153,6 +162,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function getMinimum(): int
     {
         $this->trace = '';
+        $this->stack = [];
 
         return array_reduce($this->items, [$this, 'minimum'], 0);
     }
@@ -176,6 +186,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function getMaximum(): int
     {
         $this->trace = '';
+        $this->stack = [];
 
         return array_reduce($this->items, [$this, 'maximum'], 0);
     }
@@ -196,7 +207,15 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
+    public function getTrace(): array
+    {
+        return $this->stack;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTraceAsString(): string
     {
         return $this->trace;
     }
@@ -206,14 +225,29 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function roll(): int
     {
+        $this->stack = [];
         if (0 === count($this->items)) {
             $this->trace = '0';
-
+            $this->stack = [
+                'class' => get_class($this),
+                'roll' => '0',
+            ];
             return 0;
         }
 
         $res = array_reduce($this->items, [$this, 'calculate'], []);
         $roll = array_sum(array_column($res, 'roll'));
+        $stack = [];
+        foreach ($res as $column) {
+            $stack[] = $column['stack'];
+        }
+
+        $this->stack = [
+            'class' => get_class($this),
+            'roll' => (string) $roll,
+            'inner_stack' => $stack,
+        ];
+
         $this->trace = implode(' + ', array_map(function (string $value) {
             if (false !== strpos($value, '+')) {
                 return '('.$value.')';
@@ -237,7 +271,8 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     {
         $res[] = [
             'roll' => $rollable->roll(),
-            'trace' => $rollable->getTrace(),
+            'trace' => $rollable->getTraceAsString(),
+            'stack' => $rollable->getTrace(),
         ];
 
         return $res;

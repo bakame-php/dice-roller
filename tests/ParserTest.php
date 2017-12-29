@@ -198,22 +198,22 @@ final class ParserTest extends TestCase
      * @covers ::parse
      * @covers \Bakame\DiceRoller\Cup::roll
      * @covers \Bakame\DiceRoller\Cup::calculate
-     * @covers \Bakame\DiceRoller\Cup::getTrace
+     * @covers \Bakame\DiceRoller\Cup::getTraceAsString
      * @covers \Bakame\DiceRoller\Explode::calculate
      */
     public function testComplexExplain()
     {
         $cup = DiceRoller\create('(3DF+2D6)!=3+3DF^2');
-        $this->assertSame('', $cup->getTrace());
+        $this->assertSame('', $cup->getTraceAsString());
         $cup->roll();
-        $this->assertContains('(', $cup->getTrace());
+        $this->assertContains('(', $cup->getTraceAsString());
     }
 
     /**
      * @covers ::parse
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::roll
-     * @covers \Bakame\DiceRoller\Cup::getTrace
+     * @covers \Bakame\DiceRoller\Cup::getTraceAsString
      */
     public function testRollWithNoDice()
     {
@@ -223,7 +223,7 @@ final class ParserTest extends TestCase
         $this->assertSame(0, $cup->getMaximum());
         for ($i = 0; $i < 5; $i++) {
             $this->assertEquals(0, $cup->roll());
-            $this->assertEquals('0', $cup->getTrace());
+            $this->assertEquals('0', $cup->getTraceAsString());
         }
     }
 

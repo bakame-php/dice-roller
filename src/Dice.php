@@ -25,9 +25,9 @@ final class Dice implements Countable, Rollable
     private $sides;
 
     /**
-     * @var string
+     * @var array
      */
-    private $trace;
+    private $stack = [];
 
     /**
      * new instance
@@ -42,7 +42,7 @@ final class Dice implements Countable, Rollable
             throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', $sides));
         }
 
-        $this->trace = '';
+        $this->stack = [];
         $this->sides = $sides;
     }
 
@@ -51,7 +51,7 @@ final class Dice implements Countable, Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return 'D'.$this->sides;
     }
@@ -63,7 +63,7 @@ final class Dice implements Countable, Rollable
      */
     public function count()
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return $this->sides;
     }
@@ -73,7 +73,7 @@ final class Dice implements Countable, Rollable
      */
     public function getMinimum(): int
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return 1;
     }
@@ -83,7 +83,7 @@ final class Dice implements Countable, Rollable
      */
     public function getMaximum(): int
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return $this->sides;
     }
@@ -94,7 +94,10 @@ final class Dice implements Countable, Rollable
     public function roll(): int
     {
         $roll = random_int(1, $this->sides);
-        $this->trace = (string) $roll;
+        $this->stack = [
+            'class' => get_class($this),
+            'roll' => (string) $roll,
+        ];
 
         return $roll;
     }
@@ -102,8 +105,16 @@ final class Dice implements Countable, Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
+    public function getTrace(): array
     {
-        return $this->trace;
+        return $this->stack;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTraceAsString(): string
+    {
+        return $this->stack['roll'] ?? '';
     }
 }

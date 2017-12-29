@@ -110,14 +110,14 @@ final class ExplodeTest extends TestCase
         $dice->method('roll')
             ->will($this->onConsecutiveCalls(2, 2, 3));
 
-        $dice->method('getTrace')
+        $dice->method('getTraceAsString')
             ->will($this->onConsecutiveCalls('2', '2', '3'))
         ;
 
         $cup = new Explode(new Cup($dice), Explode::EQUALS, 2);
-        $this->assertSame('', $cup->getTrace());
+        $this->assertSame('', $cup->getTraceAsString());
         $this->assertSame(7, $cup->roll());
-        $this->assertSame('2 + 2 + 3', $cup->getTrace());
+        $this->assertSame('2 + 2 + 3', $cup->getTraceAsString());
     }
 
     /**

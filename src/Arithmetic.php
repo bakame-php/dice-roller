@@ -46,6 +46,11 @@ final class Arithmetic implements Rollable
     private $operator;
 
     /**
+     * @var array
+     */
+    private $stack = [];
+
+    /**
      * @var string
      */
     private $trace;
@@ -83,6 +88,7 @@ final class Arithmetic implements Rollable
         $this->rollable = $rollable;
         $this->value = $value;
         $this->trace = '';
+        $this->stack = [];
     }
 
     /**
@@ -91,6 +97,7 @@ final class Arithmetic implements Rollable
     public function __toString()
     {
         $this->trace = '';
+        $this->stack = [];
 
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
@@ -103,7 +110,15 @@ final class Arithmetic implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
+    public function getTrace(): array
+    {
+        return $this->stack;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTraceAsString(): string
     {
         return $this->trace;
     }
@@ -115,7 +130,21 @@ final class Arithmetic implements Rollable
     {
         $roll = $this->calculate('roll');
 
-        $this->setTrace();
+        $stack = $this->rollable->getTrace();
+        $this->stack = [
+            'class' => get_class($this),
+            'roll' => (string) $roll,
+            'operator' => $this->operator,
+            'value' => $this->value,
+            'inner_stack' => $stack,
+        ];
+
+        $str = $this->rollable->getTraceAsString();
+        if (strpos($str, '+') !== false) {
+            $str = '('.$str.')';
+        }
+
+        $this->trace = $str.' '.$this->operator.' '.$this->value;
 
         return $roll;
     }
@@ -185,19 +214,6 @@ final class Arithmetic implements Rollable
         }
 
         return (abs($roll) ** $this->value) * -1;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    private function setTrace()
-    {
-        $str = $this->rollable->getTrace();
-        if (strpos($str, '+') !== false) {
-            $str = '('.$str.')';
-        }
-
-        $this->trace = $str.' '.$this->operator.' '.$this->value;
     }
 
     /**

@@ -43,8 +43,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::__toString
-     * @covers ::getTrace
-     * @covers ::setTrace
+     * @covers ::getTraceAsString
      */
     public function testToString()
     {
@@ -54,58 +53,38 @@ final class ArithmeticTest extends TestCase
             new Dice(4)
         ), '^', 3);
         $this->assertSame('(2D3+D4)^3', (string) $cup);
-        $this->assertSame('', $cup->getTrace());
+        $this->assertSame('', $cup->getTraceAsString());
     }
 
     /**
      * @covers ::roll
-     * @covers ::getTrace
-     * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Cup::getTrace
+     * @covers ::getTraceAsString
+     * @covers \Bakame\DiceRoller\Cup::getTraceAsString
      */
     public function testGetTrace()
     {
-        $dice = new class() implements Rollable {
-            public function getMinimum(): int
-            {
-                return 1;
-            }
+        $dice = $this->createMock(Rollable::class);
+        $dice->method('roll')
+            ->will($this->returnValue(1));
 
-            public function getMaximum(): int
-            {
-                return 1;
-            }
-
-            public function roll(): int
-            {
-                return 1;
-            }
-
-            public function __toString()
-            {
-                return '1';
-            }
-
-            public function getTrace(): string
-            {
-                return '1';
-            }
-        };
+        $dice->method('getTraceAsString')
+            ->will($this->returnValue('1'))
+        ;
 
         $rollables = new Cup($dice, clone $dice);
         $cup = new Arithmetic($rollables, '*', 3);
-        $this->assertSame('', $rollables->getTrace());
-        $this->assertSame('', $cup->getTrace());
+        $this->assertSame('', $rollables->getTraceAsString());
+        $this->assertSame('', $cup->getTraceAsString());
         $this->assertSame(6, $cup->roll());
-        $this->assertSame('(1 + 1) * 3', $cup->getTrace());
-        $this->assertSame('1 + 1', $rollables->getTrace());
+        $this->assertSame('(1 + 1) * 3', $cup->getTraceAsString());
+        $this->assertSame('1 + 1', $rollables->getTraceAsString());
     }
 
     /**
      * @covers ::roll
      * @covers ::calculate
      * @covers ::exp
-     * @covers ::getTrace
+     * @covers ::getTraceAsString
      */
     public function testRollWithNegativeDiceValue()
     {
@@ -113,7 +92,7 @@ final class ArithmeticTest extends TestCase
         $dice->method('roll')
             ->will($this->returnValue(-1));
 
-        $dice->method('getTrace')
+        $dice->method('getTraceAsString')
             ->will($this->returnValue('-1'));
         ;
 
@@ -121,7 +100,7 @@ final class ArithmeticTest extends TestCase
         $this->assertSame(-1, $dice->roll());
         //$this->assertSame(-1, $cup->roll());
         $cup->roll();
-        $this->assertSame('-1 ^ 3', $cup->getTrace());
+        $this->assertSame('-1 ^ 3', $cup->getTraceAsString());
     }
 
     /**

@@ -19,9 +19,9 @@ use Countable;
 final class CustomDice implements Countable, Rollable
 {
     /**
-     * @var string
+     * @var array
      */
-    private $trace;
+    private $stack = [];
 
     /**
      * @var int[]
@@ -39,7 +39,7 @@ final class CustomDice implements Countable, Rollable
             throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', count($values)));
         }
 
-        $this->trace = '';
+        $this->stack = [];
         $this->values = $values;
     }
 
@@ -48,7 +48,7 @@ final class CustomDice implements Countable, Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return 'D['.implode(',', $this->values).']';
     }
@@ -60,7 +60,7 @@ final class CustomDice implements Countable, Rollable
      */
     public function count()
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return count($this->values);
     }
@@ -70,7 +70,7 @@ final class CustomDice implements Countable, Rollable
      */
     public function getMinimum(): int
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return min($this->values);
     }
@@ -80,7 +80,7 @@ final class CustomDice implements Countable, Rollable
      */
     public function getMaximum(): int
     {
-        $this->trace = '';
+        $this->stack = [];
 
         return max($this->values);
     }
@@ -88,9 +88,17 @@ final class CustomDice implements Countable, Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
+    public function getTrace(): array
     {
-        return $this->trace;
+        return $this->stack;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTraceAsString(): string
+    {
+        return $this->stack['roll'] ?? '';
     }
 
     /**
@@ -100,7 +108,10 @@ final class CustomDice implements Countable, Rollable
     {
         $index = random_int(1, count($this->values) - 1);
         $roll = $this->values[$index];
-        $this->trace = (string) $roll;
+        $this->stack = [
+            'class' => get_class($this),
+            'roll' => (string) $roll,
+        ];
 
         return $roll;
     }

@@ -56,72 +56,34 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::roll
-     * @covers ::getTrace
-     * @covers \Bakame\DiceRoller\Cup::getTrace
+     * @covers ::getTraceAsString
+     * @covers \Bakame\DiceRoller\Cup::getTraceAsString
      */
     public function testGetTrace()
     {
-        $dice1 = new class() implements Rollable {
-            public function getMinimum(): int
-            {
-                return 1;
-            }
+        $dice1 = $this->createMock(Rollable::class);
+        $dice1->method('roll')
+            ->will($this->returnValue(1));
 
-            public function getMaximum(): int
-            {
-                return 1;
-            }
+        $dice1->method('getTraceAsString')
+            ->will($this->returnValue('1'))
+        ;
 
-            public function roll(): int
-            {
-                return 1;
-            }
+        $dice2 = $this->createMock(Rollable::class);
+        $dice2->method('roll')
+            ->will($this->returnValue(2));
 
-            public function __toString()
-            {
-                return '1';
-            }
-
-            public function getTrace(): string
-            {
-                return '1';
-            }
-        };
-
-        $dice2 = new class() implements Rollable {
-            public function getMinimum(): int
-            {
-                return 2;
-            }
-
-            public function getMaximum(): int
-            {
-                return 2;
-            }
-
-            public function roll(): int
-            {
-                return 2;
-            }
-
-            public function __toString()
-            {
-                return '2';
-            }
-
-            public function getTrace(): string
-            {
-                return '2';
-            }
-        };
+        $dice2->method('getTraceAsString')
+            ->will($this->returnValue('2'))
+        ;
 
         $rollables = new Cup($dice1, clone $dice1, $dice2, clone $dice2);
         $cup = new DropKeep($rollables, DropKeep::DROP_LOWEST, 1);
-        $this->assertSame('', $rollables->getTrace());
-        $this->assertSame('', $cup->getTrace());
+        $this->assertSame('', $rollables->getTraceAsString());
+        $this->assertSame('', $cup->getTraceAsString());
         $this->assertSame(5, $cup->roll());
-        $this->assertSame('(1 + 2 + 2)', $cup->getTrace());
-        $this->assertSame('', $rollables->getTrace());
+        $this->assertSame('(1 + 2 + 2)', $cup->getTraceAsString());
+        $this->assertSame('', $rollables->getTraceAsString());
     }
 
     /**
