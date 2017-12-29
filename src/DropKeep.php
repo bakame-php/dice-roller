@@ -131,7 +131,6 @@ final class DropKeep implements Rollable
     {
         $res = [];
         $this->trace = '';
-        $this->stack = [];
         foreach ($this->rollable as $rollable) {
             $res[] = [
                 'roll' => $rollable->$method(),
@@ -151,12 +150,11 @@ final class DropKeep implements Rollable
             $trace = '('.$trace.')';
         }
 
-        $stack = array_column($retained, 'stack');
         $this->stack = [
             'class' => get_class($this),
             'roll' => (string) $res,
             'operator' => strtoupper(array_search($this->method, self::OPERATOR)),
-            'inner_stack' => $stack,
+            'inner_stack' => array_column($retained, 'stack'),
         ];
 
         $this->trace = $trace;

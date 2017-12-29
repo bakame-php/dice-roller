@@ -213,6 +213,7 @@ final class Explode implements Rollable
             'inner_stack' => $this->inner_stack,
         ];
         $this->inner_stack = [];
+
         return $sum;
     }
 
