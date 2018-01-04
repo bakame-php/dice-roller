@@ -63,69 +63,71 @@ final class Explode implements Rollable
      * @param Rollable $rollable
      * @param string   $operator
      * @param int|null $threshold
-     *
-     * @throws Exception if the comparator is not recognized
-     * @throws Exception if the Cup is not valid
      */
     public function __construct(Rollable $rollable, string $operator, int $threshold = null)
     {
-        if (!isset(self::OPERATOR[$operator])) {
-            throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $operator));
-        }
-
         if (!$rollable instanceof Cup) {
             $rollable = new Cup($rollable);
         }
 
+        $this->validate($rollable, $operator, $threshold);
+
         $this->operator = $operator;
         $this->threshold = $threshold;
-        if (!$this->isValidCollection($rollable)) {
-            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
-        }
         $this->rollable = $rollable;
         $this->trace = '';
         $this->stack = [];
     }
 
     /**
-     * Tells whether the Rollable collection can be used
+     * Validate the modifier properties
      *
-     * @param Cup $collection
+     * @param Cup      $collection
+     * @param string   $operator
+     * @param int|null $threshold
      *
-     * @return bool
+     * @throws Exception if the comparator is not recognized
+     * @throws Exception if the Cup is not valid
      */
-    private function isValidCollection(Cup $collection): bool
+    private function validate(Cup $collection, string $operator, $threshold)
     {
+        if (!isset(self::OPERATOR[$operator])) {
+            throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $operator));
+        }
+
         $state = false;
         foreach ($collection as $rollable) {
-            $state = $this->isValidRollable($rollable);
-            if (!$state) {
-                return $state;
+            if (!($state = $this->isValidRollable($rollable, $operator, $threshold))) {
+                break;
             }
         }
 
-        return $state;
+        if (!$state) {
+            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
+        }
     }
 
     /**
      * Tells whether a Rollable object is in valid state
      *
      * @param Rollable $rollable
+     * @param string   $operator
+     * @param mixed    $threshold
      *
      * @return bool
      */
-    private function isValidRollable(Rollable $rollable): bool
+    private function isValidRollable(Rollable $rollable, string $operator, $threshold): bool
     {
         $min = $rollable->getMinimum();
         $max = $rollable->getMaximum();
-        $threshold = $this->threshold ?? $max;
+        $threshold = $threshold ?? $max;
 
-        if (self::GREATER_THAN === $this->operator) {
+        if (self::GREATER_THAN === $operator) {
             return $threshold > $min;
         }
 
-        if (self::LESSER_THAN === $this->operator) {
-            $threshold = $this->threshold ?? $min;
+        if (self::LESSER_THAN === $operator) {
+            $threshold = $threshold ?? $min;
             return $threshold < $max;
         }
 
@@ -249,9 +251,8 @@ final class Explode implements Rollable
     /**
      * Add the result of the Rollable::roll method to the submitted sum.
      *
-     * @param int      $sum
-     * @param Rollable $rollable
      * @param int      $pSum
+     * @param Rollable $rollable
      *
      * @return int
      */

@@ -27,7 +27,7 @@ final class ExplodeTest extends TestCase
      * @dataProvider provideInvalidProperties
      *
      * @covers ::__construct
-     * @covers ::isValidCollection
+     * @covers ::validate
      * @covers ::isValidRollable
      *
      * @param Cup    $cup

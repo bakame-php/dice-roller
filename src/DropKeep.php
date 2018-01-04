@@ -77,6 +77,16 @@ final class DropKeep implements Rollable
         $this->trace = '';
     }
 
+    /**
+     * Validate the modifier properties
+     *
+     * @param Cup    $rollable
+     * @param string $operator
+     * @param int    $threshold
+     *
+     * @throws Exception if the algorithm is not recognized
+     * @throws Exception if the Cup is not valid
+     */
     private function validate(Cup $rollable, string $operator, int $threshold)
     {
         if (count($rollable) < $threshold) {
@@ -114,11 +124,21 @@ final class DropKeep implements Rollable
         return $this->rollable;
     }
 
+    /**
+     * Returns the modifier threshold.
+     *
+     * @return int
+     */
     public function getThreshold(): int
     {
         return $this->threshold;
     }
 
+    /**
+     * Returns the modifier operator.
+     *
+     * @return string
+     */
     public function getOperator(): string
     {
         return array_search($this->method, self::OPERATOR);
@@ -218,6 +238,14 @@ final class DropKeep implements Rollable
         return array_slice($sum, $this->threshold);
     }
 
+    /**
+     * Sorting algorithm.
+     *
+     * @param array $data1
+     * @param array $data2
+     *
+     * @return int
+     */
     private function drop(array $data1, array $data2): int
     {
         return $data1['roll'] <=> $data2['roll'];
