@@ -87,10 +87,7 @@ final class PercentileDice implements Countable, Rollable
     public function roll(): int
     {
         $roll = random_int(1, 100);
-        $this->stack = [
-            'class' => get_class($this),
-            'roll' => (string) $roll,
-        ];
+        $this->stack = ['roll' => (string) $roll];
 
         return $roll;
     }

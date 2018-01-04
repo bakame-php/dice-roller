@@ -43,7 +43,7 @@ final class DropKeep implements Rollable
     private $threshold;
 
     /**
-     * The method name associated with a given algo
+     * The method name associated with a given operator
      *
      * @var string
      */
@@ -57,27 +57,35 @@ final class DropKeep implements Rollable
     /**
      * new instance
      *
-     * @param Cup    $rollable
-     * @param string $algo
-     * @param int    $threshold
+     * @param Rollable $rollable
+     * @param string   $operator
+     * @param int      $threshold
      *
      * @throws Exception if the algorithm is not recognized
      * @throws Exception if the Cup is not valid
      */
-    public function __construct(Cup $rollable, string $algo, int $threshold)
+    public function __construct(Rollable $rollable, string $operator, int $threshold)
+    {
+        if (!$rollable instanceof Cup) {
+            $rollable = new Cup($rollable);
+        }
+
+        $this->validate($rollable, $operator, $threshold);
+        $this->rollable = $rollable;
+        $this->threshold = $threshold;
+        $this->method = self::OPERATOR[$operator];
+        $this->trace = '';
+    }
+
+    private function validate(Cup $rollable, string $operator, int $threshold)
     {
         if (count($rollable) < $threshold) {
             throw new Exception(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($rollable), $threshold));
         }
 
-        if (!isset(self::OPERATOR[$algo])) {
-            throw new Exception(sprintf('Unknown or unsupported sortable algorithm `%s`', $algo));
+        if (!isset(self::OPERATOR[$operator])) {
+            throw new Exception(sprintf('Unknown or unsupported operator `%s`', $operator));
         }
-
-        $this->rollable = $rollable;
-        $this->threshold = $threshold;
-        $this->method = self::OPERATOR[$algo];
-        $this->trace = '';
     }
 
     /**
@@ -94,6 +102,26 @@ final class DropKeep implements Rollable
         return $str
             .strtoupper(array_search($this->method, self::OPERATOR))
             .$this->threshold;
+    }
+
+    /**
+     * Returns the inner rollable object.
+     *
+     * @return Rollable
+     */
+    public function getRollable(): Rollable
+    {
+        return $this->rollable;
+    }
+
+    public function getThreshold(): int
+    {
+        return $this->threshold;
+    }
+
+    public function getOperator(): string
+    {
+        return array_search($this->method, self::OPERATOR);
     }
 
     /**
@@ -151,9 +179,7 @@ final class DropKeep implements Rollable
         }
 
         $this->stack = [
-            'class' => get_class($this),
             'roll' => (string) $res,
-            'operator' => strtoupper(array_search($this->method, self::OPERATOR)),
             'inner_stack' => array_column($retained, 'stack'),
         ];
 
@@ -239,5 +265,63 @@ final class DropKeep implements Rollable
         rsort($sum);
 
         return array_slice($sum, 0, $this->threshold);
+    }
+
+    /**
+     * Return an instance with the specified Rollable object.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified Rollable object.
+     *
+     * @param Rollable $rollable
+     *
+     * @return self
+     */
+    public function withRollable(Rollable $rollable): self
+    {
+        if ($rollable == $this->rollable) {
+            return $this;
+        }
+
+        return new self($rollable, $this->getOperator(), $this->threshold);
+    }
+
+    /**
+     * Return an instance with the specified operator.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified operator.
+     *
+     * @param string $operator
+     *
+     * @return self
+     */
+    public function withOperator(string $operator): self
+    {
+        if ($operator === $this->getOperator()) {
+            return $this;
+        }
+
+        return new self($this->rollable, $operator, $this->threshold);
+    }
+
+    /**
+     * Return an instance with the specified threshold.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified threshold.
+     *
+     * @param int $value
+     * @param int $threshold
+     *
+     * @return self
+     */
+    public function withThreshold(int $threshold): self
+    {
+        if ($threshold === $this->threshold) {
+            return $this;
+        }
+
+        return new self($this->rollable, $this->getOperator(), $threshold);
     }
 }

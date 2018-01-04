@@ -108,10 +108,7 @@ final class CustomDice implements Countable, Rollable
     {
         $index = random_int(1, count($this->values) - 1);
         $roll = $this->values[$index];
-        $this->stack = [
-            'class' => get_class($this),
-            'roll' => (string) $roll,
-        ];
+        $this->stack = ['roll' => (string) $roll];
 
         return $roll;
     }

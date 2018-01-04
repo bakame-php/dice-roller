@@ -34,8 +34,8 @@
         "files": ["src/functions_include.php"]
     },
     "scripts": {
-        "test": "phpunit --coverage-text; php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
-        "phpunit": "phpunit --coverage-text",
+        "test": "phpdbg -qrr ./vendor/bin/phpunit --coverage-text; php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
+        "phpunit": "phpdbg -qrr ./vendor/bin/phpunit --coverage-text",
         "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;"
     },
     "bin": [

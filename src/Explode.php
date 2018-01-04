@@ -20,6 +20,12 @@ final class Explode implements Rollable
     const GREATER_THAN = '>';
     const LESSER_THAN = '<';
 
+    const OPERATOR = [
+        self::EQUALS => 1,
+        self::GREATER_THAN => 1,
+        self::LESSER_THAN => 1,
+    ];
+
     /**
      * The Cup object to decorate
      *
@@ -39,7 +45,7 @@ final class Explode implements Rollable
      *
      * @var string
      */
-    private $compare;
+    private $operator;
 
     /**
      * @var string
@@ -52,26 +58,26 @@ final class Explode implements Rollable
     private $stack;
 
     /**
-     * @var array
-     */
-    private $inner_stack;
-
-    /**
      * new instance
      *
-     * @param Cup      $rollable
-     * @param string   $compare
+     * @param Rollable $rollable
+     * @param string   $operator
      * @param int|null $threshold
      *
      * @throws Exception if the comparator is not recognized
      * @throws Exception if the Cup is not valid
      */
-    public function __construct(Cup $rollable, string $compare, int $threshold = null)
+    public function __construct(Rollable $rollable, string $operator, int $threshold = null)
     {
-        if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
-            throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
+        if (!isset(self::OPERATOR[$operator])) {
+            throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $operator));
         }
-        $this->compare = $compare;
+
+        if (!$rollable instanceof Cup) {
+            $rollable = new Cup($rollable);
+        }
+
+        $this->operator = $operator;
         $this->threshold = $threshold;
         if (!$this->isValidCollection($rollable)) {
             throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
@@ -114,11 +120,11 @@ final class Explode implements Rollable
         $max = $rollable->getMaximum();
         $threshold = $this->threshold ?? $max;
 
-        if (self::GREATER_THAN === $this->compare) {
+        if (self::GREATER_THAN === $this->operator) {
             return $threshold > $min;
         }
 
-        if (self::LESSER_THAN === $this->compare) {
+        if (self::LESSER_THAN === $this->operator) {
             $threshold = $this->threshold ?? $min;
             return $threshold < $max;
         }
@@ -148,11 +154,41 @@ final class Explode implements Rollable
      */
     private function getAnnotationSuffix()
     {
-        if (self::EQUALS === $this->compare && in_array($this->threshold, [null, 1], true)) {
+        if (self::EQUALS === $this->operator && in_array($this->threshold, [null, 1], true)) {
             return '';
         }
 
-        return $this->compare.$this->threshold;
+        return $this->operator.$this->threshold;
+    }
+
+    /**
+     * Returns the inner rollable object.
+     *
+     * @return Rollable
+     */
+    public function getRollable(): Rollable
+    {
+        return $this->rollable;
+    }
+
+    /**
+     * Returns the operator used by the modifier.
+     *
+     * @return string
+     */
+    public function getOperator(): string
+    {
+        return $this->operator;
+    }
+
+    /**
+     * Returns the threshold used by the modifier
+     *
+     * @return int|null
+     */
+    public function getThreshold()
+    {
+        return $this->threshold;
     }
 
     /**
@@ -200,19 +236,12 @@ final class Explode implements Rollable
     {
         $sum = 0;
         $this->trace = '';
-        $this->inner_stack = [];
+        $this->stack = ['roll' => '', 'inner_stack' => []];
         foreach ($this->rollable as $innerRoll) {
             $sum = $this->calculate($sum, $innerRoll);
         }
 
-        $this->stack = [
-            'class' => get_class($this),
-            'roll' => $sum,
-            'compare' => $this->compare,
-            'threshold' => $this->threshold,
-            'inner_stack' => $this->inner_stack,
-        ];
-        $this->inner_stack = [];
+        $this->stack['roll'] = (string) $sum;
 
         return $sum;
     }
@@ -222,13 +251,16 @@ final class Explode implements Rollable
      *
      * @param int      $sum
      * @param Rollable $rollable
+     * @param int      $pSum
      *
      * @return int
      */
-    private function calculate(int $sum, Rollable $rollable): int
+    private function calculate(int $pSum, Rollable $rollable): int
     {
+        $stack = ['roll' => '', 'inner_stack' => []];
         $trace = [];
         $threshold = $this->threshold ?? $rollable->getMaximum();
+        $sum = $pSum;
         do {
             $res = $rollable->roll();
             $sum += $res;
@@ -237,15 +269,16 @@ final class Explode implements Rollable
                 $str = '('.$str.')';
             }
             $trace[] = $str;
-            $this->inner_stack[] = $rollable->getTrace();
+            $stack['inner_stack'][] = $rollable->getTrace();
         } while ($this->isValid($res, $threshold));
 
         $trace = implode(' + ', $trace);
         if ('' !== $this->trace) {
             $trace = ' + '.$trace;
         }
-
+        $stack['roll'] = (string) ($sum - $pSum);
         $this->trace .= $trace;
+        $this->stack['inner_stack'][] = $stack;
 
         return $sum;
     }
@@ -260,14 +293,71 @@ final class Explode implements Rollable
      */
     private function isValid(int $result, int $threshold): bool
     {
-        if (self::EQUALS == $this->compare) {
+        if (self::EQUALS == $this->operator) {
             return $result === $threshold;
         }
 
-        if (self::GREATER_THAN === $this->compare) {
+        if (self::GREATER_THAN === $this->operator) {
             return $result > $threshold;
         }
 
         return $result < $threshold;
+    }
+
+    /**
+     * Return an instance with the specified Rollable object.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified Rollable object.
+     *
+     * @param Rollable $rollable
+     *
+     * @return self
+     */
+    public function withRollable(Rollable $rollable): self
+    {
+        if ($rollable == $this->rollable) {
+            return $this;
+        }
+
+        return new self($rollable, $this->operator, $this->threshold);
+    }
+
+    /**
+     * Return an instance with the specified operator.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified operator.
+     *
+     * @param string $operator
+     *
+     * @return self
+     */
+    public function withOperator(string $operator): self
+    {
+        if ($operator === $this->operator) {
+            return $this;
+        }
+
+        return new self($this->rollable, $operator, $this->threshold);
+    }
+
+    /**
+     * Return an instance with the specified threshold.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified threshold.
+     *
+     * @param int|null $threshold
+     *
+     * @return self
+     */
+    public function withThreshold($threshold): self
+    {
+        if ($threshold === $this->threshold) {
+            return $this;
+        }
+
+        return new self($this->rollable, $this->operator, $threshold);
     }
 }

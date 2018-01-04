@@ -24,6 +24,7 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::validate
      */
     public function testConstructorThrows1()
     {
@@ -33,6 +34,7 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::validate
      */
     public function testConstructorThrows2()
     {
@@ -42,17 +44,46 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::__toString
+     * @covers ::validate
+     * @covers ::getOperator
+     * @covers ::getThreshold
+     * @covers ::getRollable
+     * @covers ::getTraceAsString
      */
-    public function testToString()
+    public function testGetter()
     {
-        $cup = new DropKeep(new Cup(
-            new Dice(3),
-            new Dice(3),
-            new Dice(4)
-        ), DropKeep::DROP_LOWEST, 2);
-        $this->assertSame('(2D3+D4)DL2', (string) $cup);
+        $cup = new Cup(new Dice(3), new Dice(3), new Dice(4));
+        $obj = new DropKeep($cup, DropKeep::DROP_LOWEST, 2);
+
+        $this->assertSame('(2D3+D4)DL2', (string) $obj);
+        $this->assertSame(2, $obj->getThreshold());
+        $this->assertSame($cup, $obj->getRollable());
+        $this->assertSame(DropKeep::DROP_LOWEST, $obj->getOperator());
+        $this->assertSame('', $obj->getTraceAsString());
     }
 
+    /**
+     * @covers ::__construct
+     * @covers ::validate
+     * @covers ::withOperator
+     * @covers ::withRollable
+     * @covers ::withThreshold
+     */
+    public function testImmutability()
+    {
+        $cup = new Cup(new Dice(3), new Dice(3), new Dice(4));
+        $obj = new DropKeep($cup, DropKeep::DROP_LOWEST, 2);
+
+        $this->assertSame($obj->withRollable($cup), $obj);
+        $this->assertSame($obj->withThreshold(2), $obj);
+        $this->assertSame($obj->withOperator(DropKeep::DROP_LOWEST), $obj);
+        $this->assertNotEquals($obj->withOperator(DropKeep::DROP_HIGHEST), $obj);
+        $this->assertNotEquals($obj->withThreshold(3), $obj);
+        $this->assertNotEquals($obj->withRollable(new Cup(new Dice(3), new Dice(4))), $obj);
+
+        $cup2 = new DropKeep(new Dice(3), DropKeep::KEEP_HIGHEST, 1);
+        $this->assertSame(1, $cup2->getThreshold());
+    }
 
     /**
      * @covers ::roll

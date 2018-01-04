@@ -96,7 +96,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      *
      * @return self
      */
-    public function withRollable(Rollable $rollable): self
+    public function withAddedRollable(Rollable $rollable): self
     {
         $items = array_filter(array_merge($this->items, [$rollable]), [$this, 'isValid']);
         if ($items === $this->items) {
@@ -228,17 +228,14 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         $this->stack = [];
         if (0 === count($this->items)) {
             $this->trace = '0';
-            $this->stack = [
-                'class' => get_class($this),
-                'roll' => '0',
-            ];
+            $this->stack = ['roll' => '0'];
+
             return 0;
         }
 
         $res = array_reduce($this->items, [$this, 'calculate'], []);
         $roll = array_sum(array_column($res, 'roll'));
         $this->stack = [
-            'class' => get_class($this),
             'roll' => (string) $roll,
             'inner_stack' =>  array_column($res, 'stack'),
         ];

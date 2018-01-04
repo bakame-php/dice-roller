@@ -69,26 +69,36 @@ final class Arithmetic implements Rollable
      * @param string   $operator
      * @param int      $value
      * @param string   $operator
-     *
-     * @throws Exception if the value is lesser than 0
-     * @throws Exception if the operator is not recognized
      */
     public function __construct(Rollable $rollable, string $operator, int $value)
     {
-        if (!isset(self::OPERATOR[$operator])) {
-            throw new Exception(sprintf('Invalid or Unsupported operator `%s`', $operator));
-        }
-
-        if (0 > $value || (0 === $value && $operator == self::DIVISION)) {
-            throw new Exception(sprintf('The submitted value `%i` is invalid for the given `%s` operator', $value, $operator));
-        }
-
+        $this->validate($operator, $value);
         $this->operator = $operator;
         $this->method = self::OPERATOR[$operator];
         $this->rollable = $rollable;
         $this->value = $value;
         $this->trace = '';
         $this->stack = [];
+    }
+
+    /**
+     * Validate the Modifier settings
+     *
+     * @param string $operator
+     * @param int    $value
+     *
+     * @throws Exception if the value is lesser than 0
+     * @throws Exception if the operator is not recognized
+     */
+    private function validate(string $operator, int $value)
+    {
+        if (!isset(self::OPERATOR[$operator])) {
+            throw new Exception(sprintf('Invalid or Unsupported operator `%s`', $operator));
+        }
+
+        if (0 > $value || (0 === $value && $operator == self::DIVISION)) {
+            throw new Exception(sprintf('The submitted value `%i` is invalid for the given `%s` operator', $this->value, $operator));
+        }
     }
 
     /**
@@ -105,6 +115,36 @@ final class Arithmetic implements Rollable
         }
 
         return $str.$this->operator.$this->value;
+    }
+
+    /**
+     * Returns the inner rollable object.
+     *
+     * @return Rollable
+     */
+    public function getRollable(): Rollable
+    {
+        return $this->rollable;
+    }
+
+    /**
+     * Returns the arithmetic operator to be used by the modifier.
+     *
+     * @return string
+     */
+    public function getOperator(): string
+    {
+        return $this->operator;
+    }
+
+    /**
+     * Returns the value to be used by the modifier.
+     *
+     * @return int
+     */
+    public function getValue(): int
+    {
+        return $this->value;
     }
 
     /**
@@ -132,10 +172,8 @@ final class Arithmetic implements Rollable
 
         $stack = $this->rollable->getTrace();
         $this->stack = [
-            'class' => get_class($this),
             'roll' => (string) $roll,
-            'operator' => $this->operator,
-            'value' => $this->value,
+            'modifier' => $this->operator.' '.$this->value,
             'inner_stack' => $stack,
         ];
 
@@ -150,7 +188,7 @@ final class Arithmetic implements Rollable
     }
 
     /**
-     * Compute the sum to be return.
+     * Computes the sum to be return.
      *
      * @param string $method One of the Rollable method
      *
@@ -230,5 +268,62 @@ final class Arithmetic implements Rollable
     public function getMaximum(): int
     {
         return $this->calculate('getMaximum');
+    }
+
+    /**
+     * Return an instance with the specified Rollable object.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified Rollable object.
+     *
+     * @param Rollable $rollable
+     *
+     * @return self
+     */
+    public function withRollable(Rollable $rollable): self
+    {
+        if ($rollable == $this->rollable) {
+            return $this;
+        }
+
+        return new self($rollable, $this->operator, $this->value);
+    }
+
+    /**
+     * Return an instance with the specified operator.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified operator.
+     *
+     * @param string $operator
+     *
+     * @return self
+     */
+    public function withOperator(string $operator): self
+    {
+        if ($operator === $this->operator) {
+            return $this;
+        }
+
+        return new self($this->rollable, $operator, $this->value);
+    }
+
+    /**
+     * Return an instance with the specified value.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified operator.
+     *
+     * @param int $value
+     *
+     * @return self
+     */
+    public function withValue(int $value): self
+    {
+        if ($value === $this->value) {
+            return $this;
+        }
+
+        return new self($this->rollable, $this->operator, $value);
     }
 }

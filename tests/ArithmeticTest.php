@@ -16,6 +16,7 @@ final class ArithmeticTest extends TestCase
 {
     /**
      * @covers ::__construct
+     * @covers ::validate
      */
     public function testArithmeticConstructorThrows1()
     {
@@ -25,6 +26,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::validate
      */
     public function testArithmeticConstructorThrows2()
     {
@@ -34,6 +36,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::validate
      */
     public function testArithmeticConstructorThrows3()
     {
@@ -43,17 +46,40 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::__toString
+     * @covers ::validate
+     * @covers ::getOperator
+     * @covers ::getValue
+     * @covers ::getRollable
      * @covers ::getTraceAsString
      */
-    public function testToString()
+    public function testGetter()
     {
-        $cup = new Arithmetic(new Cup(
-            new Dice(3),
-            new Dice(3),
-            new Dice(4)
-        ), '^', 3);
-        $this->assertSame('(2D3+D4)^3', (string) $cup);
-        $this->assertSame('', $cup->getTraceAsString());
+        $cup = new Cup(new Dice(3), new Dice(3), new Dice(4));
+        $obj = new Arithmetic($cup, Arithmetic::EXPONENTIATION, 3);
+
+        $this->assertSame(Arithmetic::EXPONENTIATION, $obj->getOperator());
+        $this->assertSame(3, $obj->getValue());
+        $this->assertSame($cup, $obj->getRollable());
+        $this->assertSame('(2D3+D4)^3', (string) $obj);
+        $this->assertSame('', $obj->getTraceAsString());
+    }
+
+    /**
+     * @covers ::withRollable
+     * @covers ::withValue
+     * @covers ::withOperator
+     */
+    public function testImmutability()
+    {
+        $cup = new Cup(new Dice(3), new Dice(3), new Dice(4));
+        $obj = new Arithmetic($cup, '^', 3);
+
+        $this->assertSame($obj->withRollable($cup), $obj);
+        $this->assertSame($obj->withValue(3), $obj);
+        $this->assertSame($obj->withOperator(Arithmetic::EXPONENTIATION), $obj);
+        $this->assertNotEquals($obj->withOperator(Arithmetic::ADDITION), $obj);
+        $this->assertNotEquals($obj->withValue(4), $obj);
+        $this->assertNotEquals($obj->withRollable(new Dice(3)), $obj);
     }
 
     /**

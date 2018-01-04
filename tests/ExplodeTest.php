@@ -104,6 +104,35 @@ final class ExplodeTest extends TestCase
         ];
     }
 
+    /**
+     * @covers ::__construct
+     * @covers ::getOperator
+     * @covers ::getRollable
+     * @covers ::getThreshold
+     * @covers ::withOperator
+     * @covers ::withRollable
+     * @covers ::withThreshold
+     */
+    public function testImmutability()
+    {
+        $cup = new Cup(new Dice(3), new Dice(3), new Dice(4));
+        $obj = new Explode($cup, Explode::EQUALS, 3);
+
+        $this->assertSame($cup, $obj->getRollable());
+        $this->assertSame(Explode::EQUALS, $obj->getOperator());
+        $this->assertSame(3, $obj->getThreshold());
+
+        $this->assertSame($obj->withRollable($cup), $obj);
+        $this->assertSame($obj->withThreshold(3), $obj);
+        $this->assertSame($obj->withOperator(Explode::EQUALS), $obj);
+        $this->assertNotEquals($obj->withOperator(Explode::GREATER_THAN), $obj);
+        $this->assertNotEquals($obj->withThreshold(2), $obj);
+        $this->assertNotEquals($obj->withRollable(new Cup(new Dice(3), new Dice(4))), $obj);
+
+        $obj2 = new Explode(new Dice(3), Explode::EQUALS, 2);
+        $this->assertSame(2, $obj2->getThreshold());
+    }
+
     public function testGetTrace()
     {
         $dice = $this->createMock(Rollable::class);
