@@ -25,16 +25,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     private $items = [];
 
     /**
-     * @var string
-     */
-    private $stack;
-
-    /**
-     * @var string
-     */
-    private $trace;
-
-    /**
      * Create a new Cup containing only on type of Rollable object
      *
      * @param int      $quantity
@@ -69,8 +59,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function __construct(Rollable ...$items)
     {
-        $this->trace = '';
-        $this->stack = [];
         $this->items = array_filter($items, [$this, 'isValid']);
     }
 
@@ -114,8 +102,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
-        $this->stack = [];
         if (0 == count($this->items)) {
             return '0';
         }
@@ -137,9 +123,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function count()
     {
-        $this->trace = '';
-        $this->stack = [];
-
         return count($this->items);
     }
 
@@ -148,9 +131,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getIterator()
     {
-        $this->trace = '';
-        $this->stack = [];
-
         foreach ($this->items as $rollable) {
             yield $rollable;
         }
@@ -161,9 +141,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getMinimum(): int
     {
-        $this->trace = '';
-        $this->stack = [];
-
         return array_reduce($this->items, [$this, 'minimum'], 0);
     }
 
@@ -185,9 +162,6 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getMaximum(): int
     {
-        $this->trace = '';
-        $this->stack = [];
-
         return array_reduce($this->items, [$this, 'maximum'], 0);
     }
 
@@ -207,66 +181,20 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): array
+    public function roll(): Roll
     {
-        return $this->stack;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTraceAsString(): string
-    {
-        return $this->trace;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function roll(): int
-    {
-        $this->stack = [];
         if (0 === count($this->items)) {
-            $this->trace = '0';
-            $this->stack = ['roll' => '0'];
-
-            return 0;
+            return new Result($this, 0);
         }
 
-        $res = array_reduce($this->items, [$this, 'calculate'], []);
-        $roll = array_sum(array_column($res, 'roll'));
-        $this->stack = [
-            'roll' => (string) $roll,
-            'inner_stack' =>  array_column($res, 'stack'),
-        ];
+        $sum = 0;
+        $children = [];
+        foreach ($this->items as $rollable) {
+            $inner_roll = $rollable->roll();
+            $sum += $inner_roll->getResult();
+            $children[] = $inner_roll;
+        }
 
-        $this->trace = implode(' + ', array_map(function (string $value) {
-            if (false !== strpos($value, '+')) {
-                return '('.$value.')';
-            }
-
-            return $value;
-        }, array_column($res, 'trace')));
-
-        return $roll;
-    }
-
-    /**
-     * Add the result of the Rollable::roll method to the submitted sum.
-     *
-     * @param array    $res
-     * @param Rollable $rollable
-     *
-     * @return array
-     */
-    private function calculate(array $res, Rollable $rollable): array
-    {
-        $res[] = [
-            'roll' => $rollable->roll(),
-            'trace' => $rollable->getTraceAsString(),
-            'stack' => $rollable->getTrace(),
-        ];
-
-        return $res;
+        return new Result($this, $sum, $children);
     }
 }

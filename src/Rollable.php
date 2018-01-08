@@ -36,27 +36,9 @@ interface Rollable
     /**
      * Returns the result of a roll.
      *
-     * @return int
+     * @return Roll
      */
-    public function roll(): int;
-
-    /**
-     * Returns the last roll stack trace.
-     *
-     * If no roll was performed this method MUST return an empty array
-     *
-     * @return array
-     */
-    public function getTrace(): array;
-
-    /**
-     * Returns the last roll stack trace as a string.
-     *
-     * If no roll was performed this method MUST return an empty string
-     *
-     * @return string
-     */
-    public function getTraceAsString(): string;
+    public function roll(): Roll;
 
     /**
      * Returns the string representation of the

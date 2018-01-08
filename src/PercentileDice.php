@@ -19,17 +19,10 @@ use Countable;
 final class PercentileDice implements Countable, Rollable
 {
     /**
-     * @var array
-     */
-    private $stack = [];
-
-    /**
      * {@inheritdoc}
      */
     public function __toString()
     {
-        $this->stack = [];
-
         return 'D%';
     }
 
@@ -40,8 +33,6 @@ final class PercentileDice implements Countable, Rollable
      */
     public function count()
     {
-        $this->stack = [];
-
         return 100;
     }
 
@@ -50,8 +41,6 @@ final class PercentileDice implements Countable, Rollable
      */
     public function getMinimum(): int
     {
-        $this->stack = [];
-
         return 1;
     }
 
@@ -60,35 +49,14 @@ final class PercentileDice implements Countable, Rollable
      */
     public function getMaximum(): int
     {
-        $this->stack = [];
-
         return 100;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): array
+    public function roll(): Roll
     {
-        return $this->stack;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTraceAsString(): string
-    {
-        return $this->stack['roll'] ?? '';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function roll(): int
-    {
-        $roll = random_int(1, 100);
-        $this->stack = ['roll' => (string) $roll];
-
-        return $roll;
+        return new Result($this, random_int(1, 100));
     }
 }

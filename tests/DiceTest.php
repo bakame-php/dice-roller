@@ -17,7 +17,7 @@ final class DiceTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
-     * @covers ::getTraceAsString
+     * @covers \Bakame\DiceRoller\Result
      */
     public function testSixSidedValues()
     {
@@ -28,10 +28,9 @@ final class DiceTest extends TestCase
         $this->assertSame(1, $dice->getMinimum());
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
-            $this->assertContains($dice->getTraceAsString(), ['1', '2', '3', '4', '5', '6']);
-            $this->assertGreaterThanOrEqual($dice->getMinimum(), $test);
-            $this->assertLessThanOrEqual($dice->getMaximum(), $test);
-            $this->assertSame('', $dice->getTraceAsString());
+            $this->assertGreaterThanOrEqual($dice->getMinimum(), $test->getResult());
+            $this->assertLessThanOrEqual($dice->getMaximum(), $test->getResult());
+            $this->assertSame($test->getAnnotation(), (string) $dice);
         }
     }
 

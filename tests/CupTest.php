@@ -50,8 +50,8 @@ final class CupTest extends TestCase
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
-     * @covers ::calculate
      * @covers ::roll
+     * @covers \Bakame\DiceRoller\Result
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::count
@@ -63,11 +63,11 @@ final class CupTest extends TestCase
         $this->assertSame(6, $cup->getMinimum());
         $this->assertSame(48, $cup->getMaximum());
         $this->assertCount(2, $cup);
-        $this->assertContainsOnlyInstancesOf(Rollable::class, $cup);
         for ($i = 0; $i < 5; $i++) {
             $test = $cup->roll();
-            $this->assertGreaterThanOrEqual($cup->getMinimum(), $test);
-            $this->assertLessThanOrEqual($cup->getMaximum(), $test);
+            $this->assertGreaterThanOrEqual($cup->getMinimum(), $test->getResult());
+            $this->assertLessThanOrEqual($cup->getMaximum(), $test->getResult());
+            $this->assertSame($test->getAnnotation(), (string) $cup);
         }
     }
 

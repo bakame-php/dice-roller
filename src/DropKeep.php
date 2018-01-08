@@ -50,11 +50,6 @@ final class DropKeep implements Rollable
     private $method;
 
     /**
-     * @var string
-     */
-    private $trace;
-
-    /**
      * new instance
      *
      * @param Rollable $rollable
@@ -74,7 +69,6 @@ final class DropKeep implements Rollable
         $this->rollable = $rollable;
         $this->threshold = $threshold;
         $this->method = self::OPERATOR[$operator];
-        $this->trace = '';
     }
 
     /**
@@ -103,7 +97,6 @@ final class DropKeep implements Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
@@ -147,25 +140,50 @@ final class DropKeep implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): array
+    public function roll(): Roll
     {
-        return $this->stack;
+        $children = [];
+        foreach ($this->rollable as $rollable) {
+            $children[] = $rollable->roll();
+        }
+
+        uasort($children, function (Roll $roll1, Roll $roll2) {
+            return $roll1->getResult() <=> $roll2->getResult();
+        });
+        $children = array_values($children);
+
+        $sum = 0;
+        foreach ($children as $offset => $roll) {
+            if ($this->isValid($offset)) {
+                $sum += $roll->getResult();
+                continue;
+            }
+
+            $roll->setStatus(Roll::DROP_ROLL);
+        }
+
+        return new Result($this, $sum, $children);
     }
 
     /**
-     * {@inheritdoc}
+     * Tell whether the current RollInterface object should be kept
+     * for result calculation depending on its offset.
+     *
+     * @param int $offset
+     *
+     * @return bool
      */
-    public function getTraceAsString(): string
+    private function isValid(int $offset): bool
     {
-        return $this->trace;
-    }
+        if ($offset > $this->threshold - 1 && in_array($this->method, ['keepHighest', 'dropLowest'])) {
+            return true;
+        }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function roll(): int
-    {
-        return $this->calculate('roll');
+        if ($offset <= $this->threshold - 1 && in_array($this->method, ['keepLowest', 'dropHighest'])) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -178,34 +196,14 @@ final class DropKeep implements Rollable
     private function calculate(string $method): int
     {
         $res = [];
-        $this->trace = '';
         foreach ($this->rollable as $rollable) {
-            $res[] = [
-                'roll' => $rollable->$method(),
-                'trace' => $method === 'roll' ? $rollable->getTraceAsString() : '',
-                'stack' => $method === 'roll' ? $rollable->getTrace() : [],
-            ];
+            $innerRoll = $rollable->$method();
+            $res[] = $innerRoll;
         }
 
         $retained = $this->{$this->method}($res);
-        $res = array_sum(array_column($retained, 'roll'));
-        if ($method !== 'roll') {
-            return $res;
-        }
 
-        $trace = implode(' + ', array_column($retained, 'trace'));
-        if (strpos($trace, '+') !== false) {
-            $trace = '('.$trace.')';
-        }
-
-        $this->stack = [
-            'roll' => (string) $res,
-            'inner_stack' => array_column($retained, 'stack'),
-        ];
-
-        $this->trace = $trace;
-
-        return $res;
+        return array_sum($retained);
     }
 
     /**
@@ -246,7 +244,7 @@ final class DropKeep implements Rollable
      *
      * @return int
      */
-    private function drop(array $data1, array $data2): int
+    private function drop(int $data1, int $data2): int
     {
         return $data1['roll'] <=> $data2['roll'];
     }

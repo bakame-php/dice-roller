@@ -46,16 +46,6 @@ final class Arithmetic implements Rollable
     private $operator;
 
     /**
-     * @var array
-     */
-    private $stack = [];
-
-    /**
-     * @var string
-     */
-    private $trace;
-
-    /**
      * The method name associated with a given algo
      *
      * @var string
@@ -77,8 +67,6 @@ final class Arithmetic implements Rollable
         $this->method = self::OPERATOR[$operator];
         $this->rollable = $rollable;
         $this->value = $value;
-        $this->trace = '';
-        $this->stack = [];
     }
 
     /**
@@ -106,9 +94,6 @@ final class Arithmetic implements Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
-        $this->stack = [];
-
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
@@ -150,41 +135,12 @@ final class Arithmetic implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): array
+    public function roll(): Roll
     {
-        return $this->stack;
-    }
+        $inner_roll = $this->rollable->roll();
+        $result = $this->{$this->method}($inner_roll->getResult());
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTraceAsString(): string
-    {
-        return $this->trace;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function roll(): int
-    {
-        $roll = $this->calculate('roll');
-
-        $stack = $this->rollable->getTrace();
-        $this->stack = [
-            'roll' => (string) $roll,
-            'modifier' => $this->operator.' '.$this->value,
-            'inner_stack' => $stack,
-        ];
-
-        $str = $this->rollable->getTraceAsString();
-        if (strpos($str, '+') !== false) {
-            $str = '('.$str.')';
-        }
-
-        $this->trace = $str.' '.$this->operator.' '.$this->value;
-
-        return $roll;
+        return new Result($this, $result, [$inner_roll], $this->operator.' '.$this->value);
     }
 
     /**
@@ -196,62 +152,66 @@ final class Arithmetic implements Rollable
      */
     private function calculate(string $method): int
     {
-        return $this->{$this->method}($method);
+        return $this->{$this->method}($this->rollable->$method());
     }
 
     /**
      * Adds a fixed value to a the result from a Rollable public method
      *
      * @param string $method
+     * @param int    $value
      */
-    private function add(string $method): int
+    private function add(int $value): int
     {
-        return $this->rollable->$method() + $this->value;
+        return $value + $this->value;
     }
 
     /**
      * Substracts a fixed value to a the result from a Rollable public method
      *
      * @param string $method
+     * @param int    $value
      */
-    private function subs(string $method): int
+    private function subs(int $value): int
     {
-        return $this->rollable->$method() - $this->value;
+        return $value - $this->value;
     }
 
     /**
      * Multiplies a fixed value to a the result from a Rollable public method
      *
      * @param string $method
+     * @param int    $value
      */
-    private function multiply(string $method): int
+    private function multiply(int $value): int
     {
-        return $this->rollable->$method() * $this->value;
+        return $value * $this->value;
     }
 
     /**
      * divises a fixed value to a the result from a Rollable public method
      *
      * @param string $method
+     * @param int    $value
      */
-    private function div(string $method): int
+    private function div(int $value): int
     {
-        return intdiv($this->rollable->$method(), $this->value);
+        return intdiv($value, $this->value);
     }
 
     /**
      * Exponents a fixed value to a the result from a Rollable public method
      *
      * @param string $method
+     * @param int    $value
      */
-    private function exp(string $method): int
+    private function exp(int $value): int
     {
-        $roll = $this->rollable->$method();
-        if ($roll > -1) {
-            return $roll ** $this->value;
+        if ($value > -1) {
+            return $value ** $this->value;
         }
 
-        return (abs($roll) ** $this->value) * -1;
+        return (abs($value) ** $this->value) * -1;
     }
 
     /**

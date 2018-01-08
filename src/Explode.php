@@ -48,16 +48,6 @@ final class Explode implements Rollable
     private $operator;
 
     /**
-     * @var string
-     */
-    private $trace;
-
-    /**
-     * @var array
-     */
-    private $stack;
-
-    /**
      * new instance
      *
      * @param Rollable $rollable
@@ -71,12 +61,9 @@ final class Explode implements Rollable
         }
 
         $this->validate($rollable, $operator, $threshold);
-
         $this->operator = $operator;
         $this->threshold = $threshold;
         $this->rollable = $rollable;
-        $this->trace = '';
-        $this->stack = [];
     }
 
     /**
@@ -139,8 +126,6 @@ final class Explode implements Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
-        $this->stack = [];
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
@@ -196,27 +181,8 @@ final class Explode implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): array
-    {
-        return $this->stack;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTraceAsString(): string
-    {
-        return $this->trace;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getMinimum(): int
     {
-        $this->trace = '';
-        $this->stack = [];
-
         return $this->rollable->getMinimum();
     }
 
@@ -225,63 +191,53 @@ final class Explode implements Rollable
      */
     public function getMaximum(): int
     {
-        $this->trace = '';
-        $this->stack = [];
-
         return PHP_INT_MAX;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
         $sum = 0;
-        $this->trace = '';
-        $this->stack = ['roll' => '', 'inner_stack' => []];
-        foreach ($this->rollable as $innerRoll) {
-            $sum = $this->calculate($sum, $innerRoll);
+        $children = [];
+        foreach ($this->rollable as $rollable) {
+            $innerRoll = $this->calculate($rollable);
+            $sum += $innerRoll->getResult();
+            $children[] = $innerRoll;
         }
 
-        $this->stack['roll'] = (string) $sum;
-
-        return $sum;
+        return new Result($this, $sum, $children);
     }
 
     /**
      * Add the result of the Rollable::roll method to the submitted sum.
      *
-     * @param int      $pSum
      * @param Rollable $rollable
      *
-     * @return int
+     * @return Roll
      */
-    private function calculate(int $pSum, Rollable $rollable): int
+    private function calculate(Rollable $rollable): Roll
     {
-        $stack = ['roll' => '', 'inner_stack' => []];
-        $trace = [];
         $threshold = $this->threshold ?? $rollable->getMaximum();
-        $sum = $pSum;
+
+        $children = [];
         do {
-            $res = $rollable->roll();
-            $sum += $res;
-            $str = $rollable->getTraceAsString();
-            if (false !== strpos($str, '+')) {
-                $str = '('.$str.')';
-            }
-            $trace[] = $str;
-            $stack['inner_stack'][] = $rollable->getTrace();
-        } while ($this->isValid($res, $threshold));
+            $innerRoll = $rollable->roll();
+            $children[] = $innerRoll;
+        } while ($this->isValid($innerRoll->getResult(), $threshold));
 
-        $trace = implode(' + ', $trace);
-        if ('' !== $this->trace) {
-            $trace = ' + '.$trace;
-        }
-        $stack['roll'] = (string) ($sum - $pSum);
-        $this->trace .= $trace;
-        $this->stack['inner_stack'][] = $stack;
+        $sum = array_reduce($children, function (int $sum, Roll $innerRoll) {
+            $sum += $innerRoll->getResult();
 
-        return $sum;
+            return $sum;
+        }, 0);
+
+        return new Result(
+            Cup::createFromRollable(count($children), $rollable),
+            $sum,
+            $children
+        );
     }
 
     /**

@@ -15,7 +15,7 @@ final class FudgeDiceTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
-     * @covers ::getTraceAsString
+     * @covers \Bakame\DiceRoller\Result
      */
     public function testFudgeDice()
     {
@@ -24,11 +24,9 @@ final class FudgeDiceTest extends TestCase
         $this->assertSame(1, $dice->getMaximum());
         $this->assertSame(-1, $dice->getMinimum());
         for ($i = 0; $i < 10; $i++) {
-            $test = $dice->roll();
-            $this->assertContains($dice->getTraceAsString(), ['-1', '0', '1']);
+            $test = $dice->roll()->getResult();
             $this->assertGreaterThanOrEqual($dice->getMinimum(), $test);
             $this->assertLessThanOrEqual($dice->getMaximum(), $test);
-            $this->assertSame('', $dice->getTraceAsString());
         }
     }
 }

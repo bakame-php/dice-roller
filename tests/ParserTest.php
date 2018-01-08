@@ -177,6 +177,7 @@ final class ParserTest extends TestCase
      * @covers \Bakame\DiceRoller\Rollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Result
      */
     public function testFiveFourSidedDice()
     {
@@ -188,7 +189,7 @@ final class ParserTest extends TestCase
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $test = $group->roll();
+            $test = $group->roll()->getResult();
             $this->assertGreaterThanOrEqual($group->getMinimum(), $test);
             $this->assertLessThanOrEqual($group->getMaximum(), $test);
         }
@@ -196,24 +197,9 @@ final class ParserTest extends TestCase
 
     /**
      * @covers ::parse
-     * @covers \Bakame\DiceRoller\Cup::roll
-     * @covers \Bakame\DiceRoller\Cup::calculate
-     * @covers \Bakame\DiceRoller\Cup::getTraceAsString
-     * @covers \Bakame\DiceRoller\Explode::calculate
-     */
-    public function testComplexExplain()
-    {
-        $cup = DiceRoller\create('(3DF+2D6)!=3+3DF^2');
-        $this->assertSame('', $cup->getTraceAsString());
-        $cup->roll();
-        $this->assertContains('(', $cup->getTraceAsString());
-    }
-
-    /**
-     * @covers ::parse
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::roll
-     * @covers \Bakame\DiceRoller\Cup::getTraceAsString
+     * @covers \Bakame\DiceRoller\Result
      */
     public function testRollWithNoDice()
     {
@@ -222,8 +208,7 @@ final class ParserTest extends TestCase
         $this->assertSame(0, $cup->getMinimum());
         $this->assertSame(0, $cup->getMaximum());
         for ($i = 0; $i < 5; $i++) {
-            $this->assertEquals(0, $cup->roll());
-            $this->assertEquals('0', $cup->getTraceAsString());
+            $this->assertEquals(0, $cup->roll()->getResult());
         }
     }
 
@@ -233,6 +218,7 @@ final class ParserTest extends TestCase
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\Rollable
      * @covers \Bakame\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\Result
      */
     public function testRollWithSingleDice()
     {
@@ -244,7 +230,7 @@ final class ParserTest extends TestCase
             $this->assertCount(8, $dice);
         }
         for ($i = 0; $i < 5; $i++) {
-            $test = $cup->roll();
+            $test = $cup->roll()->getResult();
             $this->assertGreaterThanOrEqual($cup->getMinimum(), $test);
             $this->assertLessThanOrEqual($cup->getMaximum(), $test);
         }
@@ -270,7 +256,7 @@ final class ParserTest extends TestCase
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $test = $cup->roll();
+            $test = $cup->roll()->getResult();
             $this->assertGreaterThanOrEqual($cup->getMinimum(), $test);
             $this->assertLessThanOrEqual($cup->getMaximum(), $test);
         }
@@ -303,7 +289,7 @@ final class ParserTest extends TestCase
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $test = $cup->roll();
+            $test = $cup->roll()->getResult();
             $this->assertGreaterThanOrEqual($cup->getMinimum(), $test);
             $this->assertLessThanOrEqual($cup->getMaximum(), $test);
         }

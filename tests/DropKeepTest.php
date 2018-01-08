@@ -7,7 +7,6 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\DropKeep;
 use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -48,7 +47,6 @@ final class DropKeepTest extends TestCase
      * @covers ::getOperator
      * @covers ::getThreshold
      * @covers ::getRollable
-     * @covers ::getTraceAsString
      */
     public function testGetter()
     {
@@ -59,7 +57,6 @@ final class DropKeepTest extends TestCase
         $this->assertSame(2, $obj->getThreshold());
         $this->assertSame($cup, $obj->getRollable());
         $this->assertSame(DropKeep::DROP_LOWEST, $obj->getOperator());
-        $this->assertSame('', $obj->getTraceAsString());
     }
 
     /**
@@ -86,48 +83,18 @@ final class DropKeepTest extends TestCase
     }
 
     /**
-     * @covers ::roll
-     * @covers ::getTraceAsString
-     * @covers \Bakame\DiceRoller\Cup::getTraceAsString
-     */
-    public function testGetTrace()
-    {
-        $dice1 = $this->createMock(Rollable::class);
-        $dice1->method('roll')
-            ->will($this->returnValue(1));
-
-        $dice1->method('getTraceAsString')
-            ->will($this->returnValue('1'))
-        ;
-
-        $dice2 = $this->createMock(Rollable::class);
-        $dice2->method('roll')
-            ->will($this->returnValue(2));
-
-        $dice2->method('getTraceAsString')
-            ->will($this->returnValue('2'))
-        ;
-
-        $rollables = new Cup($dice1, clone $dice1, $dice2, clone $dice2);
-        $cup = new DropKeep($rollables, DropKeep::DROP_LOWEST, 1);
-        $this->assertSame('', $rollables->getTraceAsString());
-        $this->assertSame('', $cup->getTraceAsString());
-        $this->assertSame(5, $cup->roll());
-        $this->assertSame('(1 + 2 + 2)', $cup->getTraceAsString());
-        $this->assertSame('', $rollables->getTraceAsString());
-    }
-
-    /**
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::calculate
      * @covers ::keepLowest
      * @covers ::keepHighest
+     * @covers ::isValid
      * @covers ::drop
      * @covers ::dropLowest
      * @covers ::dropHighest
      * @covers ::roll
+     * @covers \Bakame\DiceRoller\Result
      * @dataProvider validParametersProvider
      * @param string $algo
      * @param int    $threshold
@@ -137,7 +104,7 @@ final class DropKeepTest extends TestCase
     public function testModifier(string $algo, int $threshold, int $min, int $max)
     {
         $cup = new DropKeep($this->cup, $algo, $threshold);
-        $res = $cup->roll();
+        $res = $cup->roll()->getResult();
         $this->assertSame($min, $cup->getMinimum());
         $this->assertSame($max, $cup->getMaximum());
         $this->assertGreaterThanOrEqual($min, $res);

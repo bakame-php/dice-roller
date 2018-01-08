@@ -25,11 +25,6 @@ final class Dice implements Countable, Rollable
     private $sides;
 
     /**
-     * @var array
-     */
-    private $stack = [];
-
-    /**
      * new instance
      *
      * @param int $sides side count
@@ -42,7 +37,6 @@ final class Dice implements Countable, Rollable
             throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', $sides));
         }
 
-        $this->stack = [];
         $this->sides = $sides;
     }
 
@@ -51,8 +45,6 @@ final class Dice implements Countable, Rollable
      */
     public function __toString()
     {
-        $this->stack = [];
-
         return 'D'.$this->sides;
     }
 
@@ -63,8 +55,6 @@ final class Dice implements Countable, Rollable
      */
     public function count()
     {
-        $this->stack = [];
-
         return $this->sides;
     }
 
@@ -73,8 +63,6 @@ final class Dice implements Countable, Rollable
      */
     public function getMinimum(): int
     {
-        $this->stack = [];
-
         return 1;
     }
 
@@ -83,35 +71,14 @@ final class Dice implements Countable, Rollable
      */
     public function getMaximum(): int
     {
-        $this->stack = [];
-
         return $this->sides;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
-        $roll = random_int(1, $this->sides);
-        $this->stack = ['roll' => (string) $roll];
-
-        return $roll;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTrace(): array
-    {
-        return $this->stack;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTraceAsString(): string
-    {
-        return $this->stack['roll'] ?? '';
+        return new Result($this, random_int(1, $this->sides));
     }
 }

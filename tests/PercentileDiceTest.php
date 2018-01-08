@@ -16,7 +16,7 @@ final class PercentileDiceTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
-     * @covers ::getTraceAsString
+     * @covers \Bakame\DiceRoller\Result
      */
     public function testFudgeDice()
     {
@@ -26,8 +26,7 @@ final class PercentileDiceTest extends TestCase
         $this->assertSame(1, $dice->getMinimum());
         $this->assertSame('D%', (string) $dice);
         for ($i = 0; $i < 10; $i++) {
-            $test = $dice->roll();
-            $this->assertSame($dice->getTraceAsString(), (string) $test);
+            $test = $dice->roll()->getResult();
             $this->assertGreaterThanOrEqual($dice->getMinimum(), $test);
             $this->assertLessThanOrEqual($dice->getMaximum(), $test);
         }
