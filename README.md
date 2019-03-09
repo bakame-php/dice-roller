@@ -30,7 +30,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
 
 $cup = new Cup(new Dice(6), new Dice(6));
-echo $cup;             // returns 2D6
+echo $cup->toString(); // returns 2D6
 echo $cup->roll();     // returns 8
 ```
 
@@ -71,7 +71,7 @@ interface Rollable
 - `Rollable::getMinimum` returns the minimum value the rollable object can return during a roll;
 - `Rollable::getMaximum` returns the maximum value the rollable object can return during a roll;
 - `Rollable::roll` returns a value from a roll.
-- `Rollable::__toString` returns the string annotation of the Rollable object.
+- `Rollable::toString` returns the string annotation of the Rollable object.
 
 ### Dices
 
@@ -125,7 +125,7 @@ count($fudge);                 // returns 100
 
 ### Rollable collection
 
-A `Bakame\DiceRoller\Cup` is a collection of `Rollable` objects with also implements the `Rollable` interface. As such, a `Cup` can contains any type of dices but others `Cup` objects as well.
+A `Bakame\DiceRoller\Cup` is a collection of `Rollable` objects which also implements the `Rollable` interface. As such, a `Cup` can contains any type of dices but others `Cup` objects as well.
 
 ```php
 <?php
@@ -188,7 +188,7 @@ count($alt_cup);           //returns 4 the number of dices
 echo $alt_cup->toString(); //returns 3D5+DF
 ```
 
-** WARNING: a `Cup` object can be empty but adding an empty `Cup` object using any setter method is not possible. The emtpy `Cup` object will be filtered out.**
+**WARNING: a `Cup` object can be empty but adding an empty `Cup` object using any setter method is not possible. The emtpy `Cup` object will be filtered out.**
 
 
 ### Roll Modifiers
@@ -204,11 +204,11 @@ namespace Bakame\DiceRoller;
 
 final class Arithmetic implements Rollable
 {
-    const ADDITION = '+';
-    const SUBSTRACTION = '-';
-    const MULTIPLICATION = '*';
-    const DIVISION = '/';
-    const EXPONENTIATION = '^';
+    public const ADDITION = '+';
+    public const SUBSTRACTION = '-';
+    public const MULTIPLICATION = '*';
+    public const DIVISION = '/';
+    public const EXPONENTIATION = '^';
 
     public function __construct(Rollable $rollable, string $operator, int $value);
 }
@@ -245,10 +245,10 @@ namespace Bakame\DiceRoller;
 
 final class DropKeep implements Rollable
 {
-    const DROP_HIGHEST = 'dh';
-    const DROP_LOWEST = 'dl';
-    const KEEP_HIGHEST = 'kh';
-    const KEEP_LOWEST = 'kl';
+    public const DROP_HIGHEST = 'dh';
+    public const DROP_LOWEST = 'dl';
+    public const KEEP_HIGHEST = 'kh';
+    public const KEEP_LOWEST = 'kl';
 
     public function __construct(Cup $pRollable, string $pAlgo, int $pThreshold);
 }
@@ -292,14 +292,15 @@ namespace Bakame\DiceRoller;
 
 final class Explode implements Rollable
 {
-    const EQUALS = '=';
-    const GREATER_THAN = '>';
-    const LESSER_THAN = '<';
+    public const EQUALS = '=';
+    public const GREATER_THAN = '>';
+    public const LESSER_THAN = '<';
+
     public function __construct(Cup $pRollable, string $pCompare, int $pThreshold);
 }
 ```
 
-This modifier decorates a `Rollable` object by applying the one of the explode algorithm on a collection of `Rollable` objects. The constructor expects:
+This modifier decorates a `Cup` object by applying one of the explode algorithm. The constructor expects:
 
 - a `Cup` object;
 - a comparison operator string;
