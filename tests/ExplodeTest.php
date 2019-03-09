@@ -86,6 +86,7 @@ final class ExplodeTest extends TestCase
      * @dataProvider provideExplodingModifier
      *
      * @covers ::__toString
+     * @covers ::toString
      * @covers ::getAnnotationSuffix
      *
      */

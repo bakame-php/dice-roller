@@ -23,6 +23,7 @@ final class PercentileDiceTest extends TestCase
     /**
      * @covers ::count
      * @covers ::__toString
+     * @covers ::toString
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll

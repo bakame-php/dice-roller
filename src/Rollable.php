@@ -39,7 +39,6 @@ interface Rollable
      * Returns the string representation of the
      * Rollable object using Dice annotation.
      *
-     * @return string
      */
     public function toString(): string;
 }

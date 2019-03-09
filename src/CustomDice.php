@@ -48,7 +48,7 @@ final class CustomDice implements Countable, Rollable
     /**
      * {@inheritdoc}
      */
-    public function toString()
+    public function toString(): string
     {
         return 'D['.implode(',', $this->values).']';
     }

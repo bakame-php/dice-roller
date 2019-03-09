@@ -29,7 +29,7 @@ final class PercentileDice implements Countable, Rollable
     /**
      * {@inheritdoc}
      */
-    public function toString()
+    public function toString(): string
     {
         return 'D%';
     }

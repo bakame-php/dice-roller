@@ -96,14 +96,14 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * {@inheritdoc}
      */
-    public function toString()
+    public function toString(): string
     {
         if (0 == count($this->items)) {
             return '0';
         }
 
         $parts = array_map(function (Rollable $rollable) {
-            return (string) $rollable;
+            return $rollable->toString();
         }, $this->items);
 
         $pool = array_count_values($parts);

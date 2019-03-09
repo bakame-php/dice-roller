@@ -81,7 +81,7 @@ final class DropKeep implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function toString()
+    public function toString(): string
     {
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {

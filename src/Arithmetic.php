@@ -77,9 +77,9 @@ final class Arithmetic implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function toString()
+    public function toString(): string
     {
-        $str = (string) $this->rollable;
+        $str = $this->rollable->toString();
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }

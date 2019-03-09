@@ -53,6 +53,7 @@ final class DropKeepTest extends TestCase
     }
 
     /**
+     * @covers ::toString
      * @covers ::__toString
      */
     public function testToString(): void
@@ -87,7 +88,7 @@ final class DropKeepTest extends TestCase
                 return 1;
             }
 
-            public function __toString()
+            public function toString(): string
             {
                 return '1';
             }
@@ -109,7 +110,7 @@ final class DropKeepTest extends TestCase
                 return 2;
             }
 
-            public function __toString()
+            public function toString(): string
             {
                 return '2';
             }

@@ -23,6 +23,8 @@ final class DiceTest extends TestCase
 {
     /**
      * @covers ::__construct
+     * @covers ::__toString
+     * @covers ::toString
      * @covers ::count
      * @covers ::getMinimum
      * @covers ::getMaximum
@@ -33,6 +35,7 @@ final class DiceTest extends TestCase
         $expected = 6;
         $dice = new Dice($expected);
         self::assertCount($expected, $dice);
+        self::assertSame('D6', (string) $dice);
         self::assertSame($expected, $dice->getMaximum());
         self::assertSame(1, $dice->getMinimum());
         for ($i = 0; $i < 10; $i++) {

@@ -51,6 +51,8 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::__toString
+     * @covers ::toString
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
@@ -63,6 +65,7 @@ final class CupTest extends TestCase
         $cup = new Cup(DiceRoller::parse('4D10'), DiceRoller::parse('2d4'));
         self::assertSame(6, $cup->getMinimum());
         self::assertSame(48, $cup->getMaximum());
+        self::assertSame('4D10+2D4', (string) $cup);
         self::assertCount(2, $cup);
         self::assertContainsOnlyInstancesOf(Rollable::class, $cup);
         for ($i = 0; $i < 5; $i++) {
@@ -125,5 +128,16 @@ final class CupTest extends TestCase
         $alt_cup = $cup->withRollable(new Cup());
         self::assertCount(0, $cup);
         self::assertSame($cup, $alt_cup);
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::__toString
+     * @covers ::toString
+     */
+    public function testEmptyCup(): void
+    {
+        $cup = new Cup();
+        self::assertSame('0', (string) $cup);
     }
 }

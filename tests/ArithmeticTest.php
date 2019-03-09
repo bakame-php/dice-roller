@@ -53,6 +53,7 @@ final class ArithmeticTest extends TestCase
     }
 
     /**
+     * @covers ::toString
      * @covers ::__toString
      */
     public function testToString(): void
@@ -86,7 +87,7 @@ final class ArithmeticTest extends TestCase
                 return 1;
             }
 
-            public function __toString()
+            public function toString(): string
             {
                 return '1';
             }

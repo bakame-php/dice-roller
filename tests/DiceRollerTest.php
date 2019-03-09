@@ -16,7 +16,6 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\DiceRoller;
 use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
 use Traversable;
 
@@ -83,7 +82,7 @@ final class DiceRollerTest extends TestCase
     public function testValidParser(string $expected, string $toString): void
     {
         $cup = DiceRoller::parse($expected);
-        self::assertSame($toString, (string) $cup);
+        self::assertSame($toString, $cup->toString());
     }
 
     public function validStringProvider(): iterable
@@ -217,18 +216,14 @@ final class DiceRollerTest extends TestCase
      */
     public function testRollWithSingleDice(): void
     {
-        $cup = DiceRoller::parse('d8');
-        if (!is_iterable($cup)) {
-            self::markTestSkipped('The rollable object is not iterable');
-        }
-        foreach ($cup as $dice) {
-            self::assertInstanceOf(Dice::class, $dice);
-            self::assertCount(8, $dice);
-        }
+        $dice = DiceRoller::parse('d8');
+        self::assertInstanceOf(Dice::class, $dice);
+        self::assertCount(8, $dice);
+
         for ($i = 0; $i < 5; $i++) {
-            $test = $cup->roll();
-            self::assertGreaterThanOrEqual($cup->getMinimum(), $test);
-            self::assertLessThanOrEqual($cup->getMaximum(), $test);
+            $test = $dice->roll();
+            self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
+            self::assertLessThanOrEqual($dice->getMaximum(), $test);
         }
     }
 
@@ -240,23 +235,17 @@ final class DiceRollerTest extends TestCase
      */
     public function testRollWithDefaultDice(): void
     {
-        $cup = DiceRoller::parse('d');
-        if (!is_iterable($cup)) {
-            self::markTestSkipped('The rollable object is not iterable');
-        }
-        self::assertCount(1, $cup);
-        self::assertContainsOnlyInstancesOf(Rollable::class, $cup);
-        foreach ($cup as $dice) {
-            self::assertInstanceOf(Dice::class, $dice);
-            self::assertCount(6, $dice);
-            self::assertSame(1, $dice->getMinimum());
-            self::assertSame(6, $dice->getMaximum());
-        }
+        $dice = DiceRoller::parse('d');
+        self::assertInstanceOf(Dice::class, $dice);
+        self::assertInstanceOf(Dice::class, $dice);
+        self::assertCount(6, $dice);
+        self::assertSame(1, $dice->getMinimum());
+        self::assertSame(6, $dice->getMaximum());
 
         for ($i = 0; $i < 5; $i++) {
-            $test = $cup->roll();
-            self::assertGreaterThanOrEqual($cup->getMinimum(), $test);
-            self::assertLessThanOrEqual($cup->getMaximum(), $test);
+            $test = $dice->roll();
+            self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
+            self::assertLessThanOrEqual($dice->getMaximum(), $test);
         }
     }
 

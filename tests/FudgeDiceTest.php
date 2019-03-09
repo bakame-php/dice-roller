@@ -24,11 +24,14 @@ final class FudgeDiceTest extends TestCase
      * @covers ::count
      * @covers ::getMinimum
      * @covers ::getMaximum
+     * @covers ::toString
+     * @covers ::__toString
      * @covers ::roll
      */
     public function testFudgeDice(): void
     {
         $dice = new FudgeDice();
+        self::assertSame('DF', (string) $dice);
         self::assertCount(3, $dice);
         self::assertSame(1, $dice->getMaximum());
         self::assertSame(-1, $dice->getMinimum());

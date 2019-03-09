@@ -23,6 +23,7 @@ final class CustomDiceTest extends TestCase
 {
     /**
      * @covers ::__construct
+     * @covers ::toString
      * @covers ::__toString
      * @covers ::count
      * @covers ::getMinimum

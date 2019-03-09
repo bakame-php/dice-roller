@@ -46,11 +46,18 @@ final class DiceRoller
     public static function parse(string $expression): Rollable
     {
         $parts = self::explode($expression);
-        if (1 === count($parts)) {
-            return self::parsePool(array_shift($parts));
+        if (1 !== count($parts)) {
+            return new Cup(...array_map([DiceRoller::class, 'parsePool'], $parts));
         }
 
-        return new Cup(...array_map([DiceRoller::class, 'parsePool'], $parts));
+        $rollable = self::parsePool(array_shift($parts));
+        if (!$rollable instanceof Cup || 1 !== count($rollable)) {
+            return $rollable;
+        }
+
+        $arr = iterator_to_array($rollable, false);
+
+        return $arr[0];
     }
 
     /**
@@ -105,7 +112,6 @@ final class DiceRoller
 
         $pool = self::getPool($matches);
         if (1 === preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
-
             return self::addArithmetic($modifier_matches, self::addComplexModifier($modifier_matches, $pool));
         }
 
