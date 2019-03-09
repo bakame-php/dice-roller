@@ -25,11 +25,11 @@ final class Arithmetic implements Rollable
     public const MULTIPLICATION = '*';
 
     private const OPERATOR = [
-        self::ADDITION => 'add',
-        self::SUBSTRACTION => 'subs',
-        self::EXPONENTIATION => 'exp',
-        self::DIVISION => 'div',
-        self::MULTIPLICATION => 'multiply',
+        self::ADDITION => 1,
+        self::SUBSTRACTION => 1,
+        self::EXPONENTIATION => 1,
+        self::DIVISION => 1,
+        self::MULTIPLICATION => 1,
     ];
 
     /**
@@ -124,20 +124,19 @@ final class Arithmetic implements Rollable
      */
     private function calculate(int $value): int
     {
-        $method = self::OPERATOR[$this->operator];
-        if ('add' === $method) {
+        if ('+' === $this->operator) {
             return $this->add($value);
         }
 
-        if ('subs' === $method) {
+        if ('-' === $this->operator) {
             return $this->subs($value);
         }
 
-        if ('exp' === $method) {
+        if ('^' === $this->operator) {
             return $this->exp($value);
         }
 
-        if ('div' === $method) {
+        if ('/' === $this->operator) {
             return $this->div($value);
         }
 

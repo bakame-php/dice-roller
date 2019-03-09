@@ -24,10 +24,10 @@ final class DropKeep implements Rollable
     public const KEEP_LOWEST = 'kl';
 
     private const OPERATOR = [
-        self::DROP_HIGHEST => 'dropHighest',
-        self::DROP_LOWEST => 'dropLowest',
-        self::KEEP_HIGHEST => 'keepHighest',
-        self::KEEP_LOWEST => 'keepLowest',
+        self::DROP_HIGHEST => 1,
+        self::DROP_LOWEST => 1,
+        self::KEEP_HIGHEST => 1,
+        self::KEEP_LOWEST => 1,
     ];
 
     /**
