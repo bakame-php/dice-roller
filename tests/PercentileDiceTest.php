@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\PercentileDice;
@@ -16,20 +26,18 @@ final class PercentileDiceTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
-     * @covers ::getTrace
      */
-    public function testFudgeDice()
+    public function testFudgeDice(): void
     {
         $dice = new PercentileDice();
-        $this->assertCount(100, $dice);
-        $this->assertSame(100, $dice->getMaximum());
-        $this->assertSame(1, $dice->getMinimum());
-        $this->assertSame('D%', (string) $dice);
+        self::assertCount(100, $dice);
+        self::assertSame(100, $dice->getMaximum());
+        self::assertSame(1, $dice->getMinimum());
+        self::assertSame('D%', (string) $dice);
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
-            $this->assertSame($dice->getTrace(), (string) $test);
-            $this->assertGreaterThanOrEqual($dice->getMinimum(), $test);
-            $this->assertLessThanOrEqual($dice->getMaximum(), $test);
+            self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
+            self::assertLessThanOrEqual($dice->getMaximum(), $test);
         }
     }
 }

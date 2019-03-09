@@ -12,8 +12,8 @@
          stopOnFailure="false">
 
     <testsuites>
-        <testsuite name="Dice Roller Test Suite">
-            <directory>tests/</directory>
+        <testsuite name="Dire Roller Test Suite">
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 
@@ -27,9 +27,10 @@
     </filter>
 
     <logging>
-        <log type="junit" target="build/report.junit.xml"/>
-        <log type="coverage-html" target="build/coverage" charset="UTF-8" yui="true" highlight="true"/>
-        <log type="coverage-text" target="build/coverage.txt"/>
+        <log type="junit" target="build/phpunit.junit.xml"/>
+        <log type="coverage-xml" target="build/coverage-xml"/>
+        <log type="coverage-html" target="build/coverage"/>
         <log type="coverage-clover" target="build/clover.xml"/>
     </logging>
+
 </phpunit>

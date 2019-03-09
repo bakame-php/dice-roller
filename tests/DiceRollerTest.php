@@ -1,24 +1,35 @@
 <?php
 
+/**
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\DiceRoller;
 use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Parser;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use Traversable;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Parser
+ * @coversDefaultClass Bakame\DiceRoller\DiceRoller
  */
-final class ParserTest extends TestCase
+final class DiceRollerTest extends TestCase
 {
     /**
      * @covers ::parse
      * @covers ::explode
      * @covers ::parsePool
+     * @covers ::getPool
      * @covers ::addArithmetic
      * @covers ::addExplode
      * @covers ::addDropKeep
@@ -27,15 +38,14 @@ final class ParserTest extends TestCase
      * @covers ::parseDefinition
      * @covers ::createComplexPool
      * @dataProvider invalidStringProvider
-     * @param string $expected
      */
-    public function testInvalidGroupDefinition(string $expected)
+    public function testInvalidGroupDefinition(string $expected): void
     {
-        $this->expectException(Exception::class);
-        DiceRoller\create($expected);
+        self::expectException(Exception::class);
+        DiceRoller::parse($expected);
     }
 
-    public function invalidStringProvider()
+    public function invalidStringProvider(): iterable
     {
         return [
             'missing separator D' => ['ZZZ'],
@@ -61,7 +71,6 @@ final class ParserTest extends TestCase
      * @covers ::createSimplePool
      * @covers ::parseDefinition
      * @covers ::createComplexPool
-     * @covers \Bakame\DiceRoller\create
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::__toString
      * @covers \Bakame\DiceRoller\Dice::__toString
@@ -70,16 +79,14 @@ final class ParserTest extends TestCase
      * @covers \Bakame\DiceRoller\DropKeep::__toString
      * @covers \Bakame\DiceRoller\Explode::__toString
      * @dataProvider validStringProvider
-     * @param string $expected
-     * @param string $toString
      */
-    public function testValidParser(string $expected, string $toString)
+    public function testValidParser(string $expected, string $toString): void
     {
-        $cup = DiceRoller\create($expected);
-        $this->assertSame($toString, (string) $cup);
+        $cup = DiceRoller::parse($expected);
+        self::assertSame($toString, (string) $cup);
     }
 
-    public function validStringProvider()
+    public function validStringProvider(): iterable
     {
         return [
             'empty cup' => ['', '0'],
@@ -106,7 +113,6 @@ final class ParserTest extends TestCase
     }
 
     /**
-     * @covers ::__invoke
      * @covers ::parse
      * @covers ::explode
      * @covers ::parsePool
@@ -116,18 +122,13 @@ final class ParserTest extends TestCase
      * @covers ::addDropKeep
      * @covers ::addComplexModifier
      * @dataProvider permissiveParserProvider
-     * @param mixed $full
-     * @param mixed $short
      */
-    public function testPermissiveParser($full, $short)
+    public function testPermissiveParser(string $full, string $short): void
     {
-        $this->assertEquals(
-            DiceRoller\create($full),
-            (new Parser())($short)
-        );
+        self::assertEquals(DiceRoller::parse($full), DiceRoller::parse($short));
     }
 
-    public function permissiveParserProvider()
+    public function permissiveParserProvider(): iterable
     {
         return [
             'default dice size' => [
@@ -174,56 +175,37 @@ final class ParserTest extends TestCase
     }
 
     /**
-     * @covers \Bakame\DiceRoller\Rollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      */
-    public function testFiveFourSidedDice()
+    public function testFiveFourSidedDice(): void
     {
-        $group = DiceRoller\create('5D4');
-        $this->assertCount(5, $group);
-        $this->assertContainsOnlyInstancesOf(Dice::class, $group);
+        $group = Cup::createFromRollable(5, new Dice(4));
+        self::assertCount(5, $group);
+        self::assertContainsOnlyInstancesOf(Dice::class, $group);
         foreach ($group as $dice) {
-            $this->assertCount(4, $dice);
+            self::assertCount(4, $dice);
         }
 
         for ($i = 0; $i < 5; $i++) {
             $test = $group->roll();
-            $this->assertGreaterThanOrEqual($group->getMinimum(), $test);
-            $this->assertLessThanOrEqual($group->getMaximum(), $test);
+            self::assertGreaterThanOrEqual($group->getMinimum(), $test);
+            self::assertLessThanOrEqual($group->getMaximum(), $test);
         }
-    }
-
-    /**
-     * @covers ::parse
-     * @covers \Bakame\DiceRoller\Cup::roll
-     * @covers \Bakame\DiceRoller\Cup::calculate
-     * @covers \Bakame\DiceRoller\Cup::getTrace
-     * @covers \Bakame\DiceRoller\Explode::calculate
-     */
-    public function testComplexExplain()
-    {
-        $cup = DiceRoller\create('(3DF+2D6)!=3+3DF^2');
-        $this->assertSame('', $cup->getTrace());
-        $cup->roll();
-        $this->assertContains('(', $cup->getTrace());
     }
 
     /**
      * @covers ::parse
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::roll
-     * @covers \Bakame\DiceRoller\Cup::getTrace
      */
-    public function testRollWithNoDice()
+    public function testRollWithNoDice(): void
     {
-        $cup = DiceRoller\create('');
-        $this->assertCount(0, $cup);
-        $this->assertSame(0, $cup->getMinimum());
-        $this->assertSame(0, $cup->getMaximum());
+        $cup = DiceRoller::parse('');
+        self::assertSame(0, $cup->getMinimum());
+        self::assertSame(0, $cup->getMaximum());
         for ($i = 0; $i < 5; $i++) {
-            $this->assertEquals(0, $cup->roll());
-            $this->assertEquals('0', $cup->getTrace());
+            self::assertEquals(0, $cup->roll());
         }
     }
 
@@ -231,22 +213,22 @@ final class ParserTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Rollable
      * @covers \Bakame\DiceRoller\Dice::count
      */
-    public function testRollWithSingleDice()
+    public function testRollWithSingleDice(): void
     {
-        $cup = DiceRoller\create('d8');
-        $this->assertCount(1, $cup);
-        $this->assertContainsOnlyInstancesOf(Rollable::class, $cup);
+        $cup = DiceRoller::parse('d8');
+        if (!is_iterable($cup)) {
+            self::markTestSkipped('The rollable object is not iterable');
+        }
         foreach ($cup as $dice) {
-            $this->assertInstanceOf(Dice::class, $dice);
-            $this->assertCount(8, $dice);
+            self::assertInstanceOf(Dice::class, $dice);
+            self::assertCount(8, $dice);
         }
         for ($i = 0; $i < 5; $i++) {
             $test = $cup->roll();
-            $this->assertGreaterThanOrEqual($cup->getMinimum(), $test);
-            $this->assertLessThanOrEqual($cup->getMaximum(), $test);
+            self::assertGreaterThanOrEqual($cup->getMinimum(), $test);
+            self::assertLessThanOrEqual($cup->getMaximum(), $test);
         }
     }
 
@@ -254,25 +236,27 @@ final class ParserTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Rollable
      * @covers \Bakame\DiceRoller\Dice::count
      */
-    public function testRollWithDefaultDice()
+    public function testRollWithDefaultDice(): void
     {
-        $cup = DiceRoller\create('d');
-        $this->assertCount(1, $cup);
-        $this->assertContainsOnlyInstancesOf(Rollable::class, $cup);
+        $cup = DiceRoller::parse('d');
+        if (!is_iterable($cup)) {
+            self::markTestSkipped('The rollable object is not iterable');
+        }
+        self::assertCount(1, $cup);
+        self::assertContainsOnlyInstancesOf(Rollable::class, $cup);
         foreach ($cup as $dice) {
-            $this->assertInstanceOf(Dice::class, $dice);
-            $this->assertCount(6, $dice);
-            $this->assertSame(1, $dice->getMinimum());
-            $this->assertSame(6, $dice->getMaximum());
+            self::assertInstanceOf(Dice::class, $dice);
+            self::assertCount(6, $dice);
+            self::assertSame(1, $dice->getMinimum());
+            self::assertSame(6, $dice->getMaximum());
         }
 
         for ($i = 0; $i < 5; $i++) {
             $test = $cup->roll();
-            $this->assertGreaterThanOrEqual($cup->getMinimum(), $test);
-            $this->assertLessThanOrEqual($cup->getMaximum(), $test);
+            self::assertGreaterThanOrEqual($cup->getMinimum(), $test);
+            self::assertLessThanOrEqual($cup->getMaximum(), $test);
         }
     }
 
@@ -281,31 +265,31 @@ final class ParserTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Rollable
      * @covers \Bakame\DiceRoller\Dice::count
      */
-    public function testRollWithMultipleDice()
+    public function testRollWithMultipleDice(): void
     {
-        $cup = DiceRoller\create('2D6+3d4');
-        $this->assertCount(2, $cup);
+        $cup = DiceRoller::parse('2D6+3d4');
+        self::assertInstanceOf(Traversable::class, $cup);
+        self::assertCount(2, $cup);
         $res = iterator_to_array($cup, false);
-        $this->assertInstanceOf(Cup::class, $res[0]);
-        $this->assertCount(2, $res[0]);
+        self::assertInstanceOf(Cup::class, $res[0]);
+        self::assertCount(2, $res[0]);
         foreach ($res[0] as $dice) {
-            $this->assertInstanceOf(Dice::class, $dice);
-            $this->assertCount(6, $dice);
+            self::assertInstanceOf(Dice::class, $dice);
+            self::assertCount(6, $dice);
         }
 
-        $this->assertCount(3, $res[1]);
+        self::assertCount(3, $res[1]);
         foreach ($res[1] as $dice) {
-            $this->assertInstanceOf(Dice::class, $dice);
-            $this->assertCount(4, $dice);
+            self::assertInstanceOf(Dice::class, $dice);
+            self::assertCount(4, $dice);
         }
 
         for ($i = 0; $i < 5; $i++) {
             $test = $cup->roll();
-            $this->assertGreaterThanOrEqual($cup->getMinimum(), $test);
-            $this->assertLessThanOrEqual($cup->getMaximum(), $test);
+            self::assertGreaterThanOrEqual($cup->getMinimum(), $test);
+            self::assertLessThanOrEqual($cup->getMaximum(), $test);
         }
     }
 }

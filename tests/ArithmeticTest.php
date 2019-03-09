@@ -1,9 +1,20 @@
 <?php
 
-namespace Bakame\DiceRoller\Test\Modifier;
+/**
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\Arithmetic;
 use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\CustomDice;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception;
 use Bakame\DiceRoller\Rollable;
@@ -17,53 +28,47 @@ final class ArithmeticTest extends TestCase
     /**
      * @covers ::__construct
      */
-    public function testArithmeticConstructorThrows1()
+    public function testArithmeticConstructorThrows1(): void
     {
-        $this->expectException(Exception::class);
+        self::expectException(Exception::class);
         new Arithmetic(new Dice(6), '+', -3);
     }
 
     /**
      * @covers ::__construct
      */
-    public function testArithmeticConstructorThrows2()
+    public function testArithmeticConstructorThrows2(): void
     {
-        $this->expectException(Exception::class);
+        self::expectException(Exception::class);
         new Arithmetic(new Dice(6), '**', 3);
     }
 
     /**
      * @covers ::__construct
      */
-    public function testArithmeticConstructorThrows3()
+    public function testArithmeticConstructorThrows3(): void
     {
-        $this->expectException(Exception::class);
+        self::expectException(Exception::class);
         new Arithmetic(new Dice(6), '/', 0);
     }
 
     /**
      * @covers ::__toString
-     * @covers ::getTrace
-     * @covers ::setTrace
      */
-    public function testToString()
+    public function testToString(): void
     {
         $cup = new Arithmetic(new Cup(
             new Dice(3),
             new Dice(3),
             new Dice(4)
         ), '^', 3);
-        $this->assertSame('(2D3+D4)^3', (string) $cup);
-        $this->assertSame('', $cup->getTrace());
+        self::assertSame('(2D3+D4)^3', (string) $cup);
     }
 
     /**
      * @covers ::roll
-     * @covers ::getTrace
-     * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Cup::getTrace
      */
-    public function testGetTrace()
+    public function testGetTrace(): void
     {
         $dice = new class() implements Rollable {
             public function getMinimum(): int
@@ -85,43 +90,26 @@ final class ArithmeticTest extends TestCase
             {
                 return '1';
             }
-
-            public function getTrace(): string
-            {
-                return '1';
-            }
         };
 
         $rollables = new Cup($dice, clone $dice);
         $cup = new Arithmetic($rollables, '*', 3);
-        $this->assertSame('', $rollables->getTrace());
-        $this->assertSame('', $cup->getTrace());
-        $this->assertSame(6, $cup->roll());
-        $this->assertSame('(1 + 1) * 3', $cup->getTrace());
-        $this->assertSame('1 + 1', $rollables->getTrace());
+        self::assertSame(6, $cup->roll());
     }
 
     /**
      * @covers ::roll
      * @covers ::calculate
      * @covers ::exp
-     * @covers ::getTrace
      */
-    public function testRollWithNegativeDiceValue()
+    public function testRollWithNegativeDiceValue(): void
     {
         $dice = $this->createMock(Rollable::class);
         $dice->method('roll')
-            ->will($this->returnValue(-1));
+            ->will(self::returnValue(-1));
 
-        $dice->method('getTrace')
-            ->will($this->returnValue('-1'));
-        ;
-
-        $cup = new Arithmetic($dice, '^', 3);
-        $this->assertSame(-1, $dice->roll());
-        //$this->assertSame(-1, $cup->roll());
-        $cup->roll();
-        $this->assertSame('-1 ^ 3', $cup->getTrace());
+        $cup = new Arithmetic($dice, Arithmetic::EXPONENTIATION, 3);
+        self::assertSame(-1, $dice->roll());
     }
 
     /**
@@ -137,23 +125,18 @@ final class ArithmeticTest extends TestCase
      * @covers ::div
      * @covers ::exp
      * @dataProvider validParametersProvider
-     * @param string $operator
-     * @param int    $size
-     * @param int    $value
-     * @param int    $min
-     * @param int    $max
      */
-    public function testArithmetic(string $operator, int $size, int $value, int $min, int $max)
+    public function testArithmetic(string $operator, int $size, int $value, int $min, int $max): void
     {
         $roll = new Arithmetic(new Dice($size), $operator, $value);
         $test = $roll->roll();
-        $this->assertSame($min, $roll->getMinimum());
-        $this->assertSame($max, $roll->getMaximum());
-        $this->assertGreaterThanOrEqual($min, $test);
-        $this->assertLessThanOrEqual($max, $test);
+        self::assertSame($min, $roll->getMinimum());
+        self::assertSame($max, $roll->getMaximum());
+        self::assertGreaterThanOrEqual($min, $test);
+        self::assertLessThanOrEqual($max, $test);
     }
 
-    public function validParametersProvider()
+    public function validParametersProvider(): iterable
     {
         return [
             'adding' => [
@@ -192,5 +175,25 @@ final class ArithmeticTest extends TestCase
                 'max' => 36,
             ],
         ];
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::getMinimum
+     * @covers ::getMaximum
+     * @covers ::calculate
+     * @covers ::roll
+     * @covers ::calculate
+     * @covers ::multiply
+     * @covers ::exp
+     */
+    public function testArithmeticExponentWithNegativeValue(): void
+    {
+        $roll = new Arithmetic(new CustomDice(-1, -1, -1), Arithmetic::EXPONENTIATION, 3);
+        $test = $roll->roll();
+        self::assertSame(-1, $roll->getMinimum());
+        self::assertSame(-1, $roll->getMaximum());
+        self::assertGreaterThanOrEqual(-1, $test);
+        self::assertLessThanOrEqual(-1, $test);
     }
 }

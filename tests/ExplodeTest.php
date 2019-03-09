@@ -1,11 +1,21 @@
 <?php
 
-namespace Bakame\DiceRoller\Test\Modifier;
+/**
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Test;
+
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDice;
 use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\DiceRoller;
 use Bakame\DiceRoller\Exception;
 use Bakame\DiceRoller\Explode;
 use Bakame\DiceRoller\Rollable;
@@ -16,11 +26,14 @@ use PHPUnit\Framework\TestCase;
  */
 final class ExplodeTest extends TestCase
 {
+    /**
+     * @var Cup
+     */
     private $cup;
 
-    public function setUp()
+    public function setUp(): void
     {
-        $this->cup = DiceRoller\create('4d6');
+        $this->cup = Cup::createFromRollable(4, new Dice(6));
     }
 
     /**
@@ -30,19 +43,16 @@ final class ExplodeTest extends TestCase
      * @covers ::isValidCollection
      * @covers ::isValidRollable
      *
-     * @param Cup    $cup
-     * @param string $compare
-     * @param int    $threshold
      */
-    public function testConstructorThrows(Cup $cup, string $compare, int $threshold)
+    public function testConstructorThrows(Cup $cup, string $compare, int $threshold): void
     {
-        $this->expectException(Exception::class);
+        self::expectException(Exception::class);
         new Explode($cup, $compare, $threshold);
     }
 
-    public function provideInvalidProperties()
+    public function provideInvalidProperties(): iterable
     {
-        $cup = DiceRoller\create('4d6');
+        $cup = DiceRoller::parse('4d6');
         return [
             'invalid comparion' => [
                 'cup' => $cup,
@@ -78,15 +88,13 @@ final class ExplodeTest extends TestCase
      * @covers ::__toString
      * @covers ::getAnnotationSuffix
      *
-     * @param Explode $roll
-     * @param string  $annotation
      */
-    public function testToString(Explode $roll, string $annotation)
+    public function testToString(Explode $roll, string $annotation): void
     {
-        $this->assertSame($annotation, (string) $roll);
+        self::assertSame($annotation, (string) $roll);
     }
 
-    public function provideExplodingModifier()
+    public function provideExplodingModifier(): iterable
     {
         return [
             [
@@ -94,30 +102,24 @@ final class ExplodeTest extends TestCase
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => new Explode(DiceRoller\create('4d[-1,-1,-1]'), Explode::GREATER_THAN, 1),
+                'roll' => new Explode(Cup::createFromRollable(4, new CustomDice(-1, -1, -1)), Explode::GREATER_THAN, 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => new Explode(DiceRoller\create('4d6'), Explode::EQUALS, 1),
+                'roll' => new Explode(Cup::createFromRollable(4, new Dice(6)), Explode::EQUALS, 1),
                 'annotation' => '4D6!',
             ],
         ];
     }
 
-    public function testGetTrace()
+    public function testGetTrace(): void
     {
         $dice = $this->createMock(Rollable::class);
         $dice->method('roll')
-            ->will($this->onConsecutiveCalls(2, 2, 3));
-
-        $dice->method('getTrace')
-            ->will($this->onConsecutiveCalls('2', '2', '3'))
-        ;
+            ->will(self::onConsecutiveCalls(2, 2, 3));
 
         $cup = new Explode(new Cup($dice), Explode::EQUALS, 2);
-        $this->assertSame('', $cup->getTrace());
-        $this->assertSame(7, $cup->roll());
-        $this->assertSame('2 + 2 + 3', $cup->getTrace());
+        self::assertSame(7, $cup->roll());
     }
 
     /**
@@ -128,22 +130,18 @@ final class ExplodeTest extends TestCase
      * @covers ::isValid
      * @covers ::roll
      * @dataProvider validParametersProvider
-     * @param string $algo
-     * @param int    $threshold
-     * @param int    $min
-     * @param int    $max
      */
-    public function testModifier(string $algo, int $threshold, int $min, int $max)
+    public function testModifier(string $algo, int $threshold, int $min, int $max): void
     {
         $cup = new Explode($this->cup, $algo, $threshold);
         $res = $cup->roll();
-        $this->assertSame($min, $cup->getMinimum());
-        $this->assertSame($max, $cup->getMaximum());
-        $this->assertGreaterThanOrEqual($min, $res);
-        $this->assertLessThanOrEqual($max, $res);
+        self::assertSame($min, $cup->getMinimum());
+        self::assertSame($max, $cup->getMaximum());
+        self::assertGreaterThanOrEqual($min, $res);
+        self::assertLessThanOrEqual($max, $res);
     }
 
-    public function validParametersProvider()
+    public function validParametersProvider(): iterable
     {
         return [
             'equals' => [

@@ -11,7 +11,7 @@ This is a fork of [Ethtezahl/Dice-Roller](https://github.com/Ethtezahl/dice-roll
 
 ## System Requirements
 
-You need **PHP >= 7.0.0** but the latest stable version of PHP is recommended.
+You need **PHP >= 7.2.0** but the latest stable version of PHP is recommended.
 
 ## Installation
 
@@ -30,7 +30,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
 
 $cup = new Cup(new Dice(6), new Dice(6));
-echp $cup;             // returns 2D6
+echo $cup;             // returns 2D6
 echo $cup->roll();     // returns 8
 echo $cup->getTrace(); // returns 3 + 5
 ```
@@ -42,12 +42,11 @@ Use the library expression parser to simulate the roll of two six-sided die
 ```php
 <?php
 
-use Bakame\DiceRoller;
+use Bakame\DiceRoller\DiceRoller;
 
-$cup = DiceRoller\create('2D6');
-echp $cup;             // returns 2D6
+$cup = DiceRoller::parse('2D6');
+echo $cup->toString(); // returns 2D6
 echo $cup->roll();     // returns 6
-echo $cup->getTrace(); // returns 4 + 2
 ```
 
 ## Documentation
@@ -63,18 +62,16 @@ namespace Bakame\DiceRoller;
 
 interface Rollable
 {
-    public function getTrace(): string;
     public function getMinimum(): int;
     public function getMaximum(): int;
     public function roll(): int;
-    public function __toString();
+    public function toString();
 }
 ```
 
 - `Rollable::getMinimum` returns the minimum value the rollable object can return during a roll;
 - `Rollable::getMaximum` returns the maximum value the rollable object can return during a roll;
 - `Rollable::roll` returns a value from a roll.
-- `Rollable::getTrace` returns the execution trace of how the last roll was executed.
 - `Rollable::__toString` returns the string annotation of the Rollable object.
 
 ### Dices
@@ -107,24 +104,24 @@ use Bakame\DiceRoller\FudgeDice;
 use Bakame\DiceRoller\PercentileDice;
 
 $basic = new Dice(3);
-echo $basic;    // 'D3';
-$basic->roll(); // may return 1, 2 or 3
-count($basic);  // returns 3
+echo $basic->toString(); // 'D3';
+$basic->roll();          // may return 1, 2 or 3
+count($basic);           // returns 3
 
 $custom = new CustomDice(3, 2, 1, 1);
-echo $custom;    // 'D[3,2,1,1]';
-$custom->roll(); // may return 1, 2 or 3
-count($custom);  // returns 4
+echo $customc->toString();  // 'D[3,2,1,1]';
+$custom->roll();            // may return 1, 2 or 3
+count($custom);             // returns 4
 
 $fugde = new FudgeDice();
-echo $fudge;    // displays 'DF'
-$fudge->roll(); // may return -1, 0, or 1
-count($fudge);  // returns 3
+echo $fudgec->toString(); // displays 'DF'
+$fudge->roll();           // may return -1, 0, or 1
+count($fudge);            // returns 3
 
 $percentile = new PercentileDice();
-echo $percentile;    // displays 'D%'
-$percentile->roll(); // returns a value between 1 and 100
-count($fudge);       // returns 100
+echo $percentilec->toString(); // displays 'D%'
+$percentile->roll();           // returns a value between 1 and 100
+count($fudge);                 // returns 100
 ```
 
 ### Rollable collection
@@ -155,10 +152,10 @@ use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\FudgeDice;
 use Bakame\DiceRoller\PercentileDice;
 
-echo Cup::createFromRollable(3, new Dice(5));                // displays 3D5
-echo Cup::createFromRollable(4, new PercentileDice());       // displays 4D%
-echo Cup::createFromRollable(2, new CustomDice(1, 2, 2, 4)); // displays 2D[1,2,2,4]
-echo Cup::createFromRollable(1, new FudgeDice());            // displays DF
+echo Cup::createFromRollable(3, new Dice(5))->toString();                // displays 3D5
+echo Cup::createFromRollable(4, new PercentileDice())->toString();       // displays 4D%
+echo Cup::createFromRollable(2, new CustomDice(1, 2, 2, 4))->toString(); // displays 2D[1,2,2,4]
+echo Cup::createFromRollable(1, new FudgeDice())->toString();            // displays DF
 ```
 
 A `Cup` created using `createFromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception` is thrown.
@@ -184,12 +181,12 @@ Once a `Cup` is instantiated there are no method to alter its properties. Howeve
 use Bakame\DiceRoller\Cup;
 
 $cup = Cup::createFromRollable(3, new Dice(5));
-count($cup); //returns 3 the number of dices
-echo $cup;   //returns 3D5
+count($cup);           //returns 3 the number of dices
+echo $cup->toString(); //returns 3D5
 
 $alt_cup = $cup->withRollable(new FugdeDice());
-count($alt_cup); //returns 4 the number of dices
-echo $alt_cup;   //returns 3D5+DF
+count($alt_cup);           //returns 4 the number of dices
+echo $alt_cup->toString(); //returns 3D5+DF
 ```
 
 ** WARNING: a `Cup` object can be empty but adding an empty `Cup` object using any setter method is not possible. The emtpy `Cup` object will be filtered out.**
@@ -237,7 +234,7 @@ use Bakame\DiceRoller\Arithmetic;
 use Bakame\DiceRoller\Dice;
 
 $modifier = new Arithmetic(new Dice(6), Arithmetic::MULTIPLICATION, 3);
-echo $modifier;  // displays D6*3;
+echo $modifier->toString();  // displays D6*3;
 ```
 
 #### The DropKeep Modifier
@@ -284,7 +281,7 @@ use Bakame\DiceRoller\DropKeep;
 
 $cup = Cup::createFromRollable(4, new Dice(6));
 $modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
-echo $modifier; // displays '4D6DH3'
+echo $modifier->toString(); // displays '4D6DH3'
 ```
 
 #### The Explode Modifier
@@ -327,7 +324,7 @@ use Bakame\DiceRoller\FudgeDice;
 
 $cup = new Cup(new Dice(6), new FudgeDice(), new Dice(6), new Dice(6));
 $modifier = new Explode($cup, Explode::EQUALS, 3);
-echo $modifier; // displays (3D6+DF)!=3
+echo $modifier->toString(); // displays (3D6+DF)!=3
 ```
 
 ### Parsing Dice notation
@@ -337,14 +334,13 @@ echo $modifier; // displays (3D6+DF)!=3
 
 namespace Bakame\DiceRoller;
 
-final class Parser
+final class DiceRoller
 {
-    public function __invoke(string $annotation): Rollable;
-    public function parse(string $annotation): Rollable;
+    public static function parse(string $annotation): Rollable;
 }
 ```
 
-The package comes bundles with a `Parser` class to ease `Rollable` instance creation. The parser supports basic roll annotation rules in a case insentitive way:
+The package comes bundles with a parser class to ease `Rollable` instance creation. The parser supports basic roll annotation rules in a case insentitive way:
 
 
 | Annotation | Examples  | Description |
@@ -366,26 +362,13 @@ By applying these rules the `Parser` can construct the following `Rollable` obje
 ```php
 <?php
 
-use Bakame\DiceRoller\Parser;
+use Bakame\DiceRoller\DiceRoller;
 
-$cup = (new Parser())->parse('3D20+4+D4!>3/4^3');
-//or
-$cup = (new Parser())('3D20+4+D4!>3/4^3'); //using the __invoke method
+$cup = DiceRoller::parse('3D20+4+D4!>3/4^3');
 
 echo $cup->roll();
 ```
 
-If the `Parser` is not able to parse the submitted dice annotation a `Bakame\DiceRoller\Exception` will be thrown.  
-Last but not least, if you prefer using functions you can call the `create` function alias defined in the `Bakame\DiceRoller` namespace as follow:
-
-
-```php
-<?php
-
-use Bakame\DiceRoller;
-
-$cup = DiceRoller\create('3D20+4+D4!>3/4^3');
-echo $cup->roll();
-```
+If the `Parser` is not able to parse the submitted dice annotation a `Bakame\DiceRoller\Exception` will be thrown.
 
 **Happy Coding!**

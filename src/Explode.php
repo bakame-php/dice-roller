@@ -1,15 +1,15 @@
 <?php
+
 /**
-* This file is part of the League.csv library
-*
-* @license http://opensource.org/licenses/MIT
-* @link https://github.com/bakame-php/dice-roller/
-* @version 1.0.0
-* @package bakame-php/dice-roller
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
@@ -21,7 +21,7 @@ final class Explode implements Rollable
     const LESSER_THAN = '<';
 
     /**
-     * The Cup object to decorate
+     * The Cup object to decorate.
      *
      * @var Cup
      */
@@ -42,16 +42,7 @@ final class Explode implements Rollable
     private $compare;
 
     /**
-     * @var string
-     */
-    private $trace;
-
-    /**
-     * new instance
-     *
-     * @param Cup      $rollable
-     * @param string   $compare
-     * @param int|null $threshold
+     * new instance.
      *
      * @throws Exception if the comparator is not recognized
      * @throws Exception if the Cup is not valid
@@ -67,15 +58,10 @@ final class Explode implements Rollable
             throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
         }
         $this->rollable = $rollable;
-        $this->trace = '';
     }
 
     /**
-     * Tells whether the Rollable collection can be used
-     *
-     * @param Cup $collection
-     *
-     * @return bool
+     * Tells whether the Rollable collection can be used.
      */
     private function isValidCollection(Cup $collection): bool
     {
@@ -91,11 +77,7 @@ final class Explode implements Rollable
     }
 
     /**
-     * Tells whether a Rollable object is in valid state
-     *
-     * @param Rollable $rollable
-     *
-     * @return bool
+     * Tells whether a Rollable object is in valid state.
      */
     private function isValidRollable(Rollable $rollable): bool
     {
@@ -120,7 +102,14 @@ final class Explode implements Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
+        return $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString()
+    {
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
@@ -131,10 +120,8 @@ final class Explode implements Rollable
 
     /**
      * Return the modifier dice annotation.
-     *
-     * @return string
      */
-    private function getAnnotationSuffix()
+    private function getAnnotationSuffix(): string
     {
         if (self::EQUALS === $this->compare && in_array($this->threshold, [null, 1], true)) {
             return '';
@@ -146,17 +133,8 @@ final class Explode implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
-    {
-        return $this->trace;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getMinimum(): int
     {
-        $this->trace = '';
         return $this->rollable->getMinimum();
     }
 
@@ -165,7 +143,6 @@ final class Explode implements Rollable
      */
     public function getMaximum(): int
     {
-        $this->trace = '';
         return PHP_INT_MAX;
     }
 
@@ -175,7 +152,6 @@ final class Explode implements Rollable
     public function roll(): int
     {
         $sum = 0;
-        $this->trace = '';
         foreach ($this->rollable as $innerRoll) {
             $sum = $this->calculate($sum, $innerRoll);
         }
@@ -185,43 +161,20 @@ final class Explode implements Rollable
 
     /**
      * Add the result of the Rollable::roll method to the submitted sum.
-     *
-     * @param int      $sum
-     * @param Rollable $rollable
-     *
-     * @return int
      */
     private function calculate(int $sum, Rollable $rollable): int
     {
-        $trace = [];
         $threshold = $this->threshold ?? $rollable->getMaximum();
         do {
             $res = $rollable->roll();
             $sum += $res;
-            $str = $rollable->getTrace();
-            if (false !== strpos($str, '+')) {
-                $str = '('.$str.')';
-            }
-            $trace[] = $str;
         } while ($this->isValid($res, $threshold));
-
-        $trace = implode(' + ', $trace);
-        if ('' !== $this->trace) {
-            $trace = ' + '.$trace;
-        }
-
-        $this->trace .= $trace;
 
         return $sum;
     }
 
     /**
      * Returns whether we should call the rollable again.
-     *
-     * @param int $result
-     * @param int $threshold
-     *
-     * @return bool
      */
     private function isValid(int $result, int $threshold): bool
     {

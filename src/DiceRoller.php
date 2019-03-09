@@ -1,22 +1,22 @@
 <?php
+
 /**
-* This file is part of the League.csv library
-*
-* @license http://opensource.org/licenses/MIT
-* @link https://github.com/bakame-php/dice-roller/
-* @version 1.0.0
-* @package bakame-php/dice-roller
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-final class Parser
+final class DiceRoller
 {
-    const POOL_PATTERN = ',^
+    private const POOL_PATTERN = ',^
         (?<dice>
             (?<simple>(?<quantity>\d*)d(?<size>\d+|f|\%|\[.*?\])?) # simple dice pattern
             |
@@ -25,7 +25,7 @@ final class Parser
         (?<modifier>.*)?                                           # modifier pattern
     $,xi';
 
-    const MODIFIER_PATTERN = ',^
+    private const MODIFIER_PATTERN = ',^
         (?<algo>                             # modifier definition pattern
             (?<type>!|!>|!<|!=|dh|dl|kh|kl)? # modifier types - exploding and sorting
             (?<threshold>\d+)?               # modifier threshold
@@ -42,43 +42,23 @@ final class Parser
 
     /**
      * Returns a new Cup Instance from a string pattern.
-     *
-     * @param string $expression
-     *
-     * @return Rollable
      */
-    public function parse(string $expression): Rollable
+    public static function parse(string $expression): Rollable
     {
-        $parts = $this->explode($expression);
-        if (1 == count($parts)) {
-            return $this->parsePool(array_shift($parts));
+        $parts = self::explode($expression);
+        if (1 === count($parts)) {
+            return self::parsePool(array_shift($parts));
         }
 
-        return new Cup(...array_map([$this, 'parsePool'], $parts));
-    }
-
-    /**
-     * Returns a new Cup Instance from a string pattern.
-     *
-     * @see Parser::parse
-     *
-     * @param string $expression
-     *
-     * @return Rollable
-     */
-    public function __invoke(string $expression): Rollable
-    {
-        return $this->parse($expression);
+        return new Cup(...array_map([DiceRoller::class, 'parsePool'], $parts));
     }
 
     /**
      * Explodes the given string into separate parts.
      *
-     * @param string $str
-     *
      * @return string[]
      */
-    private function explode(string $str): array
+    private static function explode(string $str): array
     {
         $parts = explode('+', $str);
         $res = [];
@@ -112,43 +92,45 @@ final class Parser
      * @param string $str dice configuration string
      *
      * @throws Exception if the configuration string is not supported
-     *
-     * @return Rollable
      */
-    private function parsePool(string $str): Rollable
+    private static function parsePool(string $str): Rollable
     {
         if ('' === $str) {
             return new Cup();
         }
 
-        if (!preg_match(self::POOL_PATTERN, $str, $matches)) {
+        if (1 !== preg_match(self::POOL_PATTERN, $str, $matches)) {
             throw new Exception(sprintf('the submitted dice format `%s` is invalid or not supported', $str));
         }
 
-        $method = 'createSimplePool';
-        if ('' !== $matches['complex']) {
-            $method = 'createComplexPool';
-        }
+        $pool = self::getPool($matches);
+        if (1 === preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
 
-        $pool = $this->$method($matches);
-        if (preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
-            return $this->addArithmetic($modifier_matches, $this->addComplexModifier($modifier_matches, $pool));
+            return self::addArithmetic($modifier_matches, self::addComplexModifier($modifier_matches, $pool));
         }
 
         throw new Exception(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
     }
 
     /**
-     * Creates a simple Uniformed Pool.
-     *
-     * @param array $matches
-     *
-     * @return Cup
+     * Generates the Cup from the expression matched pattern.
      */
-    private function createSimplePool(array $matches): Cup
+    private static function getPool(array $matches): Cup
+    {
+        if ('' !== $matches['complex']) {
+            return self::createComplexPool($matches);
+        }
+
+        return self::createSimplePool($matches);
+    }
+
+    /**
+     * Creates a simple Uniformed Pool.
+     */
+    private static function createSimplePool(array $matches): Cup
     {
         $quantity = (int) ($matches['quantity'] ?? 1);
-        if (0 == $quantity) {
+        if (0 === $quantity) {
             $quantity = 1;
         }
 
@@ -158,19 +140,15 @@ final class Parser
             $definition = '6';
         }
 
-        return Cup::createFromRollable($quantity, $this->parseDefinition($definition));
+        return Cup::createFromRollable($quantity, self::parseDefinition($definition));
     }
 
     /**
-     * Parse Rollable definition
-     *
-     * @param string $definition
+     * Parse Rollable definition.
      *
      * @throws Exception If the defintion is not parsable
-     *
-     * @return Rollable
      */
-    private function parseDefinition(string $definition): Rollable
+    private static function parseDefinition(string $definition): Rollable
     {
         if (false !== ($size = filter_var($definition, FILTER_VALIDATE_INT))) {
             return new Dice($size);
@@ -193,25 +171,16 @@ final class Parser
 
     /**
      * Creates a complex mixed Pool.
-     *
-     * @param array $matches
-     *
-     * @return Cup
      */
-    private function createComplexPool(array $matches): Cup
+    private static function createComplexPool(array $matches): Cup
     {
-        return new Cup(...array_map([$this, 'parsePool'], $this->explode($matches['mixed'])));
+        return new Cup(...array_map([DiceRoller::class, 'parsePool'], self::explode($matches['mixed'])));
     }
 
     /**
      * Decorates the Rollable object with up to 2 ArithmeticModifier.
-     *
-     * @param array    $matches
-     * @param Rollable $rollable
-     *
-     * @return Rollable
      */
-    private function addArithmetic(array $matches, Rollable $rollable): Rollable
+    private static function addArithmetic(array $matches, Rollable $rollable): Rollable
     {
         if (!isset($matches['math1'])) {
             return $rollable;
@@ -227,34 +196,25 @@ final class Parser
 
     /**
      * Decorates the Rollable object with the DropKeep or the Explode Modifier.
-     *
-     * @param array $matches
-     * @param Cup   $rollable
-     *
-     * @return Rollable
      */
-    private function addComplexModifier(array $matches, Cup $rollable): Rollable
+    private static function addComplexModifier(array $matches, Cup $rollable): Rollable
     {
-        if ('' == $matches['algo']) {
+        if ('' === $matches['algo']) {
             return $rollable;
         }
 
         $type = strtolower($matches['type']);
         if (0 !== strpos($type, '!')) {
-            return $this->addDropKeep($type, $matches, $rollable);
+            return self::addDropKeep($type, $matches, $rollable);
         }
 
-        return $this->addExplode(substr($type, 1), $matches, $rollable);
+        return self::addExplode(substr($type, 1), $matches, $rollable);
     }
 
     /**
      * Decorates the Rollable object with the SortModifer modifier.
-     *
-     * @param string $algo
-     * @param array  $matches
-     * @param Cup    $rollable
      */
-    private function addDropKeep(string $algo, array $matches, Cup $rollable): Rollable
+    private static function addDropKeep(string $algo, array $matches, Cup $rollable): Rollable
     {
         $threshold = $matches['threshold'] ?? 1;
 
@@ -263,12 +223,8 @@ final class Parser
 
     /**
      * Decorates the Rollable object with the ExplodeModifier modifier.
-     *
-     * @param string $compare
-     * @param array  $matches
-     * @param Cup    $rollable
      */
-    private function addExplode(string $compare, array $matches, Cup $rollable): Rollable
+    private static function addExplode(string $compare, array $matches, Cup $rollable): Rollable
     {
         if ('' == $compare) {
             $compare = Explode::EQUALS;

@@ -1,8 +1,17 @@
 <?php
 
-namespace Bakame\DiceRoller\Test\Modifier;
+/**
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Test;
+
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\DropKeep;
@@ -15,51 +24,52 @@ use PHPUnit\Framework\TestCase;
  */
 final class DropKeepTest extends TestCase
 {
+    /**
+     * @var Cup
+     */
     private $cup;
 
-    public function setUp()
+    public function setUp(): void
     {
-        $this->cup = DiceRoller\create('4d6');
+        $this->cup = Cup::createFromRollable(4, new Dice(6));
     }
 
     /**
      * @covers ::__construct
      */
-    public function testConstructorThrows1()
+    public function testConstructorThrows1(): void
     {
-        $this->expectException(Exception::class);
+        self::expectException(Exception::class);
         new DropKeep($this->cup, DropKeep::DROP_LOWEST, 6);
     }
 
     /**
      * @covers ::__construct
      */
-    public function testConstructorThrows2()
+    public function testConstructorThrows2(): void
     {
-        $this->expectException(Exception::class);
+        self::expectException(Exception::class);
         new DropKeep($this->cup, 'foobar', 3);
     }
 
     /**
      * @covers ::__toString
      */
-    public function testToString()
+    public function testToString(): void
     {
         $cup = new DropKeep(new Cup(
             new Dice(3),
             new Dice(3),
             new Dice(4)
         ), DropKeep::DROP_LOWEST, 2);
-        $this->assertSame('(2D3+D4)DL2', (string) $cup);
+        self::assertSame('(2D3+D4)DL2', (string) $cup);
     }
 
 
     /**
      * @covers ::roll
-     * @covers ::getTrace
-     * @covers \Bakame\DiceRoller\Cup::getTrace
      */
-    public function testGetTrace()
+    public function testGetTrace(): void
     {
         $dice1 = new class() implements Rollable {
             public function getMinimum(): int
@@ -78,11 +88,6 @@ final class DropKeepTest extends TestCase
             }
 
             public function __toString()
-            {
-                return '1';
-            }
-
-            public function getTrace(): string
             {
                 return '1';
             }
@@ -108,20 +113,11 @@ final class DropKeepTest extends TestCase
             {
                 return '2';
             }
-
-            public function getTrace(): string
-            {
-                return '2';
-            }
         };
 
         $rollables = new Cup($dice1, clone $dice1, $dice2, clone $dice2);
         $cup = new DropKeep($rollables, DropKeep::DROP_LOWEST, 1);
-        $this->assertSame('', $rollables->getTrace());
-        $this->assertSame('', $cup->getTrace());
-        $this->assertSame(5, $cup->roll());
-        $this->assertSame('(1 + 2 + 2)', $cup->getTrace());
-        $this->assertSame('', $rollables->getTrace());
+        self::assertSame(5, $cup->roll());
     }
 
     /**
@@ -136,22 +132,18 @@ final class DropKeepTest extends TestCase
      * @covers ::dropHighest
      * @covers ::roll
      * @dataProvider validParametersProvider
-     * @param string $algo
-     * @param int    $threshold
-     * @param int    $min
-     * @param int    $max
      */
-    public function testModifier(string $algo, int $threshold, int $min, int $max)
+    public function testModifier(string $algo, int $threshold, int $min, int $max): void
     {
         $cup = new DropKeep($this->cup, $algo, $threshold);
         $res = $cup->roll();
-        $this->assertSame($min, $cup->getMinimum());
-        $this->assertSame($max, $cup->getMaximum());
-        $this->assertGreaterThanOrEqual($min, $res);
-        $this->assertLessThanOrEqual($max, $res);
+        self::assertSame($min, $cup->getMinimum());
+        self::assertSame($max, $cup->getMaximum());
+        self::assertGreaterThanOrEqual($min, $res);
+        self::assertLessThanOrEqual($max, $res);
     }
 
-    public function validParametersProvider()
+    public function validParametersProvider(): iterable
     {
         return [
             'dl' => [

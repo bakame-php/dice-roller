@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\CustomDice;
@@ -18,29 +28,27 @@ final class CustomDiceTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
-     * @covers ::getTrace
      */
-    public function testFudgeDice()
+    public function testFudgeDice(): void
     {
         $dice = new CustomDice(1, 2, 2, 4, 4);
-        $this->assertCount(5, $dice);
-        $this->assertSame(4, $dice->getMaximum());
-        $this->assertSame(1, $dice->getMinimum());
-        $this->assertSame('D[1,2,2,4,4]', (string) $dice);
+        self::assertCount(5, $dice);
+        self::assertSame(4, $dice->getMaximum());
+        self::assertSame(1, $dice->getMinimum());
+        self::assertSame('D[1,2,2,4,4]', (string) $dice);
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
-            $this->assertSame($dice->getTrace(), (string) $test);
-            $this->assertGreaterThanOrEqual($dice->getMinimum(), $test);
-            $this->assertLessThanOrEqual($dice->getMaximum(), $test);
+            self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
+            self::assertLessThanOrEqual($dice->getMaximum(), $test);
         }
     }
 
     /**
      * @covers ::__construct
      */
-    public function testConstructorWithWrongValue()
+    public function testConstructorWithWrongValue(): void
     {
-        $this->expectException(Exception::class);
+        self::expectException(Exception::class);
         new CustomDice(1);
     }
 }

@@ -1,6 +1,7 @@
-.idea
+vendor
 build
 composer.lock
 docs/_site
-vendor
-/nbproject/private/
+docs/node_modules
+.idea
+.php_cs.cache

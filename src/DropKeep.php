@@ -1,27 +1,27 @@
 <?php
+
 /**
-* This file is part of the League.csv library
-*
-* @license http://opensource.org/licenses/MIT
-* @link https://github.com/bakame-php/dice-roller/
-* @version 1.0.0
-* @package bakame-php/dice-roller
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
 final class DropKeep implements Rollable
 {
-    const DROP_HIGHEST = 'dh';
-    const DROP_LOWEST = 'dl';
-    const KEEP_HIGHEST = 'kh';
-    const KEEP_LOWEST = 'kl';
+    public const DROP_HIGHEST = 'dh';
+    public const DROP_LOWEST = 'dl';
+    public const KEEP_HIGHEST = 'kh';
+    public const KEEP_LOWEST = 'kl';
 
-    const OPERATOR = [
+    private const OPERATOR = [
         self::DROP_HIGHEST => 'dropHighest',
         self::DROP_LOWEST => 'dropLowest',
         self::KEEP_HIGHEST => 'keepHighest',
@@ -29,37 +29,28 @@ final class DropKeep implements Rollable
     ];
 
     /**
-     * The Cup object to decorate
+     * The Cup object to decorate.
      *
      * @var Cup
      */
     private $rollable;
 
     /**
-     * The threshold number of rollable object
+     * The threshold number of rollable object.
      *
      * @var int
      */
     private $threshold;
 
     /**
-     * The method name associated with a given algo
+     * The given algo.
      *
      * @var string
      */
-    private $method;
+    private $algo;
 
     /**
-     * @var string
-     */
-    private $trace;
-
-    /**
-     * new instance
-     *
-     * @param Cup    $rollable
-     * @param string $algo
-     * @param int    $threshold
+     * new instance.
      *
      * @throws Exception if the algorithm is not recognized
      * @throws Exception if the Cup is not valid
@@ -76,8 +67,7 @@ final class DropKeep implements Rollable
 
         $this->rollable = $rollable;
         $this->threshold = $threshold;
-        $this->method = self::OPERATOR[$algo];
-        $this->trace = '';
+        $this->algo = $algo;
     }
 
     /**
@@ -85,23 +75,20 @@ final class DropKeep implements Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
-        $str = (string) $this->rollable;
-        if (false !== strpos($str, '+')) {
-            $str = '('.$str.')';
-        }
-
-        return $str
-            .strtoupper(array_search($this->method, self::OPERATOR))
-            .$this->threshold;
+        return $this->toString();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
+    public function toString()
     {
-        return $this->trace;
+        $str = (string) $this->rollable;
+        if (false !== strpos($str, '+')) {
+            $str = '('.$str.')';
+        }
+
+        return $str.strtoupper($this->algo).$this->threshold;
     }
 
     /**
@@ -109,41 +96,12 @@ final class DropKeep implements Rollable
      */
     public function roll(): int
     {
-        return $this->calculate('roll');
-    }
-
-    /**
-     * Computes the sum to be return.
-     *
-     * @param string $method One of the Rollable method
-     *
-     * @return int
-     */
-    private function calculate(string $method): int
-    {
         $res = [];
-        $this->trace = '';
         foreach ($this->rollable as $rollable) {
-            $res[] = [
-                'roll' => $rollable->$method(),
-                'trace' => $method === 'roll' ? $rollable->getTrace() : '',
-            ];
+            $res[] = $rollable->roll();
         }
 
-        $retained = $this->{$this->method}($res);
-        $res = array_sum(array_column($retained, 'roll'));
-        if ($method !== 'roll') {
-            return $res;
-        }
-
-        $trace = implode(' + ', array_column($retained, 'trace'));
-        if (strpos($trace, '+') !== false) {
-            $trace = '('.$trace.')';
-        }
-
-        $this->trace = $trace;
-
-        return $res;
+        return $this->calculate($res);
     }
 
     /**
@@ -151,7 +109,12 @@ final class DropKeep implements Rollable
      */
     public function getMinimum(): int
     {
-        return $this->calculate('getMinimum');
+        $res = [];
+        foreach ($this->rollable as $rollable) {
+            $res[] = $rollable->getMinimum();
+        }
+
+        return $this->calculate($res);
     }
 
     /**
@@ -159,7 +122,33 @@ final class DropKeep implements Rollable
      */
     public function getMaximum(): int
     {
-        return $this->calculate('getMaximum');
+        $res = [];
+        foreach ($this->rollable as $rollable) {
+            $res[] = $rollable->getMaximum();
+        }
+
+        return $this->calculate($res);
+    }
+
+    /**
+     * Computes the sum to be return.
+     */
+    private function calculate(array $values): int
+    {
+        $method = self::OPERATOR[$this->algo];
+        if ('dropHighest' === $method) {
+            return (int) array_sum($this->dropHighest($values));
+        }
+        
+        if ('dropLowest' === $method) {
+            return (int) array_sum($this->dropLowest($values));
+        }
+        
+        if ('keepHighest' === $method) {
+            return (int) array_sum($this->keepHighest($values));
+        }
+
+        return (int) array_sum($this->keepLowest($values));
     }
 
     /**
@@ -176,9 +165,9 @@ final class DropKeep implements Rollable
         return array_slice($sum, $this->threshold);
     }
 
-    private function drop(array $data1, array $data2): int
+    private function drop(int $data1, int $data2): int
     {
-        return $data1['roll'] <=> $data2['roll'];
+        return $data1 <=> $data2;
     }
 
     /**

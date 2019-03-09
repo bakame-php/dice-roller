@@ -1,5 +1,15 @@
 <?php
 
+$header = <<<EOF
+This file is part of the League.csv library
+
+@license http://opensource.org/licenses/MIT
+@link https://github.com/bakame-php/dice-roller/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+EOF;
+
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/src')
     ->in(__DIR__.'/tests')
@@ -10,20 +20,29 @@ return PhpCsFixer\Config::create()
         '@PSR2' => true,
         'array_syntax' => ['syntax' => 'short'],
         'concat_space' => ['spacing' => 'none'],
+        'header_comment' => [
+            'commentType' => 'PHPDoc',
+            'header' => $header,
+            'location' => 'after_open',
+            'separate' => 'both',
+        ],
         'new_with_braces' => true,
         'no_blank_lines_after_phpdoc' => true,
         'no_empty_phpdoc' => true,
         'no_empty_comment' => true,
         'no_leading_import_slash' => true,
+        'no_superfluous_phpdoc_tags' => true,
         'no_trailing_comma_in_singleline_array' => true,
+        'no_superfluous_phpdoc_tags' => true,
         'no_unused_imports' => true,
-        'ordered_imports' => ['importsOrder' => null, 'sortAlgorithm' => 'alpha'],
+        'ordered_imports' => ['imports_order' => ['class', 'function', 'const'], 'sort_algorithm' => 'alpha'],
         'phpdoc_add_missing_param_annotation' => ['only_untyped' => false],
         'phpdoc_align' => true,
         'phpdoc_no_empty_return' => true,
         'phpdoc_order' => true,
         'phpdoc_scalar' => true,
         'phpdoc_to_comment' => true,
+        'phpdoc_summary' => true,
         'psr0' => true,
         'psr4' => true,
         'return_type_declaration' => ['space_before' => 'none'],

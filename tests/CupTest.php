@@ -1,73 +1,74 @@
 <?php
 
+/**
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDice;
 use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\DiceRoller;
 use Bakame\DiceRoller\Exception;
 use Bakame\DiceRoller\FudgeDice;
 use Bakame\DiceRoller\PercentileDice;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
-use TypeError;
-use function Bakame\DiceRoller\create;
 
 /**
  * @coversDefaultClass Bakame\DiceRoller\Cup
  */
 final class CupTest extends TestCase
 {
-    public function testConstructorThrowsTypeError()
-    {
-        $this->expectException(TypeError::class);
-        new Cup(new Dice(3), 'foo');
-    }
-
     /**
      * @covers ::__construct
      * @covers ::withRollable
      */
-    public function testWithRollable()
+    public function testWithRollable(): void
     {
         $cup = new Cup(new FudgeDice());
         $altCup = $cup->withRollable(new CustomDice(-1, 1, -1));
-        $this->assertNotEquals($cup, $altCup);
+        self::assertNotEquals($cup, $altCup);
     }
 
     /**
      * @covers ::__construct
      * @covers ::withRollable
      */
-    public function testWithRollableReturnsSameInstance()
+    public function testWithRollableReturnsSameInstance(): void
     {
         $cup = new Cup(new FudgeDice());
         $altCup = $cup->withRollable(new Cup());
-        $this->assertSame($cup, $altCup);
+        self::assertSame($cup, $altCup);
     }
 
     /**
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
-     * @covers ::calculate
      * @covers ::roll
-     * @covers ::minimum
-     * @covers ::maximum
      * @covers ::count
+     * @covers ::calculate
      * @covers ::getIterator
      */
-    public function testRoll()
+    public function testRoll(): void
     {
-        $cup = new Cup(create('4D10'), create('2d4'));
-        $this->assertSame(6, $cup->getMinimum());
-        $this->assertSame(48, $cup->getMaximum());
-        $this->assertCount(2, $cup);
-        $this->assertContainsOnlyInstancesOf(Rollable::class, $cup);
+        $cup = new Cup(DiceRoller::parse('4D10'), DiceRoller::parse('2d4'));
+        self::assertSame(6, $cup->getMinimum());
+        self::assertSame(48, $cup->getMaximum());
+        self::assertCount(2, $cup);
+        self::assertContainsOnlyInstancesOf(Rollable::class, $cup);
         for ($i = 0; $i < 5; $i++) {
             $test = $cup->roll();
-            $this->assertGreaterThanOrEqual($cup->getMinimum(), $test);
-            $this->assertLessThanOrEqual($cup->getMaximum(), $test);
+            self::assertGreaterThanOrEqual($cup->getMinimum(), $test);
+            self::assertLessThanOrEqual($cup->getMaximum(), $test);
         }
     }
 
@@ -75,18 +76,15 @@ final class CupTest extends TestCase
      * @covers ::__construct
      * @covers ::createFromRollable
      * @dataProvider validNamedConstructor
-     *
-     * @param int      $quantity
-     * @param Rollable $template
      */
-    public function testCreateFromRollable(int $quantity, Rollable $template)
+    public function testCreateFromRollable(int $quantity, Rollable $template): void
     {
         $cup = Cup::createFromRollable($quantity, $template);
-        $this->assertCount($quantity, $cup);
-        $this->assertContainsOnlyInstancesOf(get_class($template), $cup);
+        self::assertCount($quantity, $cup);
+        self::assertContainsOnlyInstancesOf(get_class($template), $cup);
     }
 
-    public function validNamedConstructor()
+    public function validNamedConstructor(): iterable
     {
         return [
             'basic dice' => [
@@ -109,9 +107,9 @@ final class CupTest extends TestCase
         ];
     }
 
-    public function testCreateFromRollableThrowsException()
+    public function testCreateFromRollableThrowsException(): void
     {
-        $this->expectException(Exception::class);
+        self::expectException(Exception::class);
         Cup::createFromRollable(0, new FudgeDice());
     }
 
@@ -121,11 +119,11 @@ final class CupTest extends TestCase
      * @covers ::withRollable
      * @covers ::isValid
      */
-    public function testCreateFromRollableReturnsEmptyCollection()
+    public function testCreateFromRollableReturnsEmptyCollection(): void
     {
         $cup = Cup::createFromRollable(12, new Cup());
         $alt_cup = $cup->withRollable(new Cup());
-        $this->assertCount(0, $cup);
-        $this->assertSame($cup, $alt_cup);
+        self::assertCount(0, $cup);
+        self::assertSame($cup, $alt_cup);
     }
 }

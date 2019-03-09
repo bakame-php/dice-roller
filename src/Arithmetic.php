@@ -1,28 +1,28 @@
 <?php
+
 /**
-* This file is part of the League.csv library
-*
-* @license http://opensource.org/licenses/MIT
-* @link https://github.com/bakame-php/dice-roller/
-* @version 1.0.0
-* @package bakame-php/dice-roller
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ * This file is part of the League.csv library
+ *
+ * @license http://opensource.org/licenses/MIT
+ * @link https://github.com/bakame-php/dice-roller/
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
 final class Arithmetic implements Rollable
 {
-    const ADDITION = '+';
-    const SUBSTRACTION = '-';
-    const DIVISION = '/';
-    const EXPONENTIATION = '^';
-    const MULTIPLICATION = '*';
+    public const ADDITION = '+';
+    public const SUBSTRACTION = '-';
+    public const DIVISION = '/';
+    public const EXPONENTIATION = '^';
+    public const MULTIPLICATION = '*';
 
-    const OPERATOR = [
+    private const OPERATOR = [
         self::ADDITION => 'add',
         self::SUBSTRACTION => 'subs',
         self::EXPONENTIATION => 'exp',
@@ -46,24 +46,7 @@ final class Arithmetic implements Rollable
     private $operator;
 
     /**
-     * @var string
-     */
-    private $trace;
-
-    /**
-     * The method name associated with a given algo
-     *
-     * @var string
-     */
-    private $method;
-
-    /**
-     * new instance
-     *
-     * @param Rollable $rollable
-     * @param string   $operator
-     * @param int      $value
-     * @param string   $operator
+     * new instance.
      *
      * @throws Exception if the value is lesser than 0
      * @throws Exception if the operator is not recognized
@@ -75,14 +58,12 @@ final class Arithmetic implements Rollable
         }
 
         if (0 > $value || (0 === $value && $operator == self::DIVISION)) {
-            throw new Exception(sprintf('The submitted value `%i` is invalid for the given `%s` operator', $value, $operator));
+            throw new Exception(sprintf('The submitted value `%s` is invalid for the given `%s` operator', $value, $operator));
         }
 
-        $this->operator = $operator;
-        $this->method = self::OPERATOR[$operator];
         $this->rollable = $rollable;
+        $this->operator = $operator;
         $this->value = $value;
-        $this->trace = '';
     }
 
     /**
@@ -90,8 +71,14 @@ final class Arithmetic implements Rollable
      */
     public function __toString()
     {
-        $this->trace = '';
+        return $this->toString();
+    }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function toString()
+    {
         $str = (string) $this->rollable;
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
@@ -103,101 +90,11 @@ final class Arithmetic implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
-    {
-        return $this->trace;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function roll(): int
     {
-        $roll = $this->calculate('roll');
+        $value = $this->rollable->roll();
 
-        $this->setTrace();
-
-        return $roll;
-    }
-
-    /**
-     * Compute the sum to be return.
-     *
-     * @param string $method One of the Rollable method
-     *
-     * @return int
-     */
-    private function calculate(string $method): int
-    {
-        return $this->{$this->method}($method);
-    }
-
-    /**
-     * Adds a fixed value to a the result from a Rollable public method
-     *
-     * @param string $method
-     */
-    private function add(string $method): int
-    {
-        return $this->rollable->$method() + $this->value;
-    }
-
-    /**
-     * Substracts a fixed value to a the result from a Rollable public method
-     *
-     * @param string $method
-     */
-    private function subs(string $method): int
-    {
-        return $this->rollable->$method() - $this->value;
-    }
-
-    /**
-     * Multiplies a fixed value to a the result from a Rollable public method
-     *
-     * @param string $method
-     */
-    private function multiply(string $method): int
-    {
-        return $this->rollable->$method() * $this->value;
-    }
-
-    /**
-     * divises a fixed value to a the result from a Rollable public method
-     *
-     * @param string $method
-     */
-    private function div(string $method): int
-    {
-        return intdiv($this->rollable->$method(), $this->value);
-    }
-
-    /**
-     * Exponents a fixed value to a the result from a Rollable public method
-     *
-     * @param string $method
-     */
-    private function exp(string $method): int
-    {
-        $roll = $this->rollable->$method();
-        if ($roll > -1) {
-            return $roll ** $this->value;
-        }
-
-        return (abs($roll) ** $this->value) * -1;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    private function setTrace()
-    {
-        $str = $this->rollable->getTrace();
-        if (strpos($str, '+') !== false) {
-            $str = '('.$str.')';
-        }
-
-        $this->trace = $str.' '.$this->operator.' '.$this->value;
+        return $this->calculate($value);
     }
 
     /**
@@ -205,7 +102,9 @@ final class Arithmetic implements Rollable
      */
     public function getMinimum(): int
     {
-        return $this->calculate('getMinimum');
+        $value = $this->rollable->getMinimum();
+
+        return $this->calculate($value);
     }
 
     /**
@@ -213,6 +112,77 @@ final class Arithmetic implements Rollable
      */
     public function getMaximum(): int
     {
-        return $this->calculate('getMaximum');
+        $value = $this->rollable->getMaximum();
+
+        return $this->calculate($value);
+    }
+
+    /**
+     * Computes the value to be return.
+     */
+    private function calculate(int $value): int
+    {
+        $method = self::OPERATOR[$this->operator];
+        if ('add' === $method) {
+            return $this->add($value);
+        }
+
+        if ('subs' === $method) {
+            return $this->subs($value);
+        }
+
+        if ('exp' === $method) {
+            return $this->exp($value);
+        }
+
+        if ('div' === $method) {
+            return $this->div($value);
+        }
+
+        return $this->multiply($value);
+    }
+
+    /**
+     * Adds a fixed value to a the result from a Rollable public method.
+     */
+    private function add(int $value): int
+    {
+        return $value + $this->value;
+    }
+
+    /**
+     * Substracts a fixed value to a the result from a Rollable public method.
+     */
+    private function subs(int $value): int
+    {
+        return $value - $this->value;
+    }
+
+    /**
+     * Multiplies a fixed value to a the result from a Rollable public method.
+     */
+    private function multiply(int $value): int
+    {
+        return $value * $this->value;
+    }
+
+    /**
+     * divises a fixed value to a the result from a Rollable public method.
+     */
+    private function div(int $value): int
+    {
+        return intdiv($value, $this->value);
+    }
+
+    /**
+     * Exponents a fixed value to a the result from a Rollable public method.
+     */
+    private function exp(int $value): int
+    {
+        if ($value > -1) {
+            return $value ** $this->value;
+        }
+
+        return (int) (abs($value) ** $this->value) * -1;
     }
 }

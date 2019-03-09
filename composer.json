@@ -16,11 +16,15 @@
         }
     ],
     "require": {
-        "php": ">=7.0"
+        "php": "^7.2"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.0",
-        "phpunit/phpunit": "^6.2"
+        "phpunit/phpunit": "^8.0",
+        "phpstan/phpstan": "^0.11.2",
+        "phpstan/phpstan-strict-rules": "^0.11.0",
+        "phpstan/phpstan-phpunit": "^0.11.0",
+        "symfony/var-dumper": "^4.2"
     },
     "autoload": {
         "psr-4": {
@@ -29,14 +33,24 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Bakame\\DiceRoller\\Test\\": "test"
-        },
-        "files": ["src/functions_include.php"]
+            "Bakame\\DiceRoller\\Test\\": "tests"
+        }
     },
     "scripts": {
-        "test": "phpunit --coverage-text; php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
+        "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
+        "phpstan-src": "phpstan analyse -l max -c phpstan.src.neon src",
+        "phpstan-tests": "phpstan analyse -l max -c phpstan.tests.neon tests",
+        "phpstan": [
+            "@phpstan-src",
+            "@phpstan-tests"
+        ],
         "phpunit": "phpunit --coverage-text",
-        "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;"
+        "test": [
+            "@phpcs",
+            "@phpstan-src",
+            "@phpstan-tests",
+            "@phpunit"
+        ]
     },
     "bin": [
         "bin/roll"
