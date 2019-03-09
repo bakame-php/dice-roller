@@ -32,7 +32,6 @@ use Bakame\DiceRoller\Dice;
 $cup = new Cup(new Dice(6), new Dice(6));
 echo $cup;             // returns 2D6
 echo $cup->roll();     // returns 8
-echo $cup->getTrace(); // returns 3 + 5
 ```
 
 ## Advanced use
