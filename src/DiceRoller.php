@@ -14,6 +14,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Exception\UnknownAlgorithm;
+use Bakame\DiceRoller\Exception\UnknownExpression;
+
 final class DiceRoller
 {
     private const POOL_PATTERN = ',^
@@ -107,7 +110,7 @@ final class DiceRoller
         }
 
         if (1 !== preg_match(self::POOL_PATTERN, $str, $matches)) {
-            throw new Exception(sprintf('the submitted dice format `%s` is invalid or not supported', $str));
+            throw new UnknownExpression(sprintf('the submitted dice format `%s` is invalid or not supported', $str));
         }
 
         $pool = self::getPool($matches);
@@ -115,7 +118,7 @@ final class DiceRoller
             return self::addArithmetic($modifier_matches, self::addComplexModifier($modifier_matches, $pool));
         }
 
-        throw new Exception(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
+        throw new UnknownAlgorithm(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
     }
 
     /**
@@ -243,6 +246,6 @@ final class DiceRoller
             return new Explode($rollable, $compare, (int) $matches['threshold']);
         }
 
-        throw new Exception(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $matches['algo']));
+        throw new UnknownAlgorithm(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $matches['algo']));
     }
 }

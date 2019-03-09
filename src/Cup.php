@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Exception\IllegalValue;
 use Countable;
 use Iterator;
 use IteratorAggregate;
@@ -33,7 +34,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public static function createFromRollable(int $quantity, Rollable $rollable): self
     {
         if ($quantity < 1) {
-            throw new Exception(sprintf('The quantity of dice `%s` is not valid', $quantity));
+            throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid', $quantity));
         }
 
         if (!self::isValid($rollable)) {
@@ -102,14 +103,17 @@ final class Cup implements Countable, IteratorAggregate, Rollable
             return '0';
         }
 
-        $parts = array_map(function (Rollable $rollable) {
+        $mapper = static function (Rollable $rollable): string {
             return $rollable->toString();
-        }, $this->items);
+        };
 
-        $pool = array_count_values($parts);
-        array_walk($pool, function (&$value, $offset) {
+        $walker = static function (&$value, $offset): void {
             $value = $value > 1 ? $value.$offset : $offset;
-        });
+        };
+
+        $parts = array_map($mapper, $this->items);
+        $pool = array_count_values($parts);
+        array_walk($pool, $walker);
 
         return implode('+', $pool);
     }

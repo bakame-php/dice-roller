@@ -14,6 +14,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Exception\UnknownAlgorithm;
+
 final class Explode implements Rollable
 {
     const EQUALS = '=';
@@ -44,18 +47,18 @@ final class Explode implements Rollable
     /**
      * new instance.
      *
-     * @throws Exception if the comparator is not recognized
-     * @throws Exception if the Cup is not valid
+     * @throws UnknownAlgorithm if the comparator is not recognized
+     * @throws IllegalValue     if the Cup triggers infinite loop
      */
     public function __construct(Cup $rollable, string $compare, int $threshold = null)
     {
         if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
-            throw new Exception(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
+            throw new UnknownAlgorithm(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
         }
         $this->compare = $compare;
         $this->threshold = $threshold;
         if (!$this->isValidCollection($rollable)) {
-            throw new Exception(sprintf('This expression %s will generate a infinite loop', (string) $this));
+            throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $this->toString()));
         }
         $this->rollable = $rollable;
     }

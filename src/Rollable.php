@@ -18,7 +18,6 @@ interface Rollable
      * Returns the rollable minimun result.
      *
      * MUST be lesser than or equal to the maximum value
-     *
      */
     public function getMinimum(): int;
 
@@ -26,7 +25,6 @@ interface Rollable
      * Returns the rollable maximum result.
      *
      * MUST be greater than or equal to the minimum value
-     *
      */
     public function getMaximum(): int;
 
@@ -38,7 +36,6 @@ interface Rollable
     /**
      * Returns the string representation of the
      * Rollable object using Dice annotation.
-     *
      */
     public function toString(): string;
 }

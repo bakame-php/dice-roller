@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Exception\TooFewSides;
 use Countable;
 
 final class CustomDice implements Countable, Rollable
@@ -31,7 +32,7 @@ final class CustomDice implements Countable, Rollable
     public function __construct(int ...$values)
     {
         if (2 > count($values)) {
-            throw new Exception(sprintf('Your dice must have at least 2 sides, `%s` given.', count($values)));
+            throw new TooFewSides(sprintf('Your dice must have at least 2 sides, `%s` given.', count($values)));
         }
 
         $this->values = $values;
@@ -56,9 +57,8 @@ final class CustomDice implements Countable, Rollable
     /**
      * Returns the side count.
      *
-     * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->values);
     }

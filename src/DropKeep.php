@@ -14,6 +14,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Exception\TooManyObjects;
+use Bakame\DiceRoller\Exception\UnknownAlgorithm;
+
 final class DropKeep implements Rollable
 {
     public const DROP_HIGHEST = 'dh';
@@ -58,11 +61,11 @@ final class DropKeep implements Rollable
     public function __construct(Cup $rollable, string $algo, int $threshold)
     {
         if (count($rollable) < $threshold) {
-            throw new Exception(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($rollable), $threshold));
+            throw new TooManyObjects(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($rollable), $threshold));
         }
 
         if (!isset(self::OPERATOR[$algo])) {
-            throw new Exception(sprintf('Unknown or unsupported sortable algorithm `%s`', $algo));
+            throw new UnknownAlgorithm(sprintf('Unknown or unsupported sortable algorithm `%s`', $algo));
         }
 
         $this->rollable = $rollable;
@@ -135,16 +138,15 @@ final class DropKeep implements Rollable
      */
     private function calculate(array $values): int
     {
-        $method = self::OPERATOR[$this->algo];
-        if ('dropHighest' === $method) {
+        if (self::DROP_HIGHEST === $this->algo) {
             return (int) array_sum($this->dropHighest($values));
         }
         
-        if ('dropLowest' === $method) {
+        if (self::DROP_LOWEST === $this->algo) {
             return (int) array_sum($this->dropLowest($values));
         }
         
-        if ('keepHighest' === $method) {
+        if (self::KEEP_HIGHEST === $this->algo) {
             return (int) array_sum($this->keepHighest($values));
         }
 

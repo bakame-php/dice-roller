@@ -14,6 +14,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Exception\UnknownAlgorithm;
+
 final class Arithmetic implements Rollable
 {
     public const ADDITION = '+';
@@ -48,17 +51,17 @@ final class Arithmetic implements Rollable
     /**
      * new instance.
      *
-     * @throws Exception if the value is lesser than 0
-     * @throws Exception if the operator is not recognized
+     * @throws UnknownAlgorithm if the operator is not recognized
+     * @throws IllegalValue     if the value is invalid for a given operator
      */
     public function __construct(Rollable $rollable, string $operator, int $value)
     {
         if (!isset(self::OPERATOR[$operator])) {
-            throw new Exception(sprintf('Invalid or Unsupported operator `%s`', $operator));
+            throw new UnknownAlgorithm(sprintf('Invalid or Unsupported operator `%s`', $operator));
         }
 
         if (0 > $value || (0 === $value && $operator == self::DIVISION)) {
-            throw new Exception(sprintf('The submitted value `%s` is invalid for the given `%s` operator', $value, $operator));
+            throw new IllegalValue(sprintf('The submitted value `%s` is invalid for the given `%s` operator', $value, $operator));
         }
 
         $this->rollable = $rollable;
