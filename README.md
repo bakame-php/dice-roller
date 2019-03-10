@@ -135,7 +135,7 @@ namespace Bakame\DiceRoller;
 final class Cup implements Countable, IteratorAggregate, Rollable
 {
     public function __construct(Rollable ...$rollables);
-    public static function createFromRollable(int $pQuantity, Rollable $rollable): self;
+    public static function createFromRollable(int $quantity, Rollable $rollable, ?Profiler $profiler = null): self;
     public function withRollable(Rollable $rollable): self
 }
 ```
@@ -375,7 +375,7 @@ If the `Parser` is not able to parse the submitted dice annotation a `Bakame\Dic
 
 If you want to know how internally your roll result is calculated you can use the profiler to trace the roll. The Profiler logs the library action to any [PSR-3](https://packagist.org/providers/psr/log-implementation) implementation.
 
-### usages
+### Usage
 
 The following classes can be instantiated with a profiler object:
 
@@ -414,7 +414,7 @@ $rollable = DiceRoller::parse('(3DF+2D6)*3+3DF^2', $profiler);
 $rollable->roll(); //is recorded by the profiler in details.
 ```
 
-### Logs format
+### Formatting the logs
 
 The log messages, by default, will match this format:
 
