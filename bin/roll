@@ -1,8 +1,11 @@
 #!/usr/bin/env php
 <?php
 
-use Bakame\DiceRoller;
+use Bakame\DiceRoller\DiceRoller;
 use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Logger;
+use Bakame\DiceRoller\Profiler;
+use Psr\Log\LogLevel;
 
 function getAutoloadDirectory()
 {
@@ -45,13 +48,14 @@ require $dir.'/autoload.php';
 $opts = filter_var_array(
     array_replace(
         ['iteration' => 1],
-        getopt("", ['cup::', 'iteration::', 'help', 'info'])
+        getopt("", ['cup::', 'iteration::', 'help', 'info', 'logs'])
     ),
     [
         'cup' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
         'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
         'help' => FILTER_VALIDATE_BOOLEAN,
         'info' => FILTER_VALIDATE_BOOLEAN,
+        'logs' => FILTER_VALIDATE_BOOLEAN,
     ]
 );
 
@@ -66,19 +70,25 @@ It's a dice-cup: you put your die in the cup, you shake it and then you get the 
 
 Simple Usage:
 
-$yellow php ./$script --cup=2D3 --iteration=3 --info $reset
+$yellow php ./$script --cup=2D3 --iteration=3 --info --logs $reset
 
 $green--cup$reset       submit the dice string annotation
 $green--iteration$reset submit the number of time the dices must be roll ({$yellow}default:$reset 1)
 $green--help$reset      show the following help message
+$green--info$reset      show the cup information
+$green--logs$reset      show the command logs
 EOF;
     echo $text, PHP_EOL, PHP_EOL;
     die(0);
 }
 
 try {
+
+    $logger = new Logger();
+    $profiler = new Profiler($logger);
+    $cup = DiceRoller::parse('(3DF+2D6)*3+3DF^2', $profiler);
     $str = trim($opts['cup']);
-    $cup = DiceRoller\create($str);
+    $cup = DiceRoller::parse($str, $profiler);
     if (isset($opts['info'])) {
         $text = <<<EOF
 $yellow ====== ROLL INFORMATIONS =======$reset
@@ -92,8 +102,15 @@ EOF;
 echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
     for ($i = 0; $i < $opts['iteration']; ++$i) {
         $index = $i+1;
-echo "$cyan Result #$index: $reset $yellow".$cup->roll().$reset. " explain : $green". $cup->explain().$reset.PHP_EOL;
+echo "$cyan Result #$index: $reset $yellow".$cup->roll(), $reset, PHP_EOL;
     }
+    if (isset($opts['logs'])) {
+echo PHP_EOL, "$yellow ====== ROLL LOGS ======= $reset", PHP_EOL;
+        foreach ($logger->getLogs(LogLevel::DEBUG) as $log) {
+            echo "$cyan $log $reset $yellow $reset", PHP_EOL;
+        }
+    }
+echo PHP_EOL;
     die(0);
 } catch (Exception $e) {
         $text = <<<EOF
