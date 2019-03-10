@@ -16,8 +16,11 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDice;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Logger;
+use Bakame\DiceRoller\Profiler;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 
 /**
  * @coversDefaultClass Bakame\DiceRoller\Arithmetic
@@ -100,7 +103,6 @@ final class ArithmeticTest extends TestCase
     /**
      * @covers ::roll
      * @covers ::calculate
-     * @covers ::exp
      */
     public function testRollWithNegativeDiceValue(): void
     {
@@ -119,11 +121,6 @@ final class ArithmeticTest extends TestCase
      * @covers ::calculate
      * @covers ::roll
      * @covers ::calculate
-     * @covers ::multiply
-     * @covers ::add
-     * @covers ::subs
-     * @covers ::div
-     * @covers ::exp
      * @dataProvider validParametersProvider
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max): void
@@ -184,8 +181,6 @@ final class ArithmeticTest extends TestCase
      * @covers ::calculate
      * @covers ::roll
      * @covers ::calculate
-     * @covers ::multiply
-     * @covers ::exp
      */
     public function testArithmeticExponentWithNegativeValue(): void
     {
@@ -195,5 +190,33 @@ final class ArithmeticTest extends TestCase
         self::assertSame(-1, $roll->getMaximum());
         self::assertGreaterThanOrEqual(-1, $test);
         self::assertLessThanOrEqual(-1, $test);
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::getMinimum
+     * @covers ::getMaximum
+     * @covers ::roll
+     * @covers ::calculate
+     * @covers ::setTrace
+     * @covers \Bakame\DiceRoller\Profiler
+     * @covers \Bakame\DiceRoller\Logger
+     */
+    public function testProfiler(): void
+    {
+        $logger = new Logger();
+        $roll = new Arithmetic(
+            new CustomDice(-1, -1, -1),
+            Arithmetic::EXPONENTIATION,
+            3,
+            new Profiler($logger, LogLevel::DEBUG)
+        );
+        $roll->roll();
+        $roll->getMaximum();
+        $roll->getMinimum();
+        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
+        self::assertCount(1, $logger->getLogs());
+        self::assertCount(1, $logger->getLogs(null));
+        self::assertCount(0, $logger->getLogs('foobar'));
     }
 }

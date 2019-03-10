@@ -15,8 +15,11 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\DropKeep;
 use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Logger;
+use Bakame\DiceRoller\Profiler;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 
 /**
  * @coversDefaultClass Bakame\DiceRoller\DropKeep
@@ -171,5 +174,30 @@ final class DropKeepTest extends TestCase
                 'max' => 18,
             ],
         ];
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::getMinimum
+     * @covers ::getMaximum
+     * @covers ::roll
+     * @covers ::calculate
+     * @covers ::setTrace
+     * @covers \Bakame\DiceRoller\Profiler
+     * @covers \Bakame\DiceRoller\Logger
+     */
+    public function testProfiler(): void
+    {
+        $logger = new Logger();
+        $profiler = new Profiler($logger, LogLevel::DEBUG);
+        $roll = new DropKeep(new Cup(
+            new Dice(3),
+            new Dice(3),
+            new Dice(4)
+        ), DropKeep::DROP_LOWEST, 2, $profiler);
+        $roll->roll();
+        $roll->getMaximum();
+        $roll->getMinimum();
+        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

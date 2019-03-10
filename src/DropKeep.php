@@ -52,12 +52,18 @@ final class DropKeep implements Rollable
     private $algo;
 
     /**
+     * @var Profiler|null
+     */
+    private $profiler;
+
+    /**
      * new instance.
      *
+     * @param  ?Profiler $profiler
      * @throws Exception if the algorithm is not recognized
      * @throws Exception if the Cup is not valid
      */
-    public function __construct(Cup $rollable, string $algo, int $threshold)
+    public function __construct(Cup $rollable, string $algo, int $threshold, ?Profiler $profiler = null)
     {
         if (count($rollable) < $threshold) {
             throw new TooManyObjects(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($rollable), $threshold));
@@ -70,6 +76,7 @@ final class DropKeep implements Rollable
         $this->rollable = $rollable;
         $this->threshold = $threshold;
         $this->algo = $algo;
+        $this->profiler = $profiler;
     }
 
     /**
@@ -103,7 +110,16 @@ final class DropKeep implements Rollable
             $res[] = $rollable->roll();
         }
 
-        return $this->calculate($res);
+        $res = $this->calculate($res);
+
+        $retval = (int) array_sum($res);
+        if (null === $this->profiler) {
+            return $retval;
+        }
+
+        $this->profiler->profile(__METHOD__, $this, $this->setTrace($res), $retval);
+
+        return $retval;
     }
 
     /**
@@ -116,7 +132,16 @@ final class DropKeep implements Rollable
             $res[] = $rollable->getMinimum();
         }
 
-        return $this->calculate($res);
+        $res = $this->calculate($res);
+
+        $retval = (int) array_sum($res);
+        if (null === $this->profiler) {
+            return $retval;
+        }
+
+        $this->profiler->profile(__METHOD__, $this, $this->setTrace($res), $retval);
+
+        return $retval;
     }
 
     /**
@@ -129,27 +154,36 @@ final class DropKeep implements Rollable
             $res[] = $rollable->getMaximum();
         }
 
-        return $this->calculate($res);
+        $res = $this->calculate($res);
+
+        $retval = (int) array_sum($res);
+        if (null === $this->profiler) {
+            return $retval;
+        }
+
+        $this->profiler->profile(__METHOD__, $this, $this->setTrace($res), $retval);
+
+        return $retval;
     }
 
     /**
      * Computes the sum to be return.
      */
-    private function calculate(array $values): int
+    private function calculate(array $values): array
     {
         if (self::DROP_HIGHEST === $this->algo) {
-            return (int) array_sum($this->dropHighest($values));
+            return $this->dropHighest($values);
         }
         
         if (self::DROP_LOWEST === $this->algo) {
-            return (int) array_sum($this->dropLowest($values));
+            return $this->dropLowest($values);
         }
         
         if (self::KEEP_HIGHEST === $this->algo) {
-            return (int) array_sum($this->keepHighest($values));
+            return $this->keepHighest($values);
         }
 
-        return (int) array_sum($this->keepLowest($values));
+        return $this->keepLowest($values);
     }
 
     /**
@@ -166,6 +200,9 @@ final class DropKeep implements Rollable
         return array_slice($sum, $this->threshold);
     }
 
+    /**
+     *  Value comparison internal method.
+     */
     private function drop(int $data1, int $data2): int
     {
         return $data1 <=> $data2;
@@ -213,5 +250,19 @@ final class DropKeep implements Rollable
         rsort($sum);
 
         return array_slice($sum, 0, $this->threshold);
+    }
+
+    /**
+     * Format the trace as string.
+     */
+    private function setTrace(array $traces): string
+    {
+        $mapper = static function (int $value): string {
+            return '('.$value.')';
+        };
+
+        $arr = array_map($mapper, $traces);
+
+        return implode(' + ', $arr);
     }
 }

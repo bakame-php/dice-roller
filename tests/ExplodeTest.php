@@ -17,8 +17,11 @@ use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\DiceRoller;
 use Bakame\DiceRoller\Exception;
 use Bakame\DiceRoller\Explode;
+use Bakame\DiceRoller\Logger;
+use Bakame\DiceRoller\Profiler;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 
 /**
  * @coversDefaultClass Bakame\DiceRoller\Explode
@@ -163,5 +166,31 @@ final class ExplodeTest extends TestCase
                 'max' => PHP_INT_MAX,
             ],
         ];
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::getMinimum
+     * @covers ::getMaximum
+     * @covers ::roll
+     * @covers ::calculate
+     * @covers ::setTrace
+     * @covers \Bakame\DiceRoller\Profiler
+     * @covers \Bakame\DiceRoller\Logger
+     */
+    public function testProfiler(): void
+    {
+        $logger = new Logger();
+        $profiler = new Profiler($logger, LogLevel::DEBUG);
+        $roll = new Explode(
+            new Cup(new Dice(3), new Dice(3), new Dice(4)),
+            Explode::EQUALS,
+            3,
+            $profiler
+        );
+        $roll->roll();
+        $roll->getMaximum();
+        $roll->getMinimum();
+        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

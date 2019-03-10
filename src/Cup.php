@@ -26,11 +26,17 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     private $items = [];
 
     /**
+     * @var Profiler|null
+     */
+    private $profiler;
+
+    /**
      * Create a new Cup containing only on type of Rollable object.
      *
+     * @param  ?Profiler $profiler
      * @throws Exception if the quantity is lesser than 0
      */
-    public static function createFromRollable(int $quantity, Rollable $rollable): self
+    public static function createFromRollable(int $quantity, Rollable $rollable, ?Profiler $profiler = null): self
     {
         if ($quantity < 1) {
             throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid', $quantity));
@@ -45,7 +51,10 @@ final class Cup implements Countable, IteratorAggregate, Rollable
             $items[] = clone $rollable;
         }
 
-        return new self(...$items);
+        $cup = new self(...$items);
+        $cup->setProfiler($profiler);
+
+        return $cup;
     }
 
     /**
@@ -56,6 +65,16 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
+    }
+
+    /**
+     * Add or remove a profiler to record the object actions
+     * using a logger.
+     * @param ?Profiler $profiler
+     */
+    public function setProfiler(?Profiler $profiler): void
+    {
+        $this->profiler = $profiler;
     }
 
     /**
@@ -81,6 +100,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
 
         $cup = new self();
         $cup->items = $items;
+        $cup->profiler = $this->profiler;
 
         return $cup;
     }
@@ -140,11 +160,18 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function roll(): int
     {
-        $reduce = static function (int $result, Rollable $rollable): int {
-            return $result + $rollable->roll();
+        $mapper = static function (Rollable $rollable): int {
+            return $rollable->roll();
         };
 
-        return $this->calculate($reduce);
+        $sum = array_map($mapper, $this->items);
+        $retval = (int) array_sum($sum);
+
+        if (null !== $this->profiler) {
+            $this->profiler->profile(__METHOD__, $this, $this->setTrace($sum), $retval);
+        }
+
+        return $retval;
     }
 
     /**
@@ -152,11 +179,18 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getMinimum(): int
     {
-        $reduce = static function (int $result, Rollable $rollable): int {
-            return $result + $rollable->getMinimum();
+        $mapper = static function (Rollable $rollable): int {
+            return $rollable->getMinimum();
         };
 
-        return $this->calculate($reduce);
+        $sum = array_map($mapper, $this->items);
+        $retval = (int) array_sum($sum);
+
+        if (null !== $this->profiler) {
+            $this->profiler->profile(__METHOD__, $this, $this->setTrace($sum), $retval);
+        }
+
+        return $retval;
     }
 
     /**
@@ -164,15 +198,31 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     public function getMaximum(): int
     {
-        $reduce = static function (int $result, Rollable $rollable): int {
-            return $result + $rollable->getMaximum();
+        $mapper = static function (Rollable $rollable): int {
+            return $rollable->getMaximum();
         };
 
-        return $this->calculate($reduce);
+        $sum = array_map($mapper, $this->items);
+        $retval = (int) array_sum($sum);
+
+        if (null !== $this->profiler) {
+            $this->profiler->profile(__METHOD__, $this, $this->setTrace($sum), $retval);
+        }
+
+        return $retval;
     }
 
-    private function calculate(callable $calculate): int
+    /**
+     * Format the trace as string.
+     */
+    private function setTrace(array $traces): string
     {
-        return array_reduce($this->items, $calculate, 0);
+        $mapper = static function (int $value): string {
+            return '('.$value.')';
+        };
+
+        $arr = array_map($mapper, $traces);
+
+        return implode(' + ', $arr);
     }
 }

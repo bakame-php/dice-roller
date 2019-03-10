@@ -48,12 +48,18 @@ final class Arithmetic implements Rollable
     private $operator;
 
     /**
+     * @var Profiler|null
+     */
+    private $profiler;
+
+    /**
      * new instance.
      *
+     * @param  ?Profiler        $profiler
      * @throws UnknownAlgorithm if the operator is not recognized
      * @throws IllegalValue     if the value is invalid for a given operator
      */
-    public function __construct(Rollable $rollable, string $operator, int $value)
+    public function __construct(Rollable $rollable, string $operator, int $value, ?Profiler $profiler = null)
     {
         if (!isset(self::OPERATOR[$operator])) {
             throw new UnknownAlgorithm(sprintf('Invalid or Unsupported operator `%s`', $operator));
@@ -66,6 +72,7 @@ final class Arithmetic implements Rollable
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
+        $this->profiler = $profiler;
     }
 
     /**
@@ -96,7 +103,14 @@ final class Arithmetic implements Rollable
     {
         $value = $this->rollable->roll();
 
-        return $this->calculate($value);
+        $retval = $this->calculate($value);
+        if (null === $this->profiler) {
+            return $retval;
+        }
+
+        $this->profiler->profile(__METHOD__, $this, $this->setTrace($value), $retval);
+
+        return $retval;
     }
 
     /**
@@ -106,7 +120,14 @@ final class Arithmetic implements Rollable
     {
         $value = $this->rollable->getMinimum();
 
-        return $this->calculate($value);
+        $retval = $this->calculate($value);
+        if (null === $this->profiler) {
+            return $retval;
+        }
+
+        $this->profiler->profile(__METHOD__, $this, $this->setTrace($value), $retval);
+
+        return $retval;
     }
 
     /**
@@ -116,7 +137,14 @@ final class Arithmetic implements Rollable
     {
         $value = $this->rollable->getMaximum();
 
-        return $this->calculate($value);
+        $retval = $this->calculate($value);
+        if (null === $this->profiler) {
+            return $retval;
+        }
+
+        $this->profiler->profile(__METHOD__, $this, $this->setTrace($value), $retval);
+
+        return $retval;
     }
 
     /**
@@ -125,65 +153,33 @@ final class Arithmetic implements Rollable
     private function calculate(int $value): int
     {
         if ('+' === $this->operator) {
-            return $this->add($value);
+            return $value + $this->value;
         }
 
         if ('-' === $this->operator) {
-            return $this->subs($value);
+            return $value - $this->value;
         }
 
-        if ('^' === $this->operator) {
-            return $this->exp($value);
+        if ('*' === $this->operator) {
+            return $value * $this->value;
         }
 
         if ('/' === $this->operator) {
-            return $this->div($value);
+            return intdiv($value, $this->value);
         }
 
-        return $this->multiply($value);
-    }
-
-    /**
-     * Adds a fixed value to a the result from a Rollable public method.
-     */
-    private function add(int $value): int
-    {
-        return $value + $this->value;
-    }
-
-    /**
-     * Substracts a fixed value to a the result from a Rollable public method.
-     */
-    private function subs(int $value): int
-    {
-        return $value - $this->value;
-    }
-
-    /**
-     * Multiplies a fixed value to a the result from a Rollable public method.
-     */
-    private function multiply(int $value): int
-    {
-        return $value * $this->value;
-    }
-
-    /**
-     * divises a fixed value to a the result from a Rollable public method.
-     */
-    private function div(int $value): int
-    {
-        return intdiv($value, $this->value);
-    }
-
-    /**
-     * Exponents a fixed value to a the result from a Rollable public method.
-     */
-    private function exp(int $value): int
-    {
         if ($value > -1) {
             return $value ** $this->value;
         }
 
         return (int) (abs($value) ** $this->value) * -1;
+    }
+
+    /**
+     * Format the trace as string.
+     */
+    private function setTrace(int $value): string
+    {
+        return $value.' '.$this->operator.' '.$this->value;
     }
 }

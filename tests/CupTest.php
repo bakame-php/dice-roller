@@ -17,9 +17,12 @@ use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\DiceRoller;
 use Bakame\DiceRoller\Exception;
 use Bakame\DiceRoller\FudgeDice;
+use Bakame\DiceRoller\Logger;
 use Bakame\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\Profiler;
 use Bakame\DiceRoller\Rollable;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 
 /**
  * @coversDefaultClass Bakame\DiceRoller\Cup
@@ -56,7 +59,6 @@ final class CupTest extends TestCase
      * @covers ::getMaximum
      * @covers ::roll
      * @covers ::count
-     * @covers ::calculate
      * @covers ::getIterator
      */
     public function testRoll(): void
@@ -138,5 +140,24 @@ final class CupTest extends TestCase
     {
         $cup = new Cup();
         self::assertSame('0', (string) $cup);
+    }
+
+
+    /**
+     * @covers ::__construct
+     * @covers ::getMinimum
+     * @covers ::getMaximum
+     * @covers ::roll
+     * @covers ::setTrace
+     */
+    public function testProfiler(): void
+    {
+        $logger = new Logger();
+        $profiler = new Profiler($logger, LogLevel::DEBUG);
+        $cup = Cup::createFromRollable(12, new Dice(2), $profiler);
+        $cup->roll();
+        $cup->getMaximum();
+        $cup->getMinimum();
+        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

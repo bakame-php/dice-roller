@@ -210,7 +210,7 @@ final class Arithmetic implements Rollable
     public const DIVISION = '/';
     public const EXPONENTIATION = '^';
 
-    public function __construct(Rollable $rollable, string $operator, int $value);
+    public function __construct(Rollable $rollable, string $operator, int $value, ?Profiler $profiler = null);
 }
 ```
 
@@ -250,7 +250,7 @@ final class DropKeep implements Rollable
     public const KEEP_HIGHEST = 'kh';
     public const KEEP_LOWEST = 'kl';
 
-    public function __construct(Cup $pRollable, string $pAlgo, int $pThreshold);
+    public function __construct(Cup $pRollable, string $pAlgo, int $pThreshold, ?Profiler $profiler = null);
 }
 ```
 
@@ -296,7 +296,7 @@ final class Explode implements Rollable
     public const GREATER_THAN = '>';
     public const LESSER_THAN = '<';
 
-    public function __construct(Cup $pRollable, string $pCompare, int $pThreshold);
+    public function __construct(Cup $pRollable, string $pCompare, int $pThreshold, ?Profiler $profiler = null);
 }
 ```
 
@@ -336,7 +336,7 @@ namespace Bakame\DiceRoller;
 
 final class DiceRoller
 {
-    public static function parse(string $annotation): Rollable;
+    public static function parse(string $annotation, ?Profiler $profiler = null): Rollable;
 }
 ```
 
@@ -370,5 +370,96 @@ echo $cup->roll();
 ```
 
 If the `Parser` is not able to parse the submitted dice annotation a `Bakame\DiceRoller\Exception` will be thrown.
+
+## Profiling and Logging
+
+If you want to know how internally your roll result is calculated you can use the profiler to trace the roll. The Profiler logs the library action to any [PSR-3](https://packagist.org/providers/psr/log-implementation) implementation.
+
+### usages
+
+The following classes can be instantiated with a profiler object:
+
+- `Bakame\DiceRoller\Arithmetic`;
+- `Bakame\DiceRoller\DropKeep`;
+- `Bakame\DiceRoller\Explode`;
+
+The `Bakame\DiceRoller\Profiler` is their last optional paramater in the constructor signature.
+
+- The `Bakame\DiceRoller\Cup` class uses a setter method `setProfiler` to add or remove a `Bakame\DiceRoller\Profiler`. Or you can use the named constructor `Cup::createFromRollable` 3rd parameter.
+
+- The `Bakame\DiceRoller\DiceRoller` accepts the `Bakame\DiceRoller\Profiler` as the second argument of the `parse` method;
+
+In all cases, once registered, the profiler will record the steps taken when using
+
+- `Rollable::getMinimum`;
+- `Rollable::getMaximum`;
+- `Rollable::roll`;
+
+```php
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\DiceRoller;
+use Bakame\DiceRoller\Logger;
+use Bakame\DiceRoller\Profiler;
+use Psr\Log\LogLevel;
+
+$logger = new Logger();
+$profiler = new Profiler($logger, LogLevel::DEBUG, '{trace} = {result}');
+$cup = Cup::createFromRollable(12, new Dice(2), $profiler);
+// or
+$cup = new Cup(new Dice(3), new Dice(45));
+$cup->setProfiler($profiler);
+
+$rollable = DiceRoller::parse('(3DF+2D6)*3+3DF^2', $profiler);
+$rollable->roll(); //is recorded by the profiler in details.
+```
+
+### Logs format
+
+The log messages, by default, will match this format:
+
+    [{method}] - {rollable} : {trace} = {result}
+
+You can customize the message format using the `Profiler::setLogFormat()`
+method, like so:
+
+```php
+$profiler->setLogFormat("{trace} -> {result}")
+```
+
+The context keys are:
+
+- `{method}`: The method that was called that created the profile entry.
+- `{rollable}`: The string representation of the `Rollable` object to be analyzed.
+- `{trace}`: The calculation that was done.
+- `{result}`: The result from performing the calculation.
+
+### Configuring the Profiler
+
+At any moment you can change, using the profiler setter methods:
+
+- the log level
+- the log format
+- the PSR-3 logger 
+
+
+```php
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\DiceRoller;
+use Bakame\DiceRoller\Logger;
+use Bakame\DiceRoller\Profiler;
+use Psr\Log\LogLevel;
+
+$logger = new Logger();
+$profiler = new Profiler($logger, LogLevel::DEBUG, '{trace} = {result}');
+$profiler->setLogLevel(LogLevel::INFO);
+$profiler->setLogFormat('{trace} -> {result}');
+$profiler->setLogger('{trace} -> {result}');
+
+```
+
+Even though, the library comes bundles with a LoggerInterface implementation you should consider using a better fleshout implementation than the one present out of the box.
+
 
 **Happy Coding!**
