@@ -9,25 +9,26 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Type;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\DropKeep;
-use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Logger;
-use Bakame\DiceRoller\Profiler;
-use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\Exception\RollException;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Test\Bakame;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\DropKeep;
+use Bakame\DiceRoller\Type\Rollable;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\DropKeep
+ * @coversDefaultClass Bakame\DiceRoller\Type\DropKeep
  */
 final class DropKeepTest extends TestCase
 {
     /**
-     * @var Cup
+     * @var \Bakame\DiceRoller\Type\Cup
      */
     private $cup;
 
@@ -41,7 +42,7 @@ final class DropKeepTest extends TestCase
      */
     public function testConstructorThrows1(): void
     {
-        self::expectException(Exception::class);
+        self::expectException(RollException::class);
         new DropKeep($this->cup, DropKeep::DROP_LOWEST, 6);
     }
 
@@ -50,7 +51,7 @@ final class DropKeepTest extends TestCase
      */
     public function testConstructorThrows2(): void
     {
-        self::expectException(Exception::class);
+        self::expectException(RollException::class);
         new DropKeep($this->cup, 'foobar', 3);
     }
 
@@ -183,8 +184,8 @@ final class DropKeepTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Profiler
-     * @covers \Bakame\DiceRoller\Logger
+     * @covers \Bakame\DiceRoller\Profiler\Profiler
+     * @covers \Bakame\DiceRoller\Profiler\Logger
      */
     public function testProfiler(): void
     {

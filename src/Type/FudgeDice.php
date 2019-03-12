@@ -11,9 +11,10 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 use Countable;
+use function random_int;
 
 final class FudgeDice implements Countable, Rollable
 {

@@ -1,22 +1,17 @@
 #!/usr/bin/env php
 <?php
 
-use Bakame\DiceRoller\DiceRoller;
-use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Logger;
-use Bakame\DiceRoller\Profiler;
+use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\Profiler;
 use Psr\Log\LogLevel;
 
-function getAutoloadDirectory()
+function getAutoloadDirectory(): ?string
 {
-    $dir = dirname(__DIR__).'/vendor';
-    if (is_dir($dir)) {
-        return $dir;
-    }
-
-    $dir = __DIR__.'../../../../vendor';
-    if (is_dir($dir)) {
-        return $dir;
+    for ($i = 1; $i <= 5; $i++) {
+        if (is_dir($vendor = dirname(__DIR__, $i).'/vendor')) {
+            return $vendor;
+        }
     }
 
     return null;
@@ -83,12 +78,10 @@ EOF;
 }
 
 try {
-
     $logger = new Logger();
-    $profiler = new Profiler($logger);
-    $cup = DiceRoller::parse('(3DF+2D6)*3+3DF^2', $profiler);
+    $factory = new Factory(new Profiler($logger));
     $str = trim($opts['cup']);
-    $cup = DiceRoller::parse($str, $profiler);
+    $cup = $factory->newInstance($str);
     if (isset($opts['info'])) {
         $text = <<<EOF
 $yellow ====== ROLL INFORMATIONS =======$reset
@@ -112,13 +105,13 @@ echo PHP_EOL, "$yellow ====== ROLL LOGS ======= $reset", PHP_EOL;
     }
 echo PHP_EOL;
     die(0);
-} catch (Exception $e) {
+} catch (Exception $exception) {
         $text = <<<EOF
 
 The submitted dice annotation $yellow$str$reset could not be parsed$reset
 The Parser issue the following error:
 
-$redbg {$e->getMessage()} $reset
+$redbg {$exception->getMessage()} $reset
 
 EOF;
     echo $text, PHP_EOL, PHP_EOL;

@@ -11,10 +11,18 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
+use Bakame\DiceRoller\Profiler\Profiler;
+use function array_map;
+use function array_sum;
+use function implode;
+use function in_array;
+use function sprintf;
+use function strpos;
+use const PHP_INT_MAX;
 
 final class Explode implements Rollable
 {
@@ -23,11 +31,11 @@ final class Explode implements Rollable
     const LESSER_THAN = '<';
 
     /**
-     * The Cup object to decorate.
+     * The RollableCollection to decorate.
      *
-     * @var Cup
+     * @var Pool
      */
-    private $rollable;
+    private $pool;
 
     /**
      * The threshold.
@@ -44,38 +52,39 @@ final class Explode implements Rollable
     private $compare;
 
     /**
-     * @var Profiler|null
+     * @var \Bakame\DiceRoller\Profiler\Profiler|null
      */
     private $profiler;
 
     /**
      * new instance.
      *
+     *
      * @param  ?Profiler        $profiler
      * @throws UnknownAlgorithm if the comparator is not recognized
      * @throws IllegalValue     if the Cup triggers infinite loop
      */
-    public function __construct(Cup $rollable, string $compare, int $threshold = null, ?Profiler $profiler = null)
+    public function __construct(Pool $pool, string $compare, int $threshold = null, ?Profiler $profiler = null)
     {
         if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
             throw new UnknownAlgorithm(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
         }
         $this->compare = $compare;
         $this->threshold = $threshold;
-        if (!$this->isValidCollection($rollable)) {
-            throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $this->toString()));
+        if (!$this->isValidPool($pool)) {
+            throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
-        $this->rollable = $rollable;
+        $this->pool = $pool;
         $this->profiler = $profiler;
     }
 
     /**
-     * Tells whether the Rollable collection can be used.
+     * Tells whether the Pool can be used.
      */
-    private function isValidCollection(Cup $collection): bool
+    private function isValidPool(Pool $pool): bool
     {
         $state = false;
-        foreach ($collection as $rollable) {
+        foreach ($pool as $rollable) {
             $state = $this->isValidRollable($rollable);
             if (!$state) {
                 return $state;
@@ -119,7 +128,7 @@ final class Explode implements Rollable
      */
     public function toString(): string
     {
-        $str = (string) $this->rollable;
+        $str = $this->pool->toString();
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }
@@ -144,12 +153,12 @@ final class Explode implements Rollable
      */
     public function getMinimum(): int
     {
-        $retval = $this->rollable->getMinimum();
+        $retval = $this->pool->getMinimum();
         if (null === $this->profiler) {
             return $retval;
         }
 
-        $this->profiler->profile(__METHOD__, $this, (string) $retval, $retval);
+        $this->profiler->addOperation(__METHOD__, $this, (string) $retval, $retval);
 
         return $retval;
     }
@@ -163,7 +172,7 @@ final class Explode implements Rollable
             return PHP_INT_MAX;
         }
 
-        $this->profiler->profile(__METHOD__, $this, (string) PHP_INT_MAX, PHP_INT_MAX);
+        $this->profiler->addOperation(__METHOD__, $this, (string) PHP_INT_MAX, PHP_INT_MAX);
 
         return PHP_INT_MAX;
     }
@@ -174,7 +183,7 @@ final class Explode implements Rollable
     public function roll(): int
     {
         $sum = [];
-        foreach ($this->rollable as $innerRoll) {
+        foreach ($this->pool as $innerRoll) {
             $sum = $this->calculate($sum, $innerRoll);
         }
 
@@ -183,7 +192,7 @@ final class Explode implements Rollable
             return $retval;
         }
 
-        $this->profiler->profile(__METHOD__, $this, $this->setTrace($sum), $retval);
+        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($sum), $retval);
 
         return $retval;
     }

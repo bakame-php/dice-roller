@@ -9,31 +9,32 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Type;
 
-use Bakame\DiceRoller\FudgeDice;
+use Bakame\DiceRoller\Test\Bakame;
+use Bakame\DiceRoller\Type\PercentileDice;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\FudgeDice
+ * @coversDefaultClass Bakame\DiceRoller\Type\PercentileDice
  */
-final class FudgeDiceTest extends TestCase
+final class PercentileDiceTest extends TestCase
 {
     /**
      * @covers ::count
+     * @covers ::__toString
+     * @covers ::toString
      * @covers ::getMinimum
      * @covers ::getMaximum
-     * @covers ::toString
-     * @covers ::__toString
      * @covers ::roll
      */
     public function testFudgeDice(): void
     {
-        $dice = new FudgeDice();
-        self::assertSame('DF', (string) $dice);
-        self::assertCount(3, $dice);
-        self::assertSame(1, $dice->getMaximum());
-        self::assertSame(-1, $dice->getMinimum());
+        $dice = new PercentileDice();
+        self::assertCount(100, $dice);
+        self::assertSame(100, $dice->getMaximum());
+        self::assertSame(1, $dice->getMinimum());
+        self::assertSame('D%', (string) $dice);
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
             self::assertGreaterThanOrEqual($dice->getMinimum(), $test);

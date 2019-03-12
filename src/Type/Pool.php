@@ -11,8 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Exception;
+namespace Bakame\DiceRoller\Type;
 
-class UnknownExpression extends RollException
+use Countable;
+use IteratorAggregate;
+
+interface Pool extends IteratorAggregate, Countable, Rollable
 {
+    public function isEmpty(): bool;
 }

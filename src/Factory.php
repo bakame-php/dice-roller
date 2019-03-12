@@ -15,8 +15,29 @@ namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Exception\UnknownExpression;
+use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Type\Arithmetic;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\CustomDice;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\DropKeep;
+use Bakame\DiceRoller\Type\Explode;
+use Bakame\DiceRoller\Type\FudgeDice;
+use Bakame\DiceRoller\Type\PercentileDice;
+use Bakame\DiceRoller\Type\Pool;
+use Bakame\DiceRoller\Type\Rollable;
+use function array_shift;
+use function count;
+use function explode;
+use function iterator_to_array;
+use function preg_match;
+use function sprintf;
+use function stripos;
+use function strpos;
+use const FILTER_REQUIRE_ARRAY;
+use const FILTER_VALIDATE_INT;
 
-final class DiceRoller
+final class Factory
 {
     private const POOL_PATTERN = ',^
         (?<dice>
@@ -45,26 +66,36 @@ final class DiceRoller
     private const DEFAULT_SIZE_COUNT = '6';
 
     /**
-     * Returns a new Cup Instance from a string pattern.
+     * @var Profiler|null
+     */
+    private $profiler;
+
+    /**
+     * Factory constructor.
+     *
      * @param ?Profiler $profiler
      */
-    public static function parse(string $expression, ?Profiler $profiler = null): Rollable
+    public function __construct(?Profiler $profiler = null)
     {
-        $parts = self::explode($expression);
-        if (1 !== count($parts)) {
-            $dices = [];
-            foreach ($parts as $part) {
-                $dices[] = self::parsePool($part, $profiler);
-            }
+        $this->profiler = $profiler;
+    }
 
+    /**
+     * Returns a new Cup Instance from a string pattern.
+     */
+    public function newInstance(string $expression): Rollable
+    {
+        $parts = $this->explode($expression);
+        if (1 !== count($parts)) {
+            $dices = array_map([$this, 'parsePool'], $parts);
             $cup = new Cup(...$dices);
-            $cup->setProfiler($profiler);
+            $cup->setProfiler($this->profiler);
 
             return $cup;
         }
 
-        $rollable = self::parsePool(array_shift($parts), $profiler);
-        if (!$rollable instanceof Cup || 1 !== count($rollable)) {
+        $rollable = $this->parsePool(array_shift($parts));
+        if (!$rollable instanceof Pool || 1 !== count($rollable)) {
             return $rollable;
         }
 
@@ -78,7 +109,7 @@ final class DiceRoller
      *
      * @return string[]
      */
-    private static function explode(string $str): array
+    private function explode(string $str): array
     {
         $parts = explode('+', $str);
         $res = [];
@@ -109,16 +140,16 @@ final class DiceRoller
     /**
      * Returns a collection of equals dice.
      *
-     * @param string    $str      dice configuration string
-     * @param ?Profiler $profiler
+     * @param string $str dice configuration string
      *
-     * @throws Exception if the configuration string is not supported
+     * @throws UnknownExpression
+     * @throws UnknownAlgorithm
      */
-    private static function parsePool(string $str, ?Profiler $profiler): Rollable
+    private function parsePool(string $str): Rollable
     {
         if ('' === $str) {
             $cup = new Cup();
-            $cup->setProfiler($profiler);
+            $cup->setProfiler($this->profiler);
 
             return $cup;
         }
@@ -127,14 +158,10 @@ final class DiceRoller
             throw new UnknownExpression(sprintf('the submitted dice format `%s` is invalid or not supported', $str));
         }
 
-        $pool = self::getPool($matches, $profiler);
+        $pool = $this->getPool($matches);
 
         if (1 === preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
-            return self::addArithmetic(
-                $modifier_matches,
-                self::addComplexModifier($modifier_matches, $pool, $profiler),
-                $profiler
-            );
+            return $this->addArithmetic($modifier_matches, $this->addComplexModifier($modifier_matches, $pool));
         }
 
         throw new UnknownAlgorithm(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
@@ -142,22 +169,20 @@ final class DiceRoller
 
     /**
      * Generates the Cup from the expression matched pattern.
-     * @param ?Profiler $profiler
      */
-    private static function getPool(array $matches, ?Profiler $profiler): Cup
+    private function getPool(array $matches): Pool
     {
         if ('' !== $matches['complex']) {
-            return self::createComplexPool($matches, $profiler);
+            return $this->createComplexPool($matches);
         }
 
-        return self::createSimplePool($matches, $profiler);
+        return $this->createSimplePool($matches);
     }
 
     /**
      * Creates a simple Uniformed Pool.
-     * @param ?Profiler $profiler
      */
-    private static function createSimplePool(array $matches, ?Profiler $profiler): Cup
+    private function createSimplePool(array $matches): Pool
     {
         $quantity = (int) ($matches['quantity'] ?? 1);
         if (0 === $quantity) {
@@ -170,15 +195,13 @@ final class DiceRoller
             $definition = self::DEFAULT_SIZE_COUNT;
         }
 
-        return Cup::createFromRollable($quantity, self::parseDefinition($definition), $profiler);
+        return Cup::createFromRollable($quantity, $this->parseDefinition($definition), $this->profiler);
     }
 
     /**
      * Parse Rollable definition.
-     *
-     * @throws Exception If the defintion is not parsable
      */
-    private static function parseDefinition(string $definition): Rollable
+    private function parseDefinition(string $definition): Rollable
     {
         if (false !== ($size = filter_var($definition, FILTER_VALIDATE_INT))) {
             return new Dice($size);
@@ -194,51 +217,48 @@ final class DiceRoller
         }
 
         $sides = explode(',', substr($definition, 1, -1));
-        $sides = filter_var($sides, FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
+        $sides = (array) filter_var($sides, FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
 
         return new CustomDice(...$sides);
     }
 
     /**
      * Creates a complex mixed Pool.
-     * @param ?Profiler $profiler
      */
-    private static function createComplexPool(array $matches, ?Profiler $profiler): Cup
+    private function createComplexPool(array $matches): Pool
     {
         $dices = [];
-        foreach (self::explode($matches['mixed']) as $part) {
-            $dices[] = self::parsePool($part, $profiler);
+        foreach ($this->explode($matches['mixed']) as $part) {
+            $dices[] = $this->parsePool($part);
         }
 
         $cup = new Cup(...$dices);
-        $cup->setProfiler($profiler);
+        $cup->setProfiler($this->profiler);
 
         return $cup;
     }
 
     /**
      * Decorates the Rollable object with up to 2 ArithmeticModifier.
-     * @param ?Profiler $profiler
      */
-    private static function addArithmetic(array $matches, Rollable $rollable, ?Profiler $profiler): Rollable
+    private function addArithmetic(array $matches, Rollable $rollable): Rollable
     {
         if (!isset($matches['math1'])) {
             return $rollable;
         }
 
-        $rollable = new Arithmetic($rollable, $matches['operator1'], (int) $matches['value1'], $profiler);
+        $rollable = new Arithmetic($rollable, $matches['operator1'], (int) $matches['value1'], $this->profiler);
         if (!isset($matches['math2'])) {
             return $rollable;
         }
 
-        return new Arithmetic($rollable, $matches['operator2'], (int) $matches['value2'], $profiler);
+        return new Arithmetic($rollable, $matches['operator2'], (int) $matches['value2'], $this->profiler);
     }
 
     /**
      * Decorates the Rollable object with the DropKeep or the Explode Modifier.
-     * @param ?Profiler $profiler
      */
-    private static function addComplexModifier(array $matches, Cup $rollable, ?Profiler $profiler): Rollable
+    private function addComplexModifier(array $matches, Pool $rollable): Rollable
     {
         if ('' === $matches['algo']) {
             return $rollable;
@@ -246,38 +266,36 @@ final class DiceRoller
 
         $type = strtolower($matches['type']);
         if (0 !== strpos($type, '!')) {
-            return self::addDropKeep($type, $matches, $rollable, $profiler);
+            return $this->addDropKeep($type, $matches, $rollable);
         }
 
-        return self::addExplode(substr($type, 1), $matches, $rollable, $profiler);
+        return $this->addExplode(substr($type, 1), $matches, $rollable);
     }
 
     /**
      * Decorates the Rollable object with the SortModifer modifier.
-     * @param ?Profiler $profiler
      */
-    private static function addDropKeep(string $algo, array $matches, Cup $rollable, ?Profiler $profiler): Rollable
+    private function addDropKeep(string $algo, array $matches, Pool $rollable): Rollable
     {
         $threshold = $matches['threshold'] ?? 1;
 
-        return new DropKeep($rollable, $algo, (int) $threshold, $profiler);
+        return new DropKeep($rollable, $algo, (int) $threshold, $this->profiler);
     }
 
     /**
      * Decorates the Rollable object with the ExplodeModifier modifier.
-     * @param ?Profiler $profiler
      */
-    private static function addExplode(string $compare, array $matches, Cup $rollable, ?Profiler $profiler): Rollable
+    private function addExplode(string $compare, array $matches, Pool $rollable): Rollable
     {
         if ('' == $compare) {
             $compare = Explode::EQUALS;
             $threshold = isset($matches['threshold']) ? (int) $matches['threshold'] : null;
 
-            return new Explode($rollable, $compare, $threshold, $profiler);
+            return new Explode($rollable, $compare, $threshold, $this->profiler);
         }
 
         if (isset($matches['threshold'])) {
-            return new Explode($rollable, $compare, (int) $matches['threshold'], $profiler);
+            return new Explode($rollable, $compare, (int) $matches['threshold'], $this->profiler);
         }
 
         throw new UnknownAlgorithm(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $matches['algo']));

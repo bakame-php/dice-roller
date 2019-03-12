@@ -21,43 +21,44 @@ $ composer require bakame-php/dice-roller
 
 ## Basic usage
 
-The code above will simulate the roll of two six-sided die
+Use the library factory to simulate the roll of two six-sided die
 
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Factory;
+
+$factory = new Factory();
+$cup = $factory->newInstance('2D6');
+echo $cup->toString(); // returns 2D6
+echo $cup->roll();     // returns 6
+```
+
+## Advanced use
+
+Use the library bundle rollable objects directly to simulate the roll of two six-sided die
+
+```php
+<?php
+
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\Dice;
 
 $cup = new Cup(new Dice(6), new Dice(6));
 echo $cup->toString(); // returns 2D6
 echo $cup->roll();     // returns 8
 ```
 
-## Advanced use
-
-Use the library expression parser to simulate the roll of two six-sided die
-
-```php
-<?php
-
-use Bakame\DiceRoller\DiceRoller;
-
-$cup = DiceRoller::parse('2D6');
-echo $cup->toString(); // returns 2D6
-echo $cup->roll();     // returns 6
-```
-
 ## Documentation
 
 ### Rollable
 
-To be rollable, objects MUST implements the `Bakame\DiceRoller\Rollable` interface.
+To be rollable, objects MUST implements the `Bakame\DiceRoller\Type\Rollable` interface.
 
 ```php
 <?php
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 interface Rollable
 {
@@ -73,20 +74,20 @@ interface Rollable
 - `Rollable::roll` returns a value from a roll.
 - `Rollable::toString` returns the string annotation of the Rollable object.
 
-### Dices
+### Dices Type
 
 In addition to the `Rollable` interface, all dices objects implement the `Countable` interface. The `count` method returns the die sides count.
 
-A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception` exception is thrown.
+A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\RollException` exception is thrown.
 
 The following die type are bundled in the library:
 
 | Class Name |  Definition |
 | ---------- | ---------- |
-| `Bakame\DiceRoller\Dice`| classic die |
-| `Bakame\DiceRoller\FudgeDice` | 3 sided die with side values being `-1`, `0` and `1`. |
-| `Bakame\DiceRoller\PercentileDice` | 100 sided die with values between `1` and `100`. |
-| `Bakame\DiceRoller\CustomDice` | die with custom side values |
+| `Bakame\DiceRoller\Type\Dice`| classic die |
+| `Bakame\DiceRoller\Type\FudgeDice` | 3 sided die with side values being `-1`, `0` and `1`. |
+| `Bakame\DiceRoller\Type\PercentileDice` | 100 sided die with values between `1` and `100`. |
+| `Bakame\DiceRoller\Type\CustomDice` | die with custom side values |
 
 #### Object Constructors
 
@@ -97,10 +98,10 @@ The following die type are bundled in the library:
 ```php
 <?php
 
-use Bakame\DiceRoller\CustomDice;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\FudgeDice;
-use Bakame\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\Type\CustomDice;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\FudgeDice;
+use Bakame\DiceRoller\Type\PercentileDice;
 
 $basic = new Dice(3);
 echo $basic->toString(); // 'D3';
@@ -123,20 +124,35 @@ $percentile->roll();           // returns a value between 1 and 100
 count($fudge);                 // returns 100
 ```
 
-### Rollable collection
+### Pool
 
-A `Bakame\DiceRoller\Cup` is a collection of `Rollable` objects which also implements the `Rollable` interface. As such, a `Cup` can contains any type of dices but others `Cup` objects as well.
+If you need to roll multiple dices at the same time, you need to implement the  `Bakame\DiceRoller\Type\Pool` interface.
+ 
+```php
+<?php
+
+namespace Bakame\DiceRoller\Type;
+
+interface Pool implements Countable, IteratorAggregate, Rollable
+{
+    public function isEmpty(): bool;
+}
+```
+ 
+A `Pool` is a collection of `Rollable` objects which also implements the `Rollable` interface. The package comes bundle
+with the `Bakame\DiceRoller\Type\Cup` class which implements the interface. A `Cup` can contains any type of dices but others `Pool` objects as well.
 
 ```php
 <?php
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
-final class Cup implements Countable, IteratorAggregate, Rollable
+final class Cup implements Pool
 {
     public function __construct(Rollable ...$rollables);
     public static function createFromRollable(int $quantity, Rollable $rollable, ?Profiler $profiler = null): self;
     public function withRollable(Rollable $rollable): self
+    public function setProfiler(?Profiler $profiler): void
 }
 ```
 
@@ -145,11 +161,11 @@ The `Cup::createFromRollable` named constructor enables creating uniformed `Cup`
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDice;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\FudgeDice;
-use Bakame\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\CustomDice;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\FudgeDice;
+use Bakame\DiceRoller\Type\PercentileDice;
 
 echo Cup::createFromRollable(3, new Dice(5))->toString();                // displays 3D5
 echo Cup::createFromRollable(4, new PercentileDice())->toString();       // displays 4D%
@@ -157,14 +173,14 @@ echo Cup::createFromRollable(2, new CustomDice(1, 2, 2, 4))->toString(); // disp
 echo Cup::createFromRollable(1, new FudgeDice())->toString();            // displays DF
 ```
 
-A `Cup` created using `createFromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception` is thrown.
+A `Cup` created using `createFromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\RollException` is thrown.
 
 When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Type\Cup;
 
 foreach (Cup::createFromRollable(3, new Dice(5)) as $rollable) {
     echo $rollable; // will always return D5
@@ -177,7 +193,7 @@ Once a `Cup` is instantiated there are no method to alter its properties. Howeve
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Type\Cup;
 
 $cup = Cup::createFromRollable(3, new Dice(5));
 count($cup);           //returns 3 the number of dices
@@ -191,7 +207,7 @@ echo $alt_cup->toString(); //returns 3D5+DF
 **WARNING: a `Cup` object can be empty but adding an empty `Cup` object using any setter method is not possible. The emtpy `Cup` object will be filtered out.**
 
 
-### Roll Modifiers
+### Rollable Modifiers
 
 Sometimes you may want to modify the outcome of a roll. The library comes bundle with 3 modifiers, each implementing the `Rollable` interface.
 
@@ -200,7 +216,7 @@ Sometimes you may want to modify the outcome of a roll. The library comes bundle
 ```php
 <?php
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 final class Arithmetic implements Rollable
 {
@@ -224,13 +240,13 @@ The modifier supports the following operators:
 - `/` or `Arithmetic::DIVISION`;
 - `^` or `Arithmetic::EXPONENTIATION`;
 
-The value given must be a positive integer or 0. If the value or the operator are not valid a `Bakame\DiceRoller\Exception` will be thrown.
+The value given must be a positive integer or `0`. If the value or the operator are not valid a `RollException` will be thrown.
 
 ```php
 <?php
 
-use Bakame\DiceRoller\Arithmetic;
-use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Type\Arithmetic;
+use Bakame\DiceRoller\Type\Dice;
 
 $modifier = new Arithmetic(new Dice(6), Arithmetic::MULTIPLICATION, 3);
 echo $modifier->toString();  // displays D6*3;
@@ -241,7 +257,7 @@ echo $modifier->toString();  // displays D6*3;
 ```php
 <?php
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 final class DropKeep implements Rollable
 {
@@ -250,13 +266,13 @@ final class DropKeep implements Rollable
     public const KEEP_HIGHEST = 'kh';
     public const KEEP_LOWEST = 'kl';
 
-    public function __construct(Cup $pRollable, string $pAlgo, int $pThreshold, ?Profiler $profiler = null);
+    public function __construct(Pool $pRollable, string $pAlgo, int $pThreshold, ?Profiler $profiler = null);
 }
 ```
 
-This modifier decorates a `Rollable` object by applying the one of the dropkeep algorithm on a collection of `Rollable` objects. The constructor expects:
+This modifier decorates a `Rollable` object by applying the one of the dropkeep algorithm on a `Pool` object. The constructor expects:
 
-- a `Cup` object;
+- a `Pool` object;
 - a algorithm name;
 - a threshold to trigger the alogrithm;
 
@@ -274,9 +290,9 @@ If the algorithm or the threshold are not valid a `Bakame\DiceRoller\Exception` 
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\DropKeep;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\DropKeep;
 
 $cup = Cup::createFromRollable(4, new Dice(6));
 $modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
@@ -288,7 +304,7 @@ echo $modifier->toString(); // displays '4D6DH3'
 ```php
 <?php
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 final class Explode implements Rollable
 {
@@ -296,13 +312,13 @@ final class Explode implements Rollable
     public const GREATER_THAN = '>';
     public const LESSER_THAN = '<';
 
-    public function __construct(Cup $pRollable, string $pCompare, int $pThreshold, ?Profiler $profiler = null);
+    public function __construct(Pool $pRollable, string $pCompare, int $pThreshold, ?Profiler $profiler = null);
 }
 ```
 
-This modifier decorates a `Cup` object by applying one of the explode algorithm. The constructor expects:
+This modifier decorates a `Pool` object by applying one of the explode algorithm. The constructor expects:
 
-- a `Cup` object;
+- a `Pool` object;
 - a comparison operator string;
 - a threshold to trigger the alogrithm;
 
@@ -312,15 +328,15 @@ The supported comparison operator are:
 - `>` or `Explode::GREATER_THAN` explodes if any inner rollable roll result is greater than the `$pThreshold`;
 - `<` or `Explode::LESSER_THAN` explodes if any inner rollable roll result is lesser than the `$pThreshold`;
 
-If the comparison operator is not recognized a `Bakame\DiceRoller\Exception` will be thrown.
+If the comparison operator is not recognized a `RollException` will be thrown.
 
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\Explode;
-use Bakame\DiceRoller\FudgeDice;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\Explode;
+use Bakame\DiceRoller\Type\FudgeDice;
 
 $cup = new Cup(new Dice(6), new FudgeDice(), new Dice(6), new Dice(6));
 $modifier = new Explode($cup, Explode::EQUALS, 3);
@@ -334,9 +350,10 @@ echo $modifier->toString(); // displays (3D6+DF)!=3
 
 namespace Bakame\DiceRoller;
 
-final class DiceRoller
+final class Factory
 {
-    public static function parse(string $annotation, ?Profiler $profiler = null): Rollable;
+    public function __construct(?Profiler $profiler = null): void;
+    public function newInstance(string $annotation): Rollable;
 }
 ```
 
@@ -362,14 +379,15 @@ By applying these rules the `Parser` can construct the following `Rollable` obje
 ```php
 <?php
 
-use Bakame\DiceRoller\DiceRoller;
+use Bakame\DiceRoller\Factory;
 
-$cup = DiceRoller::parse('3D20+4+D4!>3/4^3');
+$factory = new Factory();
+$cup = $factory->newInstance('3D20+4+D4!>3/4^3');
 
 echo $cup->roll();
 ```
 
-If the `Parser` is not able to parse the submitted dice annotation a `Bakame\DiceRoller\Exception` will be thrown.
+If the `Factory` is not able to parse the submitted dice annotation a `RollException` will be thrown.
 
 ## Profiling and Logging
 
@@ -379,15 +397,14 @@ If you want to know how internally your roll result is calculated you can use th
 
 The following classes can be instantiated with a profiler object:
 
-- `Bakame\DiceRoller\Arithmetic`;
-- `Bakame\DiceRoller\DropKeep`;
-- `Bakame\DiceRoller\Explode`;
+- `Bakame\DiceRoller\Factory`;
+- `Bakame\DiceRoller\Type\Arithmetic`;
+- `Bakame\DiceRoller\Type\DropKeep`;
+- `Bakame\DiceRoller\Type\Explode`;
 
-The `Bakame\DiceRoller\Profiler` is their last optional paramater in the constructor signature.
+The `Bakame\DiceRoller\Profiler\Profiler` is their last optional parameter in the constructor signature.
 
-- The `Bakame\DiceRoller\Cup` class uses a setter method `setProfiler` to add or remove a `Bakame\DiceRoller\Profiler`. Or you can use the named constructor `Cup::createFromRollable` 3rd parameter.
-
-- The `Bakame\DiceRoller\DiceRoller` accepts the `Bakame\DiceRoller\Profiler` as the second argument of the `parse` method;
+- The `Bakame\DiceRoller\Type\Cup` class uses a setter method `setProfiler` to add or remove a `Bakame\DiceRoller\Profiler\Profiler`. Or you can use the named constructor `Cup::createFromRollable` 3rd parameter.
 
 In all cases, once registered, the profiler will record the steps taken when using
 
@@ -396,11 +413,11 @@ In all cases, once registered, the profiler will record the steps taken when usi
 - `Rollable::roll`;
 
 ```php
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\Dice;
 use Bakame\DiceRoller\DiceRoller;
-use Bakame\DiceRoller\Logger;
-use Bakame\DiceRoller\Profiler;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\Profiler;
 use Psr\Log\LogLevel;
 
 $logger = new Logger();
@@ -442,13 +459,12 @@ At any moment you can change, using the profiler setter methods:
 - the log format
 - the PSR-3 logger 
 
-
 ```php
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\Dice;
 use Bakame\DiceRoller\DiceRoller;
-use Bakame\DiceRoller\Logger;
-use Bakame\DiceRoller\Profiler;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\Profiler;
 use Psr\Log\LogLevel;
 
 $logger = new Logger();
@@ -460,6 +476,5 @@ $profiler->setLogger('{trace} -> {result}');
 ```
 
 Even though, the library comes bundles with a LoggerInterface implementation you should consider using a better fleshout implementation than the one present out of the box.
-
 
 **Happy Coding!**

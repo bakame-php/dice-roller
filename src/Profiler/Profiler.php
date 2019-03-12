@@ -11,8 +11,9 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Profiler;
 
+use Bakame\DiceRoller\Type\Rollable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
@@ -48,14 +49,16 @@ final class Profiler
     /**
      * Records the Rollable action.
      */
-    public function profile(string $method, Rollable $rollable, string $trace, int $result): void
+    public function addOperation(string $method, Rollable $rollable, string $trace, int $result): void
     {
-        $this->logger->log($this->logLevel, $this->logFormat, [
+        $context = [
             'method' => $method,
             'rollable' => $rollable->toString(),
             'trace' => $trace,
             'result' => $result,
-        ]);
+        ];
+
+        $this->logger->log($this->logLevel, $this->logFormat, $context);
     }
 
     /**

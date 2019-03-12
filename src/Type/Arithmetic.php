@@ -11,10 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
+use Bakame\DiceRoller\Profiler\Profiler;
+use function abs;
+use function intdiv;
+use function sprintf;
+use function strpos;
 
 final class Arithmetic implements Rollable
 {
@@ -48,14 +53,15 @@ final class Arithmetic implements Rollable
     private $operator;
 
     /**
-     * @var Profiler|null
+     * @var \Bakame\DiceRoller\Profiler\Profiler|null
      */
     private $profiler;
 
     /**
      * new instance.
      *
-     * @param  ?Profiler        $profiler
+     * @param ?Profiler $profiler
+     *
      * @throws UnknownAlgorithm if the operator is not recognized
      * @throws IllegalValue     if the value is invalid for a given operator
      */
@@ -108,7 +114,7 @@ final class Arithmetic implements Rollable
             return $retval;
         }
 
-        $this->profiler->profile(__METHOD__, $this, $this->setTrace($value), $retval);
+        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($value), $retval);
 
         return $retval;
     }
@@ -125,7 +131,7 @@ final class Arithmetic implements Rollable
             return $retval;
         }
 
-        $this->profiler->profile(__METHOD__, $this, $this->setTrace($value), $retval);
+        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($value), $retval);
 
         return $retval;
     }
@@ -142,7 +148,7 @@ final class Arithmetic implements Rollable
             return $retval;
         }
 
-        $this->profiler->profile(__METHOD__, $this, $this->setTrace($value), $retval);
+        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($value), $retval);
 
         return $retval;
     }

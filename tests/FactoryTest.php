@@ -11,20 +11,21 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\DiceRoller;
-use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Exception\RollException;
+use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\Dice;
 use PHPUnit\Framework\TestCase;
 use Traversable;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\DiceRoller
+ * @coversDefaultClass Bakame\DiceRoller\Factory
  */
-final class DiceRollerTest extends TestCase
+final class FactoryTest extends TestCase
 {
     /**
-     * @covers ::parse
+     * @covers ::__construct
+     * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
      * @covers ::getPool
@@ -39,8 +40,8 @@ final class DiceRollerTest extends TestCase
      */
     public function testInvalidGroupDefinition(string $expected): void
     {
-        self::expectException(Exception::class);
-        DiceRoller::parse($expected);
+        self::expectException(RollException::class);
+        (new Factory())->newInstance($expected);
     }
 
     public function invalidStringProvider(): iterable
@@ -59,7 +60,7 @@ final class DiceRollerTest extends TestCase
     }
 
     /**
-     * @covers ::parse
+     * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
      * @covers ::addArithmetic
@@ -69,18 +70,18 @@ final class DiceRollerTest extends TestCase
      * @covers ::createSimplePool
      * @covers ::parseDefinition
      * @covers ::createComplexPool
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::__toString
-     * @covers \Bakame\DiceRoller\Dice::__toString
-     * @covers \Bakame\DiceRoller\FudgeDice::__toString
-     * @covers \Bakame\DiceRoller\Arithmetic::__toString
-     * @covers \Bakame\DiceRoller\DropKeep::__toString
-     * @covers \Bakame\DiceRoller\Explode::__toString
+     * @covers \Bakame\DiceRoller\Type\Cup::count
+     * @covers \Bakame\DiceRoller\Type\Cup::toString
+     * @covers \Bakame\DiceRoller\Type\Dice::toString
+     * @covers \Bakame\DiceRoller\Type\FudgeDice::toString
+     * @covers \Bakame\DiceRoller\Type\Arithmetic::toString
+     * @covers \Bakame\DiceRoller\Type\DropKeep::toString
+     * @covers \Bakame\DiceRoller\Type\Explode::toString
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString): void
     {
-        $cup = DiceRoller::parse($expected);
+        $cup = (new Factory())->newInstance($expected);
         self::assertSame($toString, $cup->toString());
     }
 
@@ -111,7 +112,7 @@ final class DiceRollerTest extends TestCase
     }
 
     /**
-     * @covers ::parse
+     * @covers ::newInstance
      * @covers ::explode
      * @covers ::parsePool
      * @covers ::parseDefinition
@@ -123,7 +124,9 @@ final class DiceRollerTest extends TestCase
      */
     public function testPermissiveParser(string $full, string $short): void
     {
-        self::assertEquals(DiceRoller::parse($full), DiceRoller::parse($short));
+        $factory = new Factory();
+
+        self::assertEquals($factory->newInstance($full), $factory->newInstance($short));
     }
 
     public function permissiveParserProvider(): iterable
@@ -173,8 +176,8 @@ final class DiceRollerTest extends TestCase
     }
 
     /**
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Type\Cup::count
+     * @covers \Bakame\DiceRoller\Type\Cup::getIterator
      */
     public function testFiveFourSidedDice(): void
     {
@@ -193,13 +196,13 @@ final class DiceRollerTest extends TestCase
     }
 
     /**
-     * @covers ::parse
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::roll
+     * @covers ::newInstance
+     * @covers \Bakame\DiceRoller\Type\Cup::count
+     * @covers \Bakame\DiceRoller\Type\Cup::roll
      */
     public function testRollWithNoDice(): void
     {
-        $cup = DiceRoller::parse('');
+        $cup = (new Factory())->newInstance('');
         self::assertSame(0, $cup->getMinimum());
         self::assertSame(0, $cup->getMaximum());
         for ($i = 0; $i < 5; $i++) {
@@ -209,13 +212,13 @@ final class DiceRollerTest extends TestCase
 
     /**
      * @covers ::parsePool
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\Type\Cup::count
+     * @covers \Bakame\DiceRoller\Type\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Type\Dice::count
      */
     public function testRollWithSingleDice(): void
     {
-        $dice = DiceRoller::parse('d8');
+        $dice = (new Factory())->newInstance('d8');
         self::assertInstanceOf(Dice::class, $dice);
         self::assertCount(8, $dice);
 
@@ -228,14 +231,13 @@ final class DiceRollerTest extends TestCase
 
     /**
      * @covers ::parsePool
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\Type\Cup::count
+     * @covers \Bakame\DiceRoller\Type\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Type\Dice::count
      */
     public function testRollWithDefaultDice(): void
     {
-        $dice = DiceRoller::parse('d');
-        self::assertInstanceOf(Dice::class, $dice);
+        $dice = (new Factory())->newInstance('d');
         self::assertInstanceOf(Dice::class, $dice);
         self::assertCount(6, $dice);
         self::assertSame(1, $dice->getMinimum());
@@ -249,15 +251,15 @@ final class DiceRollerTest extends TestCase
     }
 
     /**
-     * @covers ::parse
+     * @covers ::newInstance
      * @covers ::parsePool
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\Type\Cup::count
+     * @covers \Bakame\DiceRoller\Type\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Type\Dice::count
      */
     public function testRollWithMultipleDice(): void
     {
-        $cup = DiceRoller::parse('2D6+3d4');
+        $cup = (new Factory())->newInstance('2D6+3d4');
         self::assertInstanceOf(Traversable::class, $cup);
         self::assertCount(2, $cup);
         $res = iterator_to_array($cup, false);

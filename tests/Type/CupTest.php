@@ -9,23 +9,24 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Type;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDice;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\DiceRoller;
-use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\FudgeDice;
-use Bakame\DiceRoller\Logger;
-use Bakame\DiceRoller\PercentileDice;
-use Bakame\DiceRoller\Profiler;
-use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\Exception\RollException;
+use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Test\Bakame;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\CustomDice;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\FudgeDice;
+use Bakame\DiceRoller\Type\PercentileDice;
+use Bakame\DiceRoller\Type\Rollable;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Cup
+ * @coversDefaultClass Bakame\DiceRoller\Type\Cup
  */
 final class CupTest extends TestCase
 {
@@ -60,10 +61,13 @@ final class CupTest extends TestCase
      * @covers ::roll
      * @covers ::count
      * @covers ::getIterator
+     * @covers ::isEmpty
      */
     public function testRoll(): void
     {
-        $cup = new Cup(DiceRoller::parse('4D10'), DiceRoller::parse('2d4'));
+        $factory = new Factory();
+        $cup = new Cup($factory->newInstance('4D10'), $factory->newInstance('2d4'));
+        self::assertFalse($cup->isEmpty());
         self::assertSame(6, $cup->getMinimum());
         self::assertSame(48, $cup->getMaximum());
         self::assertSame('4D10+2D4', (string) $cup);
@@ -113,7 +117,7 @@ final class CupTest extends TestCase
 
     public function testCreateFromRollableThrowsException(): void
     {
-        self::expectException(Exception::class);
+        self::expectException(RollException::class);
         Cup::createFromRollable(0, new FudgeDice());
     }
 
@@ -135,13 +139,14 @@ final class CupTest extends TestCase
      * @covers ::__construct
      * @covers ::__toString
      * @covers ::toString
+     * @covers ::isEmpty
      */
     public function testEmptyCup(): void
     {
         $cup = new Cup();
         self::assertSame('0', (string) $cup);
+        self::assertTrue($cup->isEmpty());
     }
-
 
     /**
      * @covers ::__construct

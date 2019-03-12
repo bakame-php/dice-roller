@@ -9,33 +9,35 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Type;
 
-use Bakame\DiceRoller\CustomDice;
-use Bakame\DiceRoller\Exception;
+use Bakame\DiceRoller\Exception\RollException;
+use Bakame\DiceRoller\Test\Bakame;
+use Bakame\DiceRoller\Type\Dice;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\CustomDice
+ * @coversDefaultClass Bakame\DiceRoller\Type\Dice
  */
-final class CustomDiceTest extends TestCase
+final class DiceTest extends TestCase
 {
     /**
      * @covers ::__construct
-     * @covers ::toString
      * @covers ::__toString
+     * @covers ::toString
      * @covers ::count
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
      */
-    public function testFudgeDice(): void
+    public function testSixSidedValues(): void
     {
-        $dice = new CustomDice(1, 2, 2, 4, 4);
-        self::assertCount(5, $dice);
-        self::assertSame(4, $dice->getMaximum());
+        $expected = 6;
+        $dice = new Dice($expected);
+        self::assertCount($expected, $dice);
+        self::assertSame('D6', (string) $dice);
+        self::assertSame($expected, $dice->getMaximum());
         self::assertSame(1, $dice->getMinimum());
-        self::assertSame('D[1,2,2,4,4]', (string) $dice);
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
             self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
@@ -48,7 +50,7 @@ final class CustomDiceTest extends TestCase
      */
     public function testConstructorWithWrongValue(): void
     {
-        self::expectException(Exception::class);
-        new CustomDice(1);
+        self::expectException(RollException::class);
+        new Dice(1);
     }
 }

@@ -2,4 +2,5 @@ includes:
 - vendor/phpstan/phpstan-strict-rules/rules.neon
 parameters:
     ignoreErrors:
+        - '#Parameter \#1 ...\$values of class Bakame\\DiceRoller\\Type\\CustomDice constructor expects array<int, int>, array<int, int\|false> given\.#'
     reportUnmatchedIgnoredErrors: true

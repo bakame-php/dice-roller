@@ -11,14 +11,22 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 use Bakame\DiceRoller\Exception\IllegalValue;
-use Countable;
+use Bakame\DiceRoller\Profiler\Profiler;
 use Iterator;
-use IteratorAggregate;
+use function array_count_values;
+use function array_filter;
+use function array_map;
+use function array_merge;
+use function array_sum;
+use function array_walk;
+use function count;
+use function implode;
+use function sprintf;
 
-final class Cup implements Countable, IteratorAggregate, Rollable
+final class Cup implements Pool
 {
     /**
      * @var Rollable[]
@@ -33,8 +41,9 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * Create a new Cup containing only on type of Rollable object.
      *
-     * @param  ?Profiler $profiler
-     * @throws Exception if the quantity is lesser than 0
+     *
+     * @param  ?Profiler    $profiler
+     * @throws IllegalValue if the quantity is lesser than 0
      */
     public static function createFromRollable(int $quantity, Rollable $rollable, ?Profiler $profiler = null): self
     {
@@ -70,6 +79,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     /**
      * Add or remove a profiler to record the object actions
      * using a logger.
+     *
      * @param ?Profiler $profiler
      */
     public function setProfiler(?Profiler $profiler): void
@@ -82,7 +92,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
      */
     private static function isValid(Rollable $rollable): bool
     {
-        return !$rollable instanceof self || count($rollable) > 0;
+        return !$rollable instanceof Pool || !$rollable->isEmpty();
     }
 
     /**
@@ -111,6 +121,14 @@ final class Cup implements Countable, IteratorAggregate, Rollable
     public function __toString()
     {
         return $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isEmpty(): bool
+    {
+        return [] === $this->items;
     }
 
     /**
@@ -168,7 +186,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         $retval = (int) array_sum($sum);
 
         if (null !== $this->profiler) {
-            $this->profiler->profile(__METHOD__, $this, $this->setTrace($sum), $retval);
+            $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($sum), $retval);
         }
 
         return $retval;
@@ -187,7 +205,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         $retval = (int) array_sum($sum);
 
         if (null !== $this->profiler) {
-            $this->profiler->profile(__METHOD__, $this, $this->setTrace($sum), $retval);
+            $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($sum), $retval);
         }
 
         return $retval;
@@ -206,7 +224,7 @@ final class Cup implements Countable, IteratorAggregate, Rollable
         $retval = (int) array_sum($sum);
 
         if (null !== $this->profiler) {
-            $this->profiler->profile(__METHOD__, $this, $this->setTrace($sum), $retval);
+            $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($sum), $retval);
         }
 
         return $retval;

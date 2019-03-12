@@ -9,27 +9,28 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Type;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDice;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\DiceRoller;
-use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Explode;
-use Bakame\DiceRoller\Logger;
-use Bakame\DiceRoller\Profiler;
-use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\Exception\RollException;
+use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Test\Bakame;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\CustomDice;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\Explode;
+use Bakame\DiceRoller\Type\Rollable;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Explode
+ * @coversDefaultClass Bakame\DiceRoller\Type\Explode
  */
 final class ExplodeTest extends TestCase
 {
     /**
-     * @var Cup
+     * @var \Bakame\DiceRoller\Type\Cup
      */
     private $cup;
 
@@ -42,19 +43,19 @@ final class ExplodeTest extends TestCase
      * @dataProvider provideInvalidProperties
      *
      * @covers ::__construct
-     * @covers ::isValidCollection
+     * @covers ::isValidPool
      * @covers ::isValidRollable
      *
      */
     public function testConstructorThrows(Cup $cup, string $compare, int $threshold): void
     {
-        self::expectException(Exception::class);
+        self::expectException(RollException::class);
         new Explode($cup, $compare, $threshold);
     }
 
     public function provideInvalidProperties(): iterable
     {
-        $cup = DiceRoller::parse('4d6');
+        $cup = (new Factory())->newInstance('4d6');
         return [
             'invalid comparion' => [
                 'cup' => $cup,
@@ -175,8 +176,8 @@ final class ExplodeTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Profiler
-     * @covers \Bakame\DiceRoller\Logger
+     * @covers \Bakame\DiceRoller\Profiler\Profiler
+     * @covers \Bakame\DiceRoller\Profiler\Logger
      */
     public function testProfiler(): void
     {

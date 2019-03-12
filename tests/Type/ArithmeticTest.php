@@ -9,21 +9,21 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Type;
 
-use Bakame\DiceRoller\Arithmetic;
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDice;
-use Bakame\DiceRoller\Dice;
-use Bakame\DiceRoller\Exception;
-use Bakame\DiceRoller\Logger;
-use Bakame\DiceRoller\Profiler;
-use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\Exception\RollException;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Type\Arithmetic;
+use Bakame\DiceRoller\Type\Cup;
+use Bakame\DiceRoller\Type\CustomDice;
+use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Type\Rollable;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Arithmetic
+ * @coversDefaultClass \Bakame\DiceRoller\Type\Arithmetic
  */
 final class ArithmeticTest extends TestCase
 {
@@ -32,7 +32,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticConstructorThrows1(): void
     {
-        self::expectException(Exception::class);
+        self::expectException(RollException::class);
         new Arithmetic(new Dice(6), '+', -3);
     }
 
@@ -41,7 +41,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticConstructorThrows2(): void
     {
-        self::expectException(Exception::class);
+        self::expectException(RollException::class);
         new Arithmetic(new Dice(6), '**', 3);
     }
 
@@ -50,7 +50,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticConstructorThrows3(): void
     {
-        self::expectException(Exception::class);
+        self::expectException(RollException::class);
         new Arithmetic(new Dice(6), '/', 0);
     }
 
@@ -199,8 +199,8 @@ final class ArithmeticTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Profiler
-     * @covers \Bakame\DiceRoller\Logger
+     * @covers \Bakame\DiceRoller\Profiler\Profiler
+     * @covers \Bakame\DiceRoller\Profiler\Logger
      */
     public function testProfiler(): void
     {

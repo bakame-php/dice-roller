@@ -11,8 +11,8 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Exception;
 
-class Exception extends \Exception
+class RollException extends \Exception
 {
 }

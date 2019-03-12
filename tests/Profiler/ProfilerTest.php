@@ -9,20 +9,22 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Profiler;
 
-use Bakame\DiceRoller\Logger;
-use Bakame\DiceRoller\Profiler;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Test\Bakame;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Profiler
+ * @coversDefaultClass Bakame\DiceRoller\Profiler\Profiler
  */
 final class ProfilerTest extends TestCase
 {
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 

@@ -11,10 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Type;
 
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Countable;
+use function random_int;
+use function sprintf;
 
 final class Dice implements Countable, Rollable
 {

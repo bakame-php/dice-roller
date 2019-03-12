@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Exception;
 
-use Bakame\DiceRoller\Exception as BaseException;
-
-class IllegalValue extends BaseException
+class IllegalValue extends RollException
 {
 }

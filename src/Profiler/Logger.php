@@ -11,9 +11,10 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Profiler;
 
 use Psr\Log\AbstractLogger;
+use function strtr;
 
 final class Logger extends AbstractLogger
 {
@@ -32,15 +33,13 @@ final class Logger extends AbstractLogger
             $replace['{'.$key.'}'] = $val;
         }
 
-        if (!array_key_exists($level, $this->logs)) {
-            $this->logs[$level] = [];
-        }
-
+        $this->logs[$level] = $this->logs[$level] ?? [];
         $this->logs[$level][] = strtr($message, $replace);
     }
 
     /**
      * Retrieves the logs from the memory.
+     *
      * @param ?string $level
      */
     public function getLogs(?string $level = null): array
@@ -49,10 +48,6 @@ final class Logger extends AbstractLogger
             return $this->logs;
         }
 
-        if (array_key_exists($level, $this->logs)) {
-            return $this->logs[$level];
-        }
-
-        return [];
+        return $this->logs[$level] ?? [];
     }
 }
