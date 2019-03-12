@@ -2,8 +2,8 @@
 <?php
 
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Profiler\Logger;
-use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Tracer\Logger;
+use Bakame\DiceRoller\Tracer\LogTracer;
 use Psr\Log\LogLevel;
 
 function getAutoloadDirectory(): ?string
@@ -79,7 +79,7 @@ EOF;
 
 try {
     $logger = new Logger();
-    $factory = new Factory(new Profiler($logger));
+    $factory = new Factory(new LogTracer($logger));
     $str = trim($opts['cup']);
     $cup = $factory->newInstance($str);
     if (isset($opts['info'])) {
@@ -91,6 +91,7 @@ $green Maximum Roll:$reset $yellow{$cup->getMaximum()}$reset
 EOF;
     echo $text, PHP_EOL, PHP_EOL;
     }
+    $logger->clear();
 
 echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
     for ($i = 0; $i < $opts['iteration']; ++$i) {
@@ -98,7 +99,7 @@ echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
 echo "$cyan Result #$index: $reset $yellow".$cup->roll(), $reset, PHP_EOL;
     }
     if (isset($opts['logs'])) {
-echo PHP_EOL, "$yellow ====== ROLL LOGS ======= $reset", PHP_EOL;
+echo PHP_EOL, "$yellow ====== ROLL TRACE ======= $reset", PHP_EOL;
         foreach ($logger->getLogs(LogLevel::DEBUG) as $log) {
             echo "$cyan $log $reset $yellow $reset", PHP_EOL;
         }

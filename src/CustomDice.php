@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Countable;
@@ -41,14 +41,6 @@ final class CustomDice implements Countable, Rollable
         }
 
         $this->values = $values;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __toString()
-    {
-        return $this->toString();
     }
 
     /**

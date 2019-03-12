@@ -9,21 +9,22 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Type;
+namespace Bakame\DiceRoller\Test\Decorator;
 
-use Bakame\DiceRoller\Exception\RollException;
-use Bakame\DiceRoller\Profiler\Logger;
-use Bakame\DiceRoller\Profiler\Profiler;
-use Bakame\DiceRoller\Type\Arithmetic;
-use Bakame\DiceRoller\Type\Cup;
-use Bakame\DiceRoller\Type\CustomDice;
-use Bakame\DiceRoller\Type\Dice;
-use Bakame\DiceRoller\Type\Rollable;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\Decorator\Arithmetic;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\Tracer\Logger;
+use Bakame\DiceRoller\Tracer\LogTracer;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Type\Arithmetic
+ * @coversDefaultClass \Bakame\DiceRoller\Decorator\Arithmetic
  */
 final class ArithmeticTest extends TestCase
 {
@@ -32,7 +33,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticConstructorThrows1(): void
     {
-        self::expectException(RollException::class);
+        self::expectException(CanNotBeRolled::class);
         new Arithmetic(new Dice(6), '+', -3);
     }
 
@@ -41,7 +42,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticConstructorThrows2(): void
     {
-        self::expectException(RollException::class);
+        self::expectException(CanNotBeRolled::class);
         new Arithmetic(new Dice(6), '**', 3);
     }
 
@@ -50,22 +51,27 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticConstructorThrows3(): void
     {
-        self::expectException(RollException::class);
+        self::expectException(CanNotBeRolled::class);
         new Arithmetic(new Dice(6), '/', 0);
     }
 
     /**
      * @covers ::toString
-     * @covers ::__toString
+     * @covers ::getInnerRollable
+     * @covers ::getTracer
      */
     public function testToString(): void
     {
-        $cup = new Arithmetic(new Cup(
+        $pool = (new Cup())->withAddedRollable(
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), '^', 3);
-        self::assertSame('(2D3+D4)^3', (string) $cup);
+        );
+
+        $cup = new Arithmetic($pool, '^', 3);
+        self::assertSame('(2D3+D4)^3', $cup->toString());
+        self::assertSame($pool, $cup->getInnerRollable());
+        self::assertInstanceOf(NullTracer::class, $cup->getTracer());
     }
 
     /**
@@ -95,7 +101,7 @@ final class ArithmeticTest extends TestCase
             }
         };
 
-        $rollables = new Cup($dice, clone $dice);
+        $rollables = (new Cup())->withAddedRollable($dice, clone $dice);
         $cup = new Arithmetic($rollables, '*', 3);
         self::assertSame(6, $cup->roll());
     }
@@ -199,8 +205,8 @@ final class ArithmeticTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Profiler\Profiler
-     * @covers \Bakame\DiceRoller\Profiler\Logger
+     * @covers \Bakame\DiceRoller\Tracer\LogTracer
+     * @covers \Bakame\DiceRoller\Tracer\Logger
      */
     public function testProfiler(): void
     {
@@ -209,7 +215,7 @@ final class ArithmeticTest extends TestCase
             new CustomDice(-1, -1, -1),
             Arithmetic::EXPONENTIATION,
             3,
-            new Profiler($logger, LogLevel::DEBUG)
+            new LogTracer($logger, LogLevel::DEBUG)
         );
         $roll->roll();
         $roll->getMaximum();

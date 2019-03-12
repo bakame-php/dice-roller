@@ -11,8 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Exception;
+namespace Bakame\DiceRoller\Tracer;
 
-class TooFewSides extends CanNotBeRolled
+use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\Tracer;
+
+final class NullTracer implements Tracer
 {
+    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void
+    {
+    }
 }

@@ -11,11 +11,16 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller\Decorator;
 
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\RollableDecorator;
+use Bakame\DiceRoller\Traceable;
+use Bakame\DiceRoller\Tracer;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -27,7 +32,7 @@ use function strpos;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements Rollable
+final class DropKeep implements Rollable, RollableDecorator, Traceable
 {
     public const DROP_HIGHEST = 'dh';
     public const DROP_LOWEST = 'dl';
@@ -63,19 +68,19 @@ final class DropKeep implements Rollable
     private $algo;
 
     /**
-     * @var Profiler|null
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * new instance.
      *
      *
-     * @param  ?Profiler        $profiler
+     * @param  ?Tracer          $tracer
      * @throws UnknownAlgorithm if the algorithm is not recognized
      * @throws TooManyObjects   if the RollableCollection is not valid
      */
-    public function __construct(Pool $pool, string $algo, int $threshold, ?Profiler $profiler = null)
+    public function __construct(Pool $pool, string $algo, int $threshold, ?Tracer $tracer = null)
     {
         if (count($pool) < $threshold) {
             throw new TooManyObjects(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pool), $threshold));
@@ -88,15 +93,23 @@ final class DropKeep implements Rollable
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->profiler = $profiler;
+        $this->tracer = $tracer ?? new NullTracer();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function __toString()
+    public function getTracer(): Tracer
     {
-        return $this->toString();
+        return $this->tracer;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getInnerRollable(): Rollable
+    {
+        return $this->pool;
     }
 
     /**
@@ -117,19 +130,14 @@ final class DropKeep implements Rollable
      */
     public function roll(): int
     {
-        $res = [];
+        $innerRetval = [];
         foreach ($this->pool as $rollable) {
-            $res[] = $rollable->roll();
+            $innerRetval[] = $rollable->roll();
         }
 
-        $res = $this->calculate($res);
+        $retval = (int) array_sum($this->calculate($innerRetval));
 
-        $retval = (int) array_sum($res);
-        if (null === $this->profiler) {
-            return $retval;
-        }
-
-        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($res), $retval);
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
 
         return $retval;
     }
@@ -139,19 +147,14 @@ final class DropKeep implements Rollable
      */
     public function getMinimum(): int
     {
-        $res = [];
+        $innerRetval = [];
         foreach ($this->pool as $rollable) {
-            $res[] = $rollable->getMinimum();
+            $innerRetval[] = $rollable->getMinimum();
         }
 
-        $res = $this->calculate($res);
+        $retval = (int) array_sum($this->calculate($innerRetval));
 
-        $retval = (int) array_sum($res);
-        if (null === $this->profiler) {
-            return $retval;
-        }
-
-        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($res), $retval);
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
 
         return $retval;
     }
@@ -161,19 +164,14 @@ final class DropKeep implements Rollable
      */
     public function getMaximum(): int
     {
-        $res = [];
+        $innerRetval = [];
         foreach ($this->pool as $rollable) {
-            $res[] = $rollable->getMaximum();
+            $innerRetval[] = $rollable->getMaximum();
         }
 
-        $res = $this->calculate($res);
+        $retval = (int) array_sum($this->calculate($innerRetval));
 
-        $retval = (int) array_sum($res);
-        if (null === $this->profiler) {
-            return $retval;
-        }
-
-        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($res), $retval);
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
 
         return $retval;
     }
@@ -266,11 +264,18 @@ final class DropKeep implements Rollable
 
     /**
      * Format the trace as string.
+     *
+     * @param int[] $traces
      */
     private function setTrace(array $traces): string
     {
         $mapper = static function (int $value): string {
-            return '('.$value.')';
+            $str = ''.$value;
+            if (0 > $value) {
+                return '('.$str.')';
+            }
+
+            return $str;
         };
 
         $arr = array_map($mapper, $traces);

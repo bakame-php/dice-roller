@@ -11,11 +11,16 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller\Decorator;
 
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\RollableDecorator;
+use Bakame\DiceRoller\Traceable;
+use Bakame\DiceRoller\Tracer;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use function array_map;
 use function array_sum;
 use function implode;
@@ -24,7 +29,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Rollable
+final class Explode implements Rollable, RollableDecorator, Traceable
 {
     const EQUALS = '=';
     const GREATER_THAN = '>';
@@ -52,19 +57,19 @@ final class Explode implements Rollable
     private $compare;
 
     /**
-     * @var \Bakame\DiceRoller\Profiler\Profiler|null
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * new instance.
      *
      *
-     * @param  ?Profiler        $profiler
+     * @param  ?Tracer          $tracer
      * @throws UnknownAlgorithm if the comparator is not recognized
      * @throws IllegalValue     if the Cup triggers infinite loop
      */
-    public function __construct(Pool $pool, string $compare, int $threshold = null, ?Profiler $profiler = null)
+    public function __construct(Pool $pool, string $compare, int $threshold = null, ?Tracer $tracer = null)
     {
         if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
             throw new UnknownAlgorithm(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
@@ -75,7 +80,7 @@ final class Explode implements Rollable
             throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
-        $this->profiler = $profiler;
+        $this->tracer = $tracer ?? new NullTracer();
     }
 
     /**
@@ -118,9 +123,17 @@ final class Explode implements Rollable
     /**
      * {@inheritdoc}
      */
-    public function __toString()
+    public function getTracer(): Tracer
     {
-        return $this->toString();
+        return $this->tracer;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getInnerRollable(): Rollable
+    {
+        return $this->pool;
     }
 
     /**
@@ -154,11 +167,8 @@ final class Explode implements Rollable
     public function getMinimum(): int
     {
         $retval = $this->pool->getMinimum();
-        if (null === $this->profiler) {
-            return $retval;
-        }
 
-        $this->profiler->addOperation(__METHOD__, $this, (string) $retval, $retval);
+        $this->tracer->addTrace($this, __METHOD__, $retval, (string) $retval);
 
         return $retval;
     }
@@ -168,11 +178,7 @@ final class Explode implements Rollable
      */
     public function getMaximum(): int
     {
-        if (null === $this->profiler) {
-            return PHP_INT_MAX;
-        }
-
-        $this->profiler->addOperation(__METHOD__, $this, (string) PHP_INT_MAX, PHP_INT_MAX);
+        $this->tracer->addTrace($this, __METHOD__, PHP_INT_MAX, (string) PHP_INT_MAX);
 
         return PHP_INT_MAX;
     }
@@ -182,17 +188,14 @@ final class Explode implements Rollable
      */
     public function roll(): int
     {
-        $sum = [];
+        $innerRetval = [];
         foreach ($this->pool as $innerRoll) {
-            $sum = $this->calculate($sum, $innerRoll);
+            $innerRetval = $this->calculate($innerRetval, $innerRoll);
         }
 
-        $retval = (int) array_sum($sum);
-        if (null === $this->profiler) {
-            return $retval;
-        }
+        $retval = (int) array_sum($innerRetval);
 
-        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($sum), $retval);
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
 
         return $retval;
     }
@@ -204,9 +207,9 @@ final class Explode implements Rollable
     {
         $threshold = $this->threshold ?? $rollable->getMaximum();
         do {
-            $res = $rollable->roll();
-            $sum[] = $res;
-        } while ($this->isValid($res, $threshold));
+            $innerRetval = $rollable->roll();
+            $sum[] = $innerRetval;
+        } while ($this->isValid($innerRetval, $threshold));
 
         return $sum;
     }
@@ -229,6 +232,8 @@ final class Explode implements Rollable
 
     /**
      * Format the trace as string.
+     *
+     * @param int[] $traces
      */
     private function setTrace(array $traces): string
     {

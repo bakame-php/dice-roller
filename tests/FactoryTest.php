@@ -11,10 +11,10 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\Exception\RollException;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Type\Cup;
-use Bakame\DiceRoller\Type\Dice;
 use PHPUnit\Framework\TestCase;
 use Traversable;
 
@@ -40,7 +40,7 @@ final class FactoryTest extends TestCase
      */
     public function testInvalidGroupDefinition(string $expected): void
     {
-        self::expectException(RollException::class);
+        self::expectException(CanNotBeRolled::class);
         (new Factory())->newInstance($expected);
     }
 
@@ -70,13 +70,13 @@ final class FactoryTest extends TestCase
      * @covers ::createSimplePool
      * @covers ::parseDefinition
      * @covers ::createComplexPool
-     * @covers \Bakame\DiceRoller\Type\Cup::count
-     * @covers \Bakame\DiceRoller\Type\Cup::toString
-     * @covers \Bakame\DiceRoller\Type\Dice::toString
-     * @covers \Bakame\DiceRoller\Type\FudgeDice::toString
-     * @covers \Bakame\DiceRoller\Type\Arithmetic::toString
-     * @covers \Bakame\DiceRoller\Type\DropKeep::toString
-     * @covers \Bakame\DiceRoller\Type\Explode::toString
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::toString
+     * @covers \Bakame\DiceRoller\Dice::toString
+     * @covers \Bakame\DiceRoller\FudgeDice::toString
+     * @covers \Bakame\DiceRoller\Decorator\Arithmetic::toString
+     * @covers \Bakame\DiceRoller\Decorator\DropKeep::toString
+     * @covers \Bakame\DiceRoller\Decorator\Explode::toString
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString): void
@@ -176,8 +176,8 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers \Bakame\DiceRoller\Type\Cup::count
-     * @covers \Bakame\DiceRoller\Type\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
      */
     public function testFiveFourSidedDice(): void
     {
@@ -197,8 +197,8 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers \Bakame\DiceRoller\Type\Cup::count
-     * @covers \Bakame\DiceRoller\Type\Cup::roll
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::roll
      */
     public function testRollWithNoDice(): void
     {
@@ -212,9 +212,9 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::parsePool
-     * @covers \Bakame\DiceRoller\Type\Cup::count
-     * @covers \Bakame\DiceRoller\Type\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Type\Dice::count
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Dice::count
      */
     public function testRollWithSingleDice(): void
     {
@@ -231,9 +231,9 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::parsePool
-     * @covers \Bakame\DiceRoller\Type\Cup::count
-     * @covers \Bakame\DiceRoller\Type\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Type\Dice::count
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Dice::count
      */
     public function testRollWithDefaultDice(): void
     {
@@ -253,9 +253,9 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers ::parsePool
-     * @covers \Bakame\DiceRoller\Type\Cup::count
-     * @covers \Bakame\DiceRoller\Type\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Type\Dice::count
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Dice::count
      */
     public function testRollWithMultipleDice(): void
     {

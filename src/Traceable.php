@@ -11,8 +11,9 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Exception;
+namespace Bakame\DiceRoller;
 
-class TooFewSides extends CanNotBeRolled
+interface Traceable
 {
+    public function getTracer(): Tracer;
 }

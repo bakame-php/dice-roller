@@ -9,14 +9,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Type;
+namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\Test\Bakame;
-use Bakame\DiceRoller\Type\FudgeDice;
+use Bakame\DiceRoller\FudgeDice;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Type\FudgeDice
+ * @coversDefaultClass Bakame\DiceRoller\FudgeDice
  */
 final class FudgeDiceTest extends TestCase
 {
@@ -25,13 +24,12 @@ final class FudgeDiceTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::toString
-     * @covers ::__toString
      * @covers ::roll
      */
     public function testFudgeDice(): void
     {
         $dice = new FudgeDice();
-        self::assertSame('DF', (string) $dice);
+        self::assertSame('DF', $dice->toString());
         self::assertCount(3, $dice);
         self::assertSame(1, $dice->getMaximum());
         self::assertSame(-1, $dice->getMinimum());

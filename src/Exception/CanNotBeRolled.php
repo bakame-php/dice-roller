@@ -13,6 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Exception;
 
-class TooFewSides extends CanNotBeRolled
+class CanNotBeRolled extends \Exception
 {
 }

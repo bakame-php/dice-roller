@@ -9,28 +9,29 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Type;
+namespace Bakame\DiceRoller\Test\Decorator;
 
-use Bakame\DiceRoller\Exception\RollException;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\Decorator\Explode;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Profiler\Logger;
-use Bakame\DiceRoller\Profiler\Profiler;
-use Bakame\DiceRoller\Test\Bakame;
-use Bakame\DiceRoller\Type\Cup;
-use Bakame\DiceRoller\Type\CustomDice;
-use Bakame\DiceRoller\Type\Dice;
-use Bakame\DiceRoller\Type\Explode;
-use Bakame\DiceRoller\Type\Rollable;
+use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\Tracer\Logger;
+use Bakame\DiceRoller\Tracer\LogTracer;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Type\Explode
+ * @coversDefaultClass Bakame\DiceRoller\Decorator\Explode
  */
 final class ExplodeTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\Type\Cup
+     * @var Cup
      */
     private $cup;
 
@@ -47,9 +48,9 @@ final class ExplodeTest extends TestCase
      * @covers ::isValidRollable
      *
      */
-    public function testConstructorThrows(Cup $cup, string $compare, int $threshold): void
+    public function testConstructorThrows(Pool $cup, string $compare, int $threshold): void
     {
-        self::expectException(RollException::class);
+        self::expectException(CanNotBeRolled::class);
         new Explode($cup, $compare, $threshold);
     }
 
@@ -73,7 +74,7 @@ final class ExplodeTest extends TestCase
                 'threshold' => 7,
             ],
             'equals invalid threshold' => [
-                'cup' => new Cup(new CustomDice(1, 1, 1)),
+                'cup' => (new Cup())->withAddedRollable(new CustomDice(1, 1, 1)),
                 'compare' => Explode::EQUALS,
                 'threshold' => 1,
             ],
@@ -88,21 +89,20 @@ final class ExplodeTest extends TestCase
     /**
      * @dataProvider provideExplodingModifier
      *
-     * @covers ::__toString
      * @covers ::toString
      * @covers ::getAnnotationSuffix
      *
      */
     public function testToString(Explode $roll, string $annotation): void
     {
-        self::assertSame($annotation, (string) $roll);
+        self::assertSame($annotation, $roll->toString());
     }
 
     public function provideExplodingModifier(): iterable
     {
         return [
             [
-                'roll' => new Explode(new Cup(new Dice(3), new Dice(3), new Dice(4)), Explode::EQUALS, 3),
+                'roll' => new Explode((new Cup())->withAddedRollable(new Dice(3), new Dice(3), new Dice(4)), Explode::EQUALS, 3),
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
@@ -116,14 +116,24 @@ final class ExplodeTest extends TestCase
         ];
     }
 
+    /**
+     * @covers ::getInnerRollable
+     * @covers ::getTracer
+     * @throws \Bakame\DiceRoller\Exception\IllegalValue
+     * @throws \Bakame\DiceRoller\Exception\UnknownAlgorithm
+     * @throws \ReflectionException
+     */
     public function testGetTrace(): void
     {
         $dice = $this->createMock(Rollable::class);
         $dice->method('roll')
             ->will(self::onConsecutiveCalls(2, 2, 3));
 
-        $cup = new Explode(new Cup($dice), Explode::EQUALS, 2);
+        $pool = (new Cup())->withAddedRollable($dice);
+        $cup = new Explode($pool, Explode::EQUALS, 2);
         self::assertSame(7, $cup->roll());
+        self::assertSame($pool, $cup->getInnerRollable());
+        self::assertInstanceOf(NullTracer::class, $cup->getTracer());
     }
 
     /**
@@ -176,15 +186,15 @@ final class ExplodeTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Profiler\Profiler
-     * @covers \Bakame\DiceRoller\Profiler\Logger
+     * @covers \Bakame\DiceRoller\Tracer\LogTracer
+     * @covers \Bakame\DiceRoller\Tracer\Logger
      */
     public function testProfiler(): void
     {
         $logger = new Logger();
-        $profiler = new Profiler($logger, LogLevel::DEBUG);
+        $profiler = new LogTracer($logger, LogLevel::DEBUG);
         $roll = new Explode(
-            new Cup(new Dice(3), new Dice(3), new Dice(4)),
+            (new Cup())->withAddedRollable(new Dice(3), new Dice(3), new Dice(4)),
             Explode::EQUALS,
             3,
             $profiler

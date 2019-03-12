@@ -11,19 +11,34 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Exception\TooFewSides;
 use Countable;
 use function random_int;
+use function sprintf;
 
-final class PercentileDice implements Countable, Rollable
+final class Dice implements Countable, Rollable
 {
     /**
-     * {@inheritdoc}
+     * @var int
      */
-    public function __toString()
+    private $sides;
+
+    /**
+     * new instance.
+     *
+     * @param int $sides side count
+     *
+     * @throws TooFewSides if a Dice contains less than 2 sides
+     */
+    public function __construct(int $sides)
     {
-        return $this->toString();
+        if (2 > $sides) {
+            throw new TooFewSides(sprintf('Your dice must have at least 2 sides, `%s` given.', $sides));
+        }
+
+        $this->sides = $sides;
     }
 
     /**
@@ -31,7 +46,7 @@ final class PercentileDice implements Countable, Rollable
      */
     public function toString(): string
     {
-        return 'D%';
+        return 'D'.$this->sides;
     }
 
     /**
@@ -41,7 +56,7 @@ final class PercentileDice implements Countable, Rollable
      */
     public function count()
     {
-        return 100;
+        return $this->sides;
     }
 
     /**
@@ -57,7 +72,7 @@ final class PercentileDice implements Countable, Rollable
      */
     public function getMaximum(): int
     {
-        return 100;
+        return $this->sides;
     }
 
     /**
@@ -65,6 +80,6 @@ final class PercentileDice implements Countable, Rollable
      */
     public function roll(): int
     {
-        return random_int(1, 100);
+        return random_int(1, $this->sides);
     }
 }

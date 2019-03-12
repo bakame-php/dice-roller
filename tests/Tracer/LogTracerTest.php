@@ -9,37 +9,38 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Profiler;
+namespace Bakame\DiceRoller\Test\Tracer;
 
-use Bakame\DiceRoller\Profiler\Logger;
-use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Test\Bakame;
+use Bakame\DiceRoller\Tracer\Logger;
+use Bakame\DiceRoller\Tracer\LogTracer;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Profiler\Profiler
+ * @coversDefaultClass Bakame\DiceRoller\Tracer\LogTracer
  */
-final class ProfilerTest extends TestCase
+final class LogTracerTest extends TestCase
 {
     /**
-     * @var LoggerInterface
+     * @var Logger
      */
     private $logger;
 
     /**
-     * @var Profiler
+     * @var LogTracer
      */
     private $profiler;
 
     protected function setUp(): void
     {
         $this->logger = new Logger();
-        $this->profiler = new Profiler($this->logger);
+        $this->profiler = new LogTracer($this->logger);
     }
 
-    public function testLogger(): void
+    public function testLoggerAccesor(): void
     {
         self::assertSame($this->logger, $this->profiler->getLogger());
         $this->profiler->setLogger(new Logger());
@@ -61,5 +62,19 @@ final class ProfilerTest extends TestCase
         $format = '{trace} -> {result}';
         $this->profiler->setLogFormat($format);
         self::assertSame($format, $this->profiler->getLogFormat());
+    }
+
+    /**
+     * @covers \Bakame\DiceRoller\Tracer\Logger
+     */
+    public function testDiceRollerLogger(): void
+    {
+        $this->logger->clear();
+        self::assertCount(0, $this->logger->getLogs());
+        $rollable = Cup::createFromRollable(3, new Dice(6), $this->profiler);
+        $rollable->roll();
+        self::assertCount(1, $this->logger->getLogs());
+        $this->logger->clear();
+        self::assertCount(0, $this->logger->getLogs());
     }
 }

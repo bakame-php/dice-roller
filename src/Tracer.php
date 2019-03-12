@@ -11,12 +11,9 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller;
 
-use Countable;
-use IteratorAggregate;
-
-interface Pool extends IteratorAggregate, Countable, Rollable
+interface Tracer
 {
-    public function isEmpty(): bool;
+    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void;
 }

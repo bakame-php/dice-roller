@@ -9,21 +9,18 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Type;
+namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\Exception\RollException;
-use Bakame\DiceRoller\Test\Bakame;
-use Bakame\DiceRoller\Type\Dice;
+use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Type\Dice
+ * @coversDefaultClass Bakame\DiceRoller\Dice
  */
 final class DiceTest extends TestCase
 {
     /**
      * @covers ::__construct
-     * @covers ::__toString
      * @covers ::toString
      * @covers ::count
      * @covers ::getMinimum
@@ -33,9 +30,9 @@ final class DiceTest extends TestCase
     public function testSixSidedValues(): void
     {
         $expected = 6;
-        $dice = new Dice($expected);
+        $dice = new \Bakame\DiceRoller\Dice($expected);
         self::assertCount($expected, $dice);
-        self::assertSame('D6', (string) $dice);
+        self::assertSame('D6', $dice->toString());
         self::assertSame($expected, $dice->getMaximum());
         self::assertSame(1, $dice->getMinimum());
         for ($i = 0; $i < 10; $i++) {
@@ -50,7 +47,7 @@ final class DiceTest extends TestCase
      */
     public function testConstructorWithWrongValue(): void
     {
-        self::expectException(RollException::class);
-        new Dice(1);
+        self::expectException(CanNotBeRolled::class);
+        new \Bakame\DiceRoller\Dice(1);
     }
 }

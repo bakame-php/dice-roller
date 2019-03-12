@@ -9,26 +9,27 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Type;
+namespace Bakame\DiceRoller\Test\Decorator;
 
-use Bakame\DiceRoller\Exception\RollException;
-use Bakame\DiceRoller\Profiler\Logger;
-use Bakame\DiceRoller\Profiler\Profiler;
-use Bakame\DiceRoller\Test\Bakame;
-use Bakame\DiceRoller\Type\Cup;
-use Bakame\DiceRoller\Type\Dice;
-use Bakame\DiceRoller\Type\DropKeep;
-use Bakame\DiceRoller\Type\Rollable;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\Decorator\DropKeep;
+use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\Tracer\Logger;
+use Bakame\DiceRoller\Tracer\LogTracer;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Type\DropKeep
+ * @coversDefaultClass Bakame\DiceRoller\Decorator\DropKeep
  */
 final class DropKeepTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\Type\Cup
+     * @var \Bakame\DiceRoller\Cup
      */
     private $cup;
 
@@ -42,7 +43,7 @@ final class DropKeepTest extends TestCase
      */
     public function testConstructorThrows1(): void
     {
-        self::expectException(RollException::class);
+        self::expectException(CanNotBeRolled::class);
         new DropKeep($this->cup, DropKeep::DROP_LOWEST, 6);
     }
 
@@ -51,22 +52,24 @@ final class DropKeepTest extends TestCase
      */
     public function testConstructorThrows2(): void
     {
-        self::expectException(RollException::class);
+        self::expectException(CanNotBeRolled::class);
         new DropKeep($this->cup, 'foobar', 3);
     }
 
     /**
      * @covers ::toString
-     * @covers ::__toString
+     * @covers ::getTracer
      */
     public function testToString(): void
     {
-        $cup = new DropKeep(new Cup(
+        $cup = new DropKeep((new Cup())->withAddedRollable(
             new Dice(3),
-            new Dice(3),
+            new CustomDice(-3, -2, -1),
             new Dice(4)
         ), DropKeep::DROP_LOWEST, 2);
-        self::assertSame('(2D3+D4)DL2', (string) $cup);
+
+        self::assertSame('(D3+D[-3,-2,-1]+D4)DL2', $cup->toString());
+        self::assertInstanceOf(NullTracer::class, $cup->getTracer());
     }
 
 
@@ -119,7 +122,7 @@ final class DropKeepTest extends TestCase
             }
         };
 
-        $rollables = new Cup($dice1, clone $dice1, $dice2, clone $dice2);
+        $rollables = (new Cup())->withAddedRollable($dice1, clone $dice1, $dice2, clone $dice2);
         $cup = new DropKeep($rollables, DropKeep::DROP_LOWEST, 1);
         self::assertSame(5, $cup->roll());
     }
@@ -184,21 +187,24 @@ final class DropKeepTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Profiler\Profiler
-     * @covers \Bakame\DiceRoller\Profiler\Logger
+     * @covers \Bakame\DiceRoller\Tracer\LogTracer
+     * @covers \Bakame\DiceRoller\Tracer\Logger
+     * @covers ::getInnerRollable
      */
     public function testProfiler(): void
     {
         $logger = new Logger();
-        $profiler = new Profiler($logger, LogLevel::DEBUG);
-        $roll = new DropKeep(new Cup(
+        $profiler = new LogTracer($logger, LogLevel::DEBUG);
+        $pool = (new Cup())->withAddedRollable(
             new Dice(3),
             new Dice(3),
             new Dice(4)
-        ), DropKeep::DROP_LOWEST, 2, $profiler);
+        );
+        $roll = new DropKeep($pool, DropKeep::DROP_LOWEST, 2, $profiler);
         $roll->roll();
         $roll->getMaximum();
         $roll->getMinimum();
+        self::assertSame($pool, $roll->getInnerRollable());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

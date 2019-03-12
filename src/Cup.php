@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Exception\IllegalValue;
-use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use Iterator;
 use function array_count_values;
 use function array_filter;
@@ -26,7 +26,7 @@ use function count;
 use function implode;
 use function sprintf;
 
-final class Cup implements Pool
+final class Cup implements Pool, Traceable
 {
     /**
      * @var Rollable[]
@@ -34,25 +34,26 @@ final class Cup implements Pool
     private $items = [];
 
     /**
-     * @var Profiler|null
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * Create a new Cup containing only on type of Rollable object.
      *
+     * @param ?Tracer $tracer
      *
-     * @param  ?Profiler    $profiler
      * @throws IllegalValue if the quantity is lesser than 0
      */
-    public static function createFromRollable(int $quantity, Rollable $rollable, ?Profiler $profiler = null): self
+    public static function createFromRollable(int $quantity, Rollable $rollable, ?Tracer $tracer = null): self
     {
         if ($quantity < 1) {
             throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid', $quantity));
         }
 
+        $tracer = $tracer ?? new NullTracer();
         if (!self::isValid($rollable)) {
-            return new self();
+            return new self($tracer);
         }
 
         $items = [$rollable];
@@ -60,31 +61,17 @@ final class Cup implements Pool
             $items[] = clone $rollable;
         }
 
-        $cup = new self(...$items);
-        $cup->setProfiler($profiler);
-
-        return $cup;
+        return (new self($tracer))->withAddedRollable(...$items);
     }
 
     /**
-     * New instance.
+     * Cup constructor.
      *
-     * @param Rollable ...$items a list of Rollable objects
+     * @param ?Tracer $tracer
      */
-    public function __construct(Rollable ...$items)
+    public function __construct(?Tracer $tracer = null)
     {
-        $this->items = array_filter($items, [$this, 'isValid']);
-    }
-
-    /**
-     * Add or remove a profiler to record the object actions
-     * using a logger.
-     *
-     * @param ?Profiler $profiler
-     */
-    public function setProfiler(?Profiler $profiler): void
-    {
-        $this->profiler = $profiler;
+        $this->tracer = $tracer ?? new NullTracer();
     }
 
     /**
@@ -100,17 +87,17 @@ final class Cup implements Pool
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified Rollable object.
+     * @param Rollable ...$items
      */
-    public function withRollable(Rollable $rollable): self
+    public function withAddedRollable(Rollable ...$items): self
     {
-        $items = array_filter(array_merge($this->items, [$rollable]), [$this, 'isValid']);
+        $items = array_filter(array_merge($this->items, $items), [$this, 'isValid']);
         if ($items === $this->items) {
             return $this;
         }
 
-        $cup = new self();
+        $cup = new self($this->tracer);
         $cup->items = $items;
-        $cup->profiler = $this->profiler;
 
         return $cup;
     }
@@ -118,9 +105,9 @@ final class Cup implements Pool
     /**
      * {@inheritdoc}
      */
-    public function __toString()
+    public function getTracer(): Tracer
     {
-        return $this->toString();
+        return $this->tracer;
     }
 
     /**
@@ -185,9 +172,7 @@ final class Cup implements Pool
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
 
-        if (null !== $this->profiler) {
-            $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($sum), $retval);
-        }
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
 
         return $retval;
     }
@@ -204,9 +189,7 @@ final class Cup implements Pool
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
 
-        if (null !== $this->profiler) {
-            $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($sum), $retval);
-        }
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
 
         return $retval;
     }
@@ -223,9 +206,7 @@ final class Cup implements Pool
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
 
-        if (null !== $this->profiler) {
-            $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($sum), $retval);
-        }
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
 
         return $retval;
     }
@@ -236,7 +217,12 @@ final class Cup implements Pool
     private function setTrace(array $traces): string
     {
         $mapper = static function (int $value): string {
-            return '('.$value.')';
+            $str = ''.$value;
+            if (0 > $value) {
+                return '('.$str.')';
+            }
+
+            return $str;
         };
 
         $arr = array_map($mapper, $traces);

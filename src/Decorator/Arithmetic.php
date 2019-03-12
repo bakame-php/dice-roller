@@ -11,17 +11,21 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller\Decorator;
 
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Profiler\Profiler;
+use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\RollableDecorator;
+use Bakame\DiceRoller\Traceable;
+use Bakame\DiceRoller\Tracer;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use function abs;
 use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements Rollable
+final class Arithmetic implements Rollable, RollableDecorator, Traceable
 {
     public const ADDITION = '+';
     public const SUBSTRACTION = '-';
@@ -53,19 +57,18 @@ final class Arithmetic implements Rollable
     private $operator;
 
     /**
-     * @var \Bakame\DiceRoller\Profiler\Profiler|null
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * new instance.
      *
-     * @param ?Profiler $profiler
      *
      * @throws UnknownAlgorithm if the operator is not recognized
      * @throws IllegalValue     if the value is invalid for a given operator
      */
-    public function __construct(Rollable $rollable, string $operator, int $value, ?Profiler $profiler = null)
+    public function __construct(Rollable $rollable, string $operator, int $value, ?Tracer $tracer = null)
     {
         if (!isset(self::OPERATOR[$operator])) {
             throw new UnknownAlgorithm(sprintf('Invalid or Unsupported operator `%s`', $operator));
@@ -78,15 +81,23 @@ final class Arithmetic implements Rollable
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->profiler = $profiler;
+        $this->tracer = $tracer ?? new NullTracer();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function __toString()
+    public function getTracer(): Tracer
     {
-        return $this->toString();
+        return $this->tracer;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getInnerRollable(): Rollable
+    {
+        return $this->rollable;
     }
 
     /**
@@ -108,13 +119,9 @@ final class Arithmetic implements Rollable
     public function roll(): int
     {
         $value = $this->rollable->roll();
-
         $retval = $this->calculate($value);
-        if (null === $this->profiler) {
-            return $retval;
-        }
 
-        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($value), $retval);
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
 
         return $retval;
     }
@@ -125,13 +132,9 @@ final class Arithmetic implements Rollable
     public function getMinimum(): int
     {
         $value = $this->rollable->getMinimum();
-
         $retval = $this->calculate($value);
-        if (null === $this->profiler) {
-            return $retval;
-        }
 
-        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($value), $retval);
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
 
         return $retval;
     }
@@ -142,13 +145,9 @@ final class Arithmetic implements Rollable
     public function getMaximum(): int
     {
         $value = $this->rollable->getMaximum();
-
         $retval = $this->calculate($value);
-        if (null === $this->profiler) {
-            return $retval;
-        }
 
-        $this->profiler->addOperation(__METHOD__, $this, $this->setTrace($value), $retval);
+        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
 
         return $retval;
     }

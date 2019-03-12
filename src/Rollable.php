@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller;
 
 interface Rollable
 {
