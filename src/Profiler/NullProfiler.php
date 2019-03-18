@@ -11,9 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Profiler;
 
-interface Tracer
+use Bakame\DiceRoller\Profiler;
+use Bakame\DiceRoller\Rollable;
+
+final class NullProfiler implements Profiler
 {
-    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void;
+    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void
+    {
+    }
 }

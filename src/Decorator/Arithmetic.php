@@ -15,18 +15,19 @@ namespace Bakame\DiceRoller\Decorator;
 
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
+use Bakame\DiceRoller\Profiler\ProfilerAware;
 use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\RollableDecorator;
 use Bakame\DiceRoller\Traceable;
-use Bakame\DiceRoller\Tracer;
-use Bakame\DiceRoller\Tracer\NullTracer;
 use function abs;
 use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements Rollable, RollableDecorator, Traceable
+final class Arithmetic implements RollableDecorator, Traceable
 {
+    use ProfilerAware;
+
     public const ADDITION = '+';
     public const SUBSTRACTION = '-';
     public const DIVISION = '/';
@@ -57,9 +58,9 @@ final class Arithmetic implements Rollable, RollableDecorator, Traceable
     private $operator;
 
     /**
-     * @var Tracer
+     * @var string
      */
-    private $tracer;
+    private $trace = '';
 
     /**
      * new instance.
@@ -68,7 +69,7 @@ final class Arithmetic implements Rollable, RollableDecorator, Traceable
      * @throws UnknownAlgorithm if the operator is not recognized
      * @throws IllegalValue     if the value is invalid for a given operator
      */
-    public function __construct(Rollable $rollable, string $operator, int $value, ?Tracer $tracer = null)
+    public function __construct(Rollable $rollable, string $operator, int $value)
     {
         if (!isset(self::OPERATOR[$operator])) {
             throw new UnknownAlgorithm(sprintf('Invalid or Unsupported operator `%s`', $operator));
@@ -81,15 +82,15 @@ final class Arithmetic implements Rollable, RollableDecorator, Traceable
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->tracer = $tracer ?? new NullTracer();
+        $this->setProfiler();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getTracer(): Tracer
+    public function getTrace(): string
     {
-        return $this->tracer;
+        return $this->trace;
     }
 
     /**
@@ -121,7 +122,7 @@ final class Arithmetic implements Rollable, RollableDecorator, Traceable
         $value = $this->rollable->roll();
         $retval = $this->calculate($value);
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
 
         return $retval;
     }
@@ -134,7 +135,7 @@ final class Arithmetic implements Rollable, RollableDecorator, Traceable
         $value = $this->rollable->getMinimum();
         $retval = $this->calculate($value);
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
 
         return $retval;
     }
@@ -147,7 +148,7 @@ final class Arithmetic implements Rollable, RollableDecorator, Traceable
         $value = $this->rollable->getMaximum();
         $retval = $this->calculate($value);
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
 
         return $retval;
     }
@@ -185,6 +186,8 @@ final class Arithmetic implements Rollable, RollableDecorator, Traceable
      */
     private function setTrace(int $value): string
     {
-        return $value.' '.$this->operator.' '.$this->value;
+        $this->trace = $value.' '.$this->operator.' '.$this->value;
+
+        return $this->trace;
     }
 }

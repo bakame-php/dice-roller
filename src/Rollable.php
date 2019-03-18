@@ -34,7 +34,7 @@ interface Rollable
 
     /**
      * Returns the string representation of the
-     * Rollable object using Dice annotation.
+     * Rollable object using SimpleDice annotation.
      */
     public function toString(): string;
 }

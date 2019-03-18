@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller\Profiler;
 
 use Psr\Log\AbstractLogger;
 use function strtr;
@@ -40,6 +40,7 @@ final class Logger extends AbstractLogger
     /**
      * Retrieves the logs from the memory.
      *
+     * @param ?string $level
      */
     public function getLogs(?string $level = null): array
     {

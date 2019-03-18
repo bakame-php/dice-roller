@@ -16,11 +16,10 @@ namespace Bakame\DiceRoller\Decorator;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Profiler\ProfilerAware;
 use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\RollableDecorator;
 use Bakame\DiceRoller\Traceable;
-use Bakame\DiceRoller\Tracer;
-use Bakame\DiceRoller\Tracer\NullTracer;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -32,8 +31,10 @@ use function strpos;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements Rollable, RollableDecorator, Traceable
+final class DropKeep implements RollableDecorator, Traceable
 {
+    use ProfilerAware;
+
     public const DROP_HIGHEST = 'dh';
     public const DROP_LOWEST = 'dl';
     public const KEEP_HIGHEST = 'kh';
@@ -68,19 +69,18 @@ final class DropKeep implements Rollable, RollableDecorator, Traceable
     private $algo;
 
     /**
-     * @var Tracer
+     * @var string
      */
-    private $tracer;
+    private $trace = '';
 
     /**
      * new instance.
      *
      *
-     * @param  ?Tracer          $tracer
      * @throws UnknownAlgorithm if the algorithm is not recognized
      * @throws TooManyObjects   if the RollableCollection is not valid
      */
-    public function __construct(Pool $pool, string $algo, int $threshold, ?Tracer $tracer = null)
+    public function __construct(Pool $pool, string $algo, int $threshold)
     {
         if (count($pool) < $threshold) {
             throw new TooManyObjects(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pool), $threshold));
@@ -93,15 +93,15 @@ final class DropKeep implements Rollable, RollableDecorator, Traceable
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->tracer = $tracer ?? new NullTracer();
+        $this->setProfiler();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getTracer(): Tracer
+    public function getTrace(): string
     {
-        return $this->tracer;
+        return $this->trace;
     }
 
     /**
@@ -137,7 +137,7 @@ final class DropKeep implements Rollable, RollableDecorator, Traceable
 
         $retval = (int) array_sum($this->calculate($innerRetval));
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
 
         return $retval;
     }
@@ -154,7 +154,7 @@ final class DropKeep implements Rollable, RollableDecorator, Traceable
 
         $retval = (int) array_sum($this->calculate($innerRetval));
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
 
         return $retval;
     }
@@ -171,7 +171,7 @@ final class DropKeep implements Rollable, RollableDecorator, Traceable
 
         $retval = (int) array_sum($this->calculate($innerRetval));
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
 
         return $retval;
     }
@@ -280,6 +280,8 @@ final class DropKeep implements Rollable, RollableDecorator, Traceable
 
         $arr = array_map($mapper, $traces);
 
-        return implode(' + ', $arr);
+        $this->trace = implode(' + ', $arr);
+
+        return $this->trace;
     }
 }

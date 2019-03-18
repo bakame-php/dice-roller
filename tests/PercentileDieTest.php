@@ -11,16 +11,16 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\PercentileDie;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\PercentileDice
+ * @coversDefaultClass Bakame\DiceRoller\PercentileDie
  */
-final class PercentileDiceTest extends TestCase
+final class PercentileDieTest extends TestCase
 {
     /**
-     * @covers ::count
+     * @covers ::getSize
      * @covers ::toString
      * @covers ::getMinimum
      * @covers ::getMaximum
@@ -28,8 +28,8 @@ final class PercentileDiceTest extends TestCase
      */
     public function testFudgeDice(): void
     {
-        $dice = new PercentileDice();
-        self::assertCount(100, $dice);
+        $dice = new PercentileDie();
+        self::assertSame(100, $dice->getSize());
         self::assertSame(100, $dice->getMaximum());
         self::assertSame(1, $dice->getMinimum());
         self::assertSame('D%', $dice->toString());

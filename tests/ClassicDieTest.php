@@ -11,30 +11,33 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\CustomDice
+ * @coversDefaultClass Bakame\DiceRoller\ClassicDie
  */
-final class CustomDiceTest extends TestCase
+final class ClassicDieTest extends TestCase
 {
     /**
      * @covers ::__construct
+     * @covers ::fromString
      * @covers ::toString
-     * @covers ::count
+     * @covers ::getSize
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
      */
-    public function testFudgeDice(): void
+    public function testSixSidedValues(): void
     {
-        $dice = new CustomDice(1, 2, 2, 4, 4);
-        self::assertCount(5, $dice);
-        self::assertSame(4, $dice->getMaximum());
+        $expected = 6;
+        $dice = new ClassicDie($expected);
+        self::assertSame($expected, $dice->getSize());
+        self::assertSame('D6', $dice->toString());
+        self::assertEquals($dice, ClassicDie::fromString($dice->toString()));
+        self::assertSame($expected, $dice->getMaximum());
         self::assertSame(1, $dice->getMinimum());
-        self::assertSame('D[1,2,2,4,4]', $dice->toString());
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
             self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
@@ -48,6 +51,15 @@ final class CustomDiceTest extends TestCase
     public function testConstructorWithWrongValue(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new CustomDice(1);
+        new ClassicDie(1);
+    }
+
+    /**
+     * @covers ::fromString
+     */
+    public function testfromStringWithWrongValue(): void
+    {
+        self::expectException(CanNotBeRolled::class);
+        ClassicDie::fromString('1');
     }
 }

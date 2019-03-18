@@ -11,15 +11,15 @@
 
 namespace Bakame\DiceRoller\Test\Decorator;
 
+use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Decorator\Arithmetic;
-use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\NullProfiler;
 use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\Tracer\Logger;
-use Bakame\DiceRoller\Tracer\LogTracer;
-use Bakame\DiceRoller\Tracer\NullTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -34,7 +34,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows1(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new Arithmetic(new Dice(6), '+', -3);
+        new Arithmetic(new ClassicDie(6), '+', -3);
     }
 
     /**
@@ -43,7 +43,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows2(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new Arithmetic(new Dice(6), '**', 3);
+        new Arithmetic(new ClassicDie(6), '**', 3);
     }
 
     /**
@@ -52,26 +52,24 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows3(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new Arithmetic(new Dice(6), '/', 0);
+        new Arithmetic(new ClassicDie(6), '/', 0);
     }
 
     /**
      * @covers ::toString
      * @covers ::getInnerRollable
-     * @covers ::getTracer
      */
     public function testToString(): void
     {
         $pool = (new Cup())->withAddedRollable(
-            new Dice(3),
-            new Dice(3),
-            new Dice(4)
+            new ClassicDie(3),
+            new ClassicDie(3),
+            new ClassicDie(4)
         );
 
         $cup = new Arithmetic($pool, '^', 3);
         self::assertSame('(2D3+D4)^3', $cup->toString());
         self::assertSame($pool, $cup->getInnerRollable());
-        self::assertInstanceOf(NullTracer::class, $cup->getTracer());
     }
 
     /**
@@ -131,7 +129,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max): void
     {
-        $roll = new Arithmetic(new Dice($size), $operator, $value);
+        $roll = new Arithmetic(new ClassicDie($size), $operator, $value);
         $test = $roll->roll();
         self::assertSame($min, $roll->getMinimum());
         self::assertSame($max, $roll->getMaximum());
@@ -187,15 +185,17 @@ final class ArithmeticTest extends TestCase
      * @covers ::calculate
      * @covers ::roll
      * @covers ::calculate
+     * @covers \Bakame\DiceRoller\Profiler\ProfilerAware
      */
     public function testArithmeticExponentWithNegativeValue(): void
     {
-        $roll = new Arithmetic(new CustomDice(-1, -1, -1), Arithmetic::EXPONENTIATION, 3);
+        $roll = new Arithmetic(new CustomDie(-1, -1, -1), Arithmetic::EXPONENTIATION, 3);
         $test = $roll->roll();
         self::assertSame(-1, $roll->getMinimum());
         self::assertSame(-1, $roll->getMaximum());
         self::assertGreaterThanOrEqual(-1, $test);
         self::assertLessThanOrEqual(-1, $test);
+        self::assertInstanceOf(NullProfiler::class, $roll->getProfiler());
     }
 
     /**
@@ -205,21 +205,27 @@ final class ArithmeticTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Tracer\LogTracer
-     * @covers \Bakame\DiceRoller\Tracer\Logger
+     * @covers ::getTrace
+     * @covers \Bakame\DiceRoller\Profiler\ProfilerAware
+     * @covers \Bakame\DiceRoller\Profiler\LogProfiler
+     * @covers \Bakame\DiceRoller\Profiler\Logger
      */
     public function testProfiler(): void
     {
         $logger = new Logger();
         $roll = new Arithmetic(
-            new CustomDice(-1, -1, -1),
+            new CustomDie(-1, -1, -1),
             Arithmetic::EXPONENTIATION,
-            3,
-            new LogTracer($logger, LogLevel::DEBUG)
+            3
         );
+        $profiler = new LogProfiler($logger, LogLevel::DEBUG);
+        $roll->setProfiler($profiler);
+        self::assertEmpty($roll->getTrace());
         $roll->roll();
+        self::assertNotEmpty($roll->getTrace());
         $roll->getMaximum();
         $roll->getMinimum();
+        self::assertSame($profiler, $roll->getProfiler());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
         self::assertCount(1, $logger->getLogs());
         self::assertCount(1, $logger->getLogs(null));

@@ -11,17 +11,16 @@
 
 namespace Bakame\DiceRoller\Test\Decorator;
 
+use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Decorator\Explode;
-use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\Tracer\Logger;
-use Bakame\DiceRoller\Tracer\LogTracer;
-use Bakame\DiceRoller\Tracer\NullTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -37,7 +36,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::createFromRollable(4, new Dice(6));
+        $this->cup = Cup::createFromRollable(4, new ClassicDie(6));
     }
 
     /**
@@ -74,7 +73,7 @@ final class ExplodeTest extends TestCase
                 'threshold' => 7,
             ],
             'equals invalid threshold' => [
-                'cup' => (new Cup())->withAddedRollable(new CustomDice(1, 1, 1)),
+                'cup' => new Cup(new CustomDie(1, 1, 1)),
                 'compare' => Explode::EQUALS,
                 'threshold' => 1,
             ],
@@ -102,15 +101,15 @@ final class ExplodeTest extends TestCase
     {
         return [
             [
-                'roll' => new Explode((new Cup())->withAddedRollable(new Dice(3), new Dice(3), new Dice(4)), Explode::EQUALS, 3),
+                'roll' => new Explode(new Cup(new ClassicDie(3), new ClassicDie(3), new ClassicDie(4)), Explode::EQUALS, 3),
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(4, new CustomDice(-1, -1, -1)), Explode::GREATER_THAN, 1),
+                'roll' => new Explode(Cup::createFromRollable(4, new CustomDie(-1, -1, -1)), Explode::GREATER_THAN, 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(4, new Dice(6)), Explode::EQUALS, 1),
+                'roll' => new Explode(Cup::createFromRollable(4, new ClassicDie(6)), Explode::EQUALS, 1),
                 'annotation' => '4D6!',
             ],
         ];
@@ -118,7 +117,6 @@ final class ExplodeTest extends TestCase
 
     /**
      * @covers ::getInnerRollable
-     * @covers ::getTracer
      * @throws \Bakame\DiceRoller\Exception\IllegalValue
      * @throws \Bakame\DiceRoller\Exception\UnknownAlgorithm
      * @throws \ReflectionException
@@ -129,11 +127,10 @@ final class ExplodeTest extends TestCase
         $dice->method('roll')
             ->will(self::onConsecutiveCalls(2, 2, 3));
 
-        $pool = (new Cup())->withAddedRollable($dice);
+        $pool = new Cup($dice);
         $cup = new Explode($pool, Explode::EQUALS, 2);
         self::assertSame(7, $cup->roll());
         self::assertSame($pool, $cup->getInnerRollable());
-        self::assertInstanceOf(NullTracer::class, $cup->getTracer());
     }
 
     /**
@@ -185,21 +182,25 @@ final class ExplodeTest extends TestCase
      * @covers ::getMaximum
      * @covers ::roll
      * @covers ::calculate
+     * @covers ::setProfiler
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Tracer\LogTracer
-     * @covers \Bakame\DiceRoller\Tracer\Logger
+     * @covers ::getTrace
+     * @covers \Bakame\DiceRoller\Profiler\LogProfiler
+     * @covers \Bakame\DiceRoller\Profiler\Logger
      */
     public function testProfiler(): void
     {
         $logger = new Logger();
-        $profiler = new LogTracer($logger, LogLevel::DEBUG);
+        $tracer = new LogProfiler($logger, LogLevel::DEBUG);
         $roll = new Explode(
-            (new Cup())->withAddedRollable(new Dice(3), new Dice(3), new Dice(4)),
+            new Cup(new ClassicDie(3), new ClassicDie(3), new ClassicDie(4)),
             Explode::EQUALS,
-            3,
-            $profiler
+            3
         );
+        $roll->setProfiler($tracer);
+        self::assertEmpty($roll->getTrace());
         $roll->roll();
+        self::assertNotEmpty($roll->getTrace());
         $roll->getMaximum();
         $roll->getMinimum();
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));

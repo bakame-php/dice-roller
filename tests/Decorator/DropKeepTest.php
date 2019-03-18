@@ -11,15 +11,14 @@
 
 namespace Bakame\DiceRoller\Test\Decorator;
 
+use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDice;
+use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Decorator\DropKeep;
-use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\Tracer\Logger;
-use Bakame\DiceRoller\Tracer\LogTracer;
-use Bakame\DiceRoller\Tracer\NullTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -35,7 +34,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::createFromRollable(4, new Dice(6));
+        $this->cup = Cup::createFromRollable(4, new ClassicDie(6));
     }
 
     /**
@@ -58,18 +57,16 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::toString
-     * @covers ::getTracer
      */
     public function testToString(): void
     {
         $cup = new DropKeep((new Cup())->withAddedRollable(
-            new Dice(3),
-            new CustomDice(-3, -2, -1),
-            new Dice(4)
+            new ClassicDie(3),
+            new CustomDie(-3, -2, -1),
+            new ClassicDie(4)
         ), DropKeep::DROP_LOWEST, 2);
 
         self::assertSame('(D3+D[-3,-2,-1]+D4)DL2', $cup->toString());
-        self::assertInstanceOf(NullTracer::class, $cup->getTracer());
     }
 
 
@@ -187,21 +184,25 @@ final class DropKeepTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTrace
-     * @covers \Bakame\DiceRoller\Tracer\LogTracer
-     * @covers \Bakame\DiceRoller\Tracer\Logger
+     * @covers ::getTrace
+     * @covers \Bakame\DiceRoller\Profiler\LogProfiler
+     * @covers \Bakame\DiceRoller\Profiler\Logger
      * @covers ::getInnerRollable
      */
     public function testProfiler(): void
     {
         $logger = new Logger();
-        $profiler = new LogTracer($logger, LogLevel::DEBUG);
-        $pool = (new Cup())->withAddedRollable(
-            new Dice(3),
-            new Dice(3),
-            new Dice(4)
+        $tracer = new LogProfiler($logger, LogLevel::DEBUG);
+        $pool = new Cup(
+            new ClassicDie(3),
+            new ClassicDie(3),
+            new ClassicDie(4)
         );
-        $roll = new DropKeep($pool, DropKeep::DROP_LOWEST, 2, $profiler);
+        $roll = new DropKeep($pool, DropKeep::DROP_LOWEST, 2);
+        $roll->setProfiler($tracer);
+        self::assertEmpty($roll->getTrace());
         $roll->roll();
+        self::assertNotEmpty($roll->getTrace());
         $roll->getMaximum();
         $roll->getMinimum();
         self::assertSame($pool, $roll->getInnerRollable());

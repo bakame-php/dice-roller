@@ -11,17 +11,17 @@
 
 namespace Bakame\DiceRoller\Test;
 
+use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDice;
-use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\FudgeDice;
-use Bakame\DiceRoller\PercentileDice;
+use Bakame\DiceRoller\FudgeDie;
+use Bakame\DiceRoller\PercentileDie;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\NullProfiler;
 use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\Tracer\Logger;
-use Bakame\DiceRoller\Tracer\LogTracer;
-use Bakame\DiceRoller\Tracer\NullTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -31,13 +31,13 @@ use Psr\Log\LogLevel;
 final class CupTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\Tracer
+     * @var \Bakame\DiceRoller\Profiler
      */
     private $tracer;
 
     public function setUp(): void
     {
-        $this->tracer = new NullTracer();
+        $this->tracer = new NullProfiler();
     }
 
     /**
@@ -46,8 +46,8 @@ final class CupTest extends TestCase
      */
     public function testWithRollable(): void
     {
-        $cup = new Cup($this->tracer);
-        $altCup = $cup->withAddedRollable(new FudgeDice(), new CustomDice(-1, 1, -1));
+        $cup = new Cup();
+        $altCup = $cup->withAddedRollable(new FudgeDie(), new CustomDie(-1, 1, -1));
         self::assertNotEquals($cup, $altCup);
     }
 
@@ -57,8 +57,8 @@ final class CupTest extends TestCase
      */
     public function testWithRollableReturnsSameInstance(): void
     {
-        $cup = (new Cup($this->tracer))->withAddedRollable(new FudgeDice());
-        $altCup = $cup->withAddedRollable(new Cup($this->tracer));
+        $cup = new Cup(new FudgeDie());
+        $altCup = $cup->withAddedRollable(new Cup());
 
         self::assertSame($cup, $altCup);
     }
@@ -72,13 +72,11 @@ final class CupTest extends TestCase
      * @covers ::count
      * @covers ::getIterator
      * @covers ::isEmpty
-     * @covers ::getTracer
      */
     public function testRoll(): void
     {
         $factory = new Factory();
-        $cup = new Cup($this->tracer);
-        $cup = $cup->withAddedRollable($factory->newInstance('4D10'), $factory->newInstance('2d4'));
+        $cup = new Cup($factory->newInstance('4D10'), $factory->newInstance('2d4'));
         self::assertFalse($cup->isEmpty());
         self::assertSame(6, $cup->getMinimum());
         self::assertSame(48, $cup->getMaximum());
@@ -90,7 +88,6 @@ final class CupTest extends TestCase
             self::assertGreaterThanOrEqual($cup->getMinimum(), $test);
             self::assertLessThanOrEqual($cup->getMaximum(), $test);
         }
-        self::assertSame($this->tracer, $cup->getTracer());
     }
 
     /**
@@ -98,7 +95,7 @@ final class CupTest extends TestCase
      * @covers ::createFromRollable
      * @dataProvider validNamedConstructor
      */
-    public function testCreateFromRollable(int $quantity, \Bakame\DiceRoller\Rollable $template): void
+    public function testCreateFromRollable(int $quantity, Rollable $template): void
     {
         $cup = Cup::createFromRollable($quantity, $template);
         self::assertCount($quantity, $cup);
@@ -110,20 +107,20 @@ final class CupTest extends TestCase
         return [
             'basic dice' => [
                 'quantity' => 2,
-                'template' => new Dice(6),
+                'template' => new ClassicDie(6),
             ],
             'fudge dice' => [
                 'quantity' => 3,
-                'template' => new FudgeDice(),
+                'template' => new FudgeDie(),
             ],
             'percentile dice' => [
                 'quantity' => 4,
-                'template' => new PercentileDice(),
+                'template' => new PercentileDie(),
 
             ],
             'custom dice' => [
                 'quantity' => 5,
-                'template' => new CustomDice(1, 2, 2, 3, 5),
+                'template' => new CustomDie(1, 2, 2, 3, 5),
             ],
         ];
     }
@@ -131,7 +128,7 @@ final class CupTest extends TestCase
     public function testCreateFromRollableThrowsException(): void
     {
         self::expectException(CanNotBeRolled::class);
-        Cup::createFromRollable(0, new FudgeDice());
+        Cup::createFromRollable(0, new FudgeDie());
     }
 
     /**
@@ -152,7 +149,7 @@ final class CupTest extends TestCase
      * @covers ::__construct
      * @covers ::toString
      * @covers ::isEmpty
-     * @covers \Bakame\DiceRoller\Tracer\NullTracer
+     * @covers \Bakame\DiceRoller\Profiler\NullProfiler
      */
     public function testEmptyCup(): void
     {
@@ -168,13 +165,16 @@ final class CupTest extends TestCase
      * @covers ::getMaximum
      * @covers ::roll
      * @covers ::setTrace
+     * @covers ::getTrace
      */
     public function testTracer(): void
     {
         $logger = new Logger();
-        $tracer = new LogTracer($logger, LogLevel::DEBUG);
-        $cup = Cup::createFromRollable(12, new CustomDice(2, -3, -5), $tracer);
+        $tracer = new LogProfiler($logger, LogLevel::DEBUG);
+        $cup = Cup::createFromRollable(12, new CustomDie(2, -3, -5), $tracer);
+        self::assertEmpty($cup->getTrace());
         $cup->roll();
+        self::assertNotEmpty($cup->getTrace());
         $cup->getMaximum();
         $cup->getMinimum();
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));

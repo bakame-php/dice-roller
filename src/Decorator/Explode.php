@@ -16,11 +16,10 @@ namespace Bakame\DiceRoller\Decorator;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Profiler\ProfilerAware;
 use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\RollableDecorator;
 use Bakame\DiceRoller\Traceable;
-use Bakame\DiceRoller\Tracer;
-use Bakame\DiceRoller\Tracer\NullTracer;
 use function array_map;
 use function array_sum;
 use function implode;
@@ -29,8 +28,10 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Rollable, RollableDecorator, Traceable
+final class Explode implements RollableDecorator, Traceable
 {
+    use ProfilerAware;
+
     const EQUALS = '=';
     const GREATER_THAN = '>';
     const LESSER_THAN = '<';
@@ -57,19 +58,18 @@ final class Explode implements Rollable, RollableDecorator, Traceable
     private $compare;
 
     /**
-     * @var Tracer
+     * @var string
      */
-    private $tracer;
+    private $trace = '';
 
     /**
      * new instance.
      *
      *
-     * @param  ?Tracer          $tracer
      * @throws UnknownAlgorithm if the comparator is not recognized
      * @throws IllegalValue     if the Cup triggers infinite loop
      */
-    public function __construct(Pool $pool, string $compare, int $threshold = null, ?Tracer $tracer = null)
+    public function __construct(Pool $pool, string $compare, int $threshold = null)
     {
         if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
             throw new UnknownAlgorithm(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
@@ -80,7 +80,7 @@ final class Explode implements Rollable, RollableDecorator, Traceable
             throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
-        $this->tracer = $tracer ?? new NullTracer();
+        $this->setProfiler();
     }
 
     /**
@@ -123,9 +123,9 @@ final class Explode implements Rollable, RollableDecorator, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getTracer(): Tracer
+    public function getTrace(): string
     {
-        return $this->tracer;
+        return $this->trace;
     }
 
     /**
@@ -168,7 +168,7 @@ final class Explode implements Rollable, RollableDecorator, Traceable
     {
         $retval = $this->pool->getMinimum();
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, (string) $retval);
+        $this->profiler->addTrace($this, __METHOD__, $retval, (string) $retval);
 
         return $retval;
     }
@@ -178,7 +178,7 @@ final class Explode implements Rollable, RollableDecorator, Traceable
      */
     public function getMaximum(): int
     {
-        $this->tracer->addTrace($this, __METHOD__, PHP_INT_MAX, (string) PHP_INT_MAX);
+        $this->profiler->addTrace($this, __METHOD__, PHP_INT_MAX, (string) PHP_INT_MAX);
 
         return PHP_INT_MAX;
     }
@@ -195,7 +195,7 @@ final class Explode implements Rollable, RollableDecorator, Traceable
 
         $retval = (int) array_sum($innerRetval);
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
 
         return $retval;
     }
@@ -243,6 +243,8 @@ final class Explode implements Rollable, RollableDecorator, Traceable
 
         $arr = array_map($mapper, $traces);
 
-        return implode(' + ', $arr);
+        $this->trace = implode(' + ', $arr);
+
+        return $this->trace;
     }
 }

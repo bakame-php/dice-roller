@@ -9,20 +9,20 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Tracer;
+namespace Bakame\DiceRoller\Test\Profiler;
 
+use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Test\Bakame;
-use Bakame\DiceRoller\Tracer\Logger;
-use Bakame\DiceRoller\Tracer\LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Tracer\LogTracer
+ * @coversDefaultClass Bakame\DiceRoller\Tracer\LogProfiler
  */
-final class LogTracerTest extends TestCase
+final class LogProfilerTest extends TestCase
 {
     /**
      * @var Logger
@@ -30,14 +30,14 @@ final class LogTracerTest extends TestCase
     private $logger;
 
     /**
-     * @var LogTracer
+     * @var LogProfiler
      */
     private $profiler;
 
     protected function setUp(): void
     {
         $this->logger = new Logger();
-        $this->profiler = new LogTracer($this->logger);
+        $this->profiler = new LogProfiler($this->logger);
     }
 
     public function testLoggerAccesor(): void
@@ -65,13 +65,13 @@ final class LogTracerTest extends TestCase
     }
 
     /**
-     * @covers \Bakame\DiceRoller\Tracer\Logger
+     * @covers \Bakame\DiceRoller\Profiler\Logger
      */
     public function testDiceRollerLogger(): void
     {
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
-        $rollable = Cup::createFromRollable(3, new Dice(6), $this->profiler);
+        $rollable = Cup::createFromRollable(3, new ClassicDie(6), $this->profiler);
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear();

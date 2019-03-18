@@ -11,14 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller\Profiler;
 
+use Bakame\DiceRoller\Profiler;
 use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-final class LogTracer implements Tracer
+final class LogProfiler implements Profiler
 {
     /**
      * @var LoggerInterface

@@ -2,8 +2,8 @@
 <?php
 
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Tracer\Logger;
-use Bakame\DiceRoller\Tracer\LogTracer;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\LogProfiler;
 use Psr\Log\LogLevel;
 
 function getAutoloadDirectory(): ?string
@@ -43,10 +43,10 @@ require $dir.'/autoload.php';
 $opts = filter_var_array(
     array_replace(
         ['iteration' => 1],
-        getopt("", ['cup::', 'iteration::', 'help', 'info', 'logs'])
+        getopt("", ['pool::', 'iteration::', 'help', 'info', 'logs'])
     ),
     [
-        'cup' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
+        'pool' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
         'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
         'help' => FILTER_VALIDATE_BOOLEAN,
         'info' => FILTER_VALIDATE_BOOLEAN,
@@ -54,7 +54,7 @@ $opts = filter_var_array(
     ]
 );
 
-if ((!isset($opts['cup']) && !isset($opts['help'])) || isset($opts['help'])) {
+if ((!isset($opts['pool']) && !isset($opts['help'])) || isset($opts['help'])) {
     $script = basename(__FILE__);
     $text = <<<EOF
 $yellow
@@ -65,9 +65,9 @@ It's a dice-cup: you put your die in the cup, you shake it and then you get the 
 
 Simple Usage:
 
-$yellow php ./$script --cup=2D3 --iteration=3 --info --logs $reset
+$yellow php ./$script --pool=2D3 --iteration=3 --info --logs $reset
 
-$green--cup$reset       submit the dice string annotation
+$green--pool$reset      submit the dice string annotation
 $green--iteration$reset submit the number of time the dices must be roll ({$yellow}default:$reset 1)
 $green--help$reset      show the following help message
 $green--info$reset      show the cup information
@@ -79,15 +79,16 @@ EOF;
 
 try {
     $logger = new Logger();
-    $factory = new Factory(new LogTracer($logger));
-    $str = trim($opts['cup']);
-    $cup = $factory->newInstance($str);
+    $factory = new Factory(new LogProfiler($logger));
+
+    $expression = trim($opts['pool']);
+    $pool = $factory->newInstance($expression);
     if (isset($opts['info'])) {
         $text = <<<EOF
 $yellow ====== ROLL INFORMATIONS =======$reset
-$green Dice annotation:$reset $yellow{$cup}$reset
-$green Minimum Roll:$reset $yellow{$cup->getMinimum()}$reset
-$green Maximum Roll:$reset $yellow{$cup->getMaximum()}$reset
+$green Expression:$reset $yellow{$pool->toString()}$reset
+$green Minimum Roll:$reset $yellow{$pool->getMinimum()}$reset
+$green Maximum Roll:$reset $yellow{$pool->getMaximum()}$reset
 EOF;
     echo $text, PHP_EOL, PHP_EOL;
     }
@@ -96,7 +97,7 @@ EOF;
 echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
     for ($i = 0; $i < $opts['iteration']; ++$i) {
         $index = $i+1;
-echo "$cyan Result #$index: $reset $yellow".$cup->roll(), $reset, PHP_EOL;
+echo "$cyan Result #$index: $reset $yellow".$pool->roll(), $reset, PHP_EOL;
     }
     if (isset($opts['logs'])) {
 echo PHP_EOL, "$yellow ====== ROLL TRACE ======= $reset", PHP_EOL;

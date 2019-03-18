@@ -13,26 +13,25 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Countable;
 use function random_int;
 
-final class FudgeDice implements Countable, Rollable
+final class PercentileDie implements Dice
 {
     /**
      * {@inheritdoc}
      */
     public function toString(): string
     {
-        return 'DF';
+        return 'D%';
     }
 
     /**
      * Returns the side count.
      *
      */
-    public function count(): int
+    public function getSize(): int
     {
-        return 3;
+        return 100;
     }
 
     /**
@@ -40,7 +39,7 @@ final class FudgeDice implements Countable, Rollable
      */
     public function getMinimum(): int
     {
-        return -1;
+        return 1;
     }
 
     /**
@@ -48,7 +47,7 @@ final class FudgeDice implements Countable, Rollable
      */
     public function getMaximum(): int
     {
-        return 1;
+        return 100;
     }
 
     /**
@@ -56,6 +55,6 @@ final class FudgeDice implements Countable, Rollable
      */
     public function roll(): int
     {
-        return random_int(-1, 1);
+        return random_int(1, 100);
     }
 }

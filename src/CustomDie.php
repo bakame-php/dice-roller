@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Exception\TooFewSides;
-use Countable;
+use Bakame\DiceRoller\Exception\UnknownExpression;
 use function count;
 use function implode;
 use function max;
@@ -22,7 +22,7 @@ use function min;
 use function random_int;
 use function sprintf;
 
-final class CustomDice implements Countable, Rollable
+final class CustomDie implements Dice
 {
     /**
      * @var int[]
@@ -44,6 +44,23 @@ final class CustomDice implements Countable, Rollable
     }
 
     /**
+     * new instance from a string expression.
+     *
+     * @throws UnknownExpression if the expression is not valid.
+     */
+    public static function fromString(string $expression): self
+    {
+        if (1 === preg_match('/^d\[(?<definition>.*)\]$/i', $expression, $matches)) {
+            $sides = explode(',', $matches['definition']);
+            $sides = (array) filter_var(array_filter($sides, 'trim'), FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
+
+            return new self(...$sides);
+        }
+
+        throw new UnknownExpression(sprintf('the submitted dice format `%s` is invalid ', $expression));
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function toString(): string
@@ -52,10 +69,9 @@ final class CustomDice implements Countable, Rollable
     }
 
     /**
-     * Returns the side count.
-     *
+     * {@inheritdoc}
      */
-    public function count(): int
+    public function getSize(): int
     {
         return count($this->values);
     }

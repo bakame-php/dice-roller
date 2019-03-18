@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Exception\IllegalValue;
-use Bakame\DiceRoller\Tracer\NullTracer;
+use Bakame\DiceRoller\Profiler\ProfilerAware;
 use Iterator;
 use function array_count_values;
 use function array_filter;
@@ -28,32 +28,34 @@ use function sprintf;
 
 final class Cup implements Pool, Traceable
 {
+    use ProfilerAware;
+
     /**
      * @var Rollable[]
      */
     private $items = [];
 
     /**
-     * @var Tracer
+     * @var string
      */
-    private $tracer;
+    private $trace = '';
 
     /**
      * Create a new Cup containing only on type of Rollable object.
      *
-     * @param ?Tracer $tracer
-     *
-     * @throws IllegalValue if the quantity is lesser than 0
+     * @param ?Profiler $tracer
      */
-    public static function createFromRollable(int $quantity, Rollable $rollable, ?Tracer $tracer = null): self
+    public static function createFromRollable(int $quantity, Rollable $rollable, ?Profiler $tracer = null): self
     {
         if ($quantity < 1) {
             throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid', $quantity));
         }
 
-        $tracer = $tracer ?? new NullTracer();
         if (!self::isValid($rollable)) {
-            return new self($tracer);
+            $new = new self();
+            $new->setProfiler($tracer);
+
+            return $new;
         }
 
         $items = [$rollable];
@@ -61,17 +63,16 @@ final class Cup implements Pool, Traceable
             $items[] = clone $rollable;
         }
 
-        return (new self($tracer))->withAddedRollable(...$items);
+        $new = new self(...$items);
+        $new->setProfiler($tracer);
+
+        return $new;
     }
 
-    /**
-     * Cup constructor.
-     *
-     * @param ?Tracer $tracer
-     */
-    public function __construct(?Tracer $tracer = null)
+    public function __construct(Rollable ...$items)
     {
-        $this->tracer = $tracer ?? new NullTracer();
+        $this->items = array_filter($items, [$this, 'isValid']);
+        $this->setProfiler();
     }
 
     /**
@@ -87,6 +88,7 @@ final class Cup implements Pool, Traceable
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified Rollable object.
+     *
      * @param Rollable ...$items
      */
     public function withAddedRollable(Rollable ...$items): self
@@ -96,8 +98,9 @@ final class Cup implements Pool, Traceable
             return $this;
         }
 
-        $cup = new self($this->tracer);
+        $cup = new self();
         $cup->items = $items;
+        $cup->setProfiler($this->profiler);
 
         return $cup;
     }
@@ -105,9 +108,9 @@ final class Cup implements Pool, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getTracer(): Tracer
+    public function getTrace(): string
     {
-        return $this->tracer;
+        return $this->trace;
     }
 
     /**
@@ -172,7 +175,7 @@ final class Cup implements Pool, Traceable
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
 
         return $retval;
     }
@@ -189,7 +192,7 @@ final class Cup implements Pool, Traceable
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
 
         return $retval;
     }
@@ -206,7 +209,7 @@ final class Cup implements Pool, Traceable
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
 
-        $this->tracer->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
 
         return $retval;
     }
@@ -227,6 +230,8 @@ final class Cup implements Pool, Traceable
 
         $arr = array_map($mapper, $traces);
 
-        return implode(' + ', $arr);
+        $this->trace = implode(' + ', $arr);
+
+        return $this->trace;
     }
 }

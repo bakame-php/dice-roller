@@ -15,5 +15,7 @@ namespace Bakame\DiceRoller;
 
 interface Traceable
 {
-    public function getTracer(): Tracer;
+    public function getTrace(): string;
+
+    public function getProfiler(): Profiler;
 }

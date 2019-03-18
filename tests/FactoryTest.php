@@ -11,8 +11,8 @@
 
 namespace Bakame\DiceRoller\Test;
 
+use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\Factory;
 use PHPUnit\Framework\TestCase;
@@ -72,8 +72,8 @@ final class FactoryTest extends TestCase
      * @covers ::createComplexPool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::toString
-     * @covers \Bakame\DiceRoller\Dice::toString
-     * @covers \Bakame\DiceRoller\FudgeDice::toString
+     * @covers \Bakame\DiceRoller\ClassicDie::toString
+     * @covers \Bakame\DiceRoller\FudgeDie::toString
      * @covers \Bakame\DiceRoller\Decorator\Arithmetic::toString
      * @covers \Bakame\DiceRoller\Decorator\DropKeep::toString
      * @covers \Bakame\DiceRoller\Decorator\Explode::toString
@@ -181,11 +181,11 @@ final class FactoryTest extends TestCase
      */
     public function testFiveFourSidedDice(): void
     {
-        $group = Cup::createFromRollable(5, new Dice(4));
+        $group = Cup::createFromRollable(5, new ClassicDie(4));
         self::assertCount(5, $group);
-        self::assertContainsOnlyInstancesOf(Dice::class, $group);
+        self::assertContainsOnlyInstancesOf(ClassicDie::class, $group);
         foreach ($group as $dice) {
-            self::assertCount(4, $dice);
+            self::assertSame(4, $dice->getSize());
         }
 
         for ($i = 0; $i < 5; $i++) {
@@ -214,13 +214,13 @@ final class FactoryTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\ClassicDie::getSize
      */
     public function testRollWithSingleDice(): void
     {
         $dice = (new Factory())->newInstance('d8');
-        self::assertInstanceOf(Dice::class, $dice);
-        self::assertCount(8, $dice);
+        self::assertInstanceOf(ClassicDie::class, $dice);
+        self::assertSame(8, $dice->getSize());
 
         for ($i = 0; $i < 5; $i++) {
             $test = $dice->roll();
@@ -233,13 +233,13 @@ final class FactoryTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\ClassicDie::getSize
      */
     public function testRollWithDefaultDice(): void
     {
         $dice = (new Factory())->newInstance('d');
-        self::assertInstanceOf(Dice::class, $dice);
-        self::assertCount(6, $dice);
+        self::assertInstanceOf(ClassicDie::class, $dice);
+        self::assertSame(6, $dice->getSize());
         self::assertSame(1, $dice->getMinimum());
         self::assertSame(6, $dice->getMaximum());
 
@@ -255,7 +255,7 @@ final class FactoryTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice::count
+     * @covers \Bakame\DiceRoller\ClassicDie::getSize
      */
     public function testRollWithMultipleDice(): void
     {
@@ -266,14 +266,14 @@ final class FactoryTest extends TestCase
         self::assertInstanceOf(Cup::class, $res[0]);
         self::assertCount(2, $res[0]);
         foreach ($res[0] as $dice) {
-            self::assertInstanceOf(Dice::class, $dice);
-            self::assertCount(6, $dice);
+            self::assertInstanceOf(ClassicDie::class, $dice);
+            self::assertSame(6, $dice->getSize());
         }
 
         self::assertCount(3, $res[1]);
         foreach ($res[1] as $dice) {
-            self::assertInstanceOf(Dice::class, $dice);
-            self::assertCount(4, $dice);
+            self::assertInstanceOf(ClassicDie::class, $dice);
+            self::assertSame(4, $dice->getSize());
         }
 
         for ($i = 0; $i < 5; $i++) {
