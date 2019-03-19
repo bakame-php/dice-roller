@@ -11,7 +11,6 @@
 
 namespace Bakame\DiceRoller\Test\Decorator;
 
-use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Decorator\Arithmetic;
@@ -20,6 +19,7 @@ use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Profiler\NullProfiler;
 use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -34,7 +34,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows1(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new Arithmetic(new ClassicDie(6), '+', -3);
+        new Arithmetic(new SidedDie(6), '+', -3);
     }
 
     /**
@@ -43,7 +43,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows2(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new Arithmetic(new ClassicDie(6), '**', 3);
+        new Arithmetic(new SidedDie(6), '**', 3);
     }
 
     /**
@@ -52,7 +52,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows3(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new Arithmetic(new ClassicDie(6), '/', 0);
+        new Arithmetic(new SidedDie(6), '/', 0);
     }
 
     /**
@@ -62,9 +62,9 @@ final class ArithmeticTest extends TestCase
     public function testToString(): void
     {
         $pool = (new Cup())->withAddedRollable(
-            new ClassicDie(3),
-            new ClassicDie(3),
-            new ClassicDie(4)
+            new SidedDie(3),
+            new SidedDie(3),
+            new SidedDie(4)
         );
 
         $cup = new Arithmetic($pool, '^', 3);
@@ -129,7 +129,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max): void
     {
-        $roll = new Arithmetic(new ClassicDie($size), $operator, $value);
+        $roll = new Arithmetic(new SidedDie($size), $operator, $value);
         $test = $roll->roll();
         self::assertSame($min, $roll->getMinimum());
         self::assertSame($max, $roll->getMaximum());

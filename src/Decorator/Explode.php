@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Decorator;
 
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Pool;
@@ -69,8 +70,12 @@ final class Explode implements RollableDecorator, Traceable
      * @throws UnknownAlgorithm if the comparator is not recognized
      * @throws IllegalValue     if the Cup triggers infinite loop
      */
-    public function __construct(Pool $pool, string $compare, int $threshold = null)
+    public function __construct(Rollable $pool, string $compare, int $threshold = null)
     {
+        if (!$pool instanceof Pool) {
+            $pool = new Cup($pool);
+        }
+
         if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
             throw new UnknownAlgorithm(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
         }

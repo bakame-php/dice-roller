@@ -18,7 +18,7 @@ use Bakame\DiceRoller\Exception\UnknownExpression;
 use function random_int;
 use function sprintf;
 
-final class ClassicDie implements Dice
+final class SidedDie implements Dice
 {
     /**
      * @var int

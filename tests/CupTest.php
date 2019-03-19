@@ -11,10 +11,10 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\FudgeDie;
 use Bakame\DiceRoller\PercentileDie;
@@ -22,6 +22,7 @@ use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Profiler\NullProfiler;
 use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -75,7 +76,7 @@ final class CupTest extends TestCase
      */
     public function testRoll(): void
     {
-        $factory = new Factory();
+        $factory = new Factory(new ExpressionParser());
         $cup = new Cup($factory->newInstance('4D10'), $factory->newInstance('2d4'));
         self::assertFalse($cup->isEmpty());
         self::assertSame(6, $cup->getMinimum());
@@ -107,7 +108,7 @@ final class CupTest extends TestCase
         return [
             'basic dice' => [
                 'quantity' => 2,
-                'template' => new ClassicDie(6),
+                'template' => new SidedDie(6),
             ],
             'fudge dice' => [
                 'quantity' => 3,
@@ -178,5 +179,25 @@ final class CupTest extends TestCase
         $cup->getMaximum();
         $cup->getMinimum();
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
+    }
+
+    /**
+     * @covers ::count
+     * @covers ::getIterator
+     */
+    public function testFiveFourSidedDice(): void
+    {
+        $group = Cup::createFromRollable(5, new SidedDie(4));
+        self::assertCount(5, $group);
+        self::assertContainsOnlyInstancesOf(SidedDie::class, $group);
+        foreach ($group as $dice) {
+            self::assertSame(4, $dice->getSize());
+        }
+
+        for ($i = 0; $i < 5; $i++) {
+            $test = $group->roll();
+            self::assertGreaterThanOrEqual($group->getMinimum(), $test);
+            self::assertLessThanOrEqual($group->getMaximum(), $test);
+        }
     }
 }

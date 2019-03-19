@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 
+use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
@@ -40,77 +41,51 @@ EOF;
 
 require $dir.'/autoload.php';
 
-$opts = filter_var_array(
-    array_replace(
+$opts = filter_var_array(array_replace(
         ['iteration' => 1],
-        getopt("", ['pool::', 'iteration::', 'help', 'info', 'logs'])
-    ),
-    [
-        'pool' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
-        'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
-        'help' => FILTER_VALIDATE_BOOLEAN,
-        'info' => FILTER_VALIDATE_BOOLEAN,
-        'logs' => FILTER_VALIDATE_BOOLEAN,
-    ]
-);
+        getopt("", ['iteration::', 'help', 'info', 'logs'])
+    ), [
+    'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
+    'help' => FILTER_VALIDATE_BOOLEAN,
+    'info' => FILTER_VALIDATE_BOOLEAN,
+    'logs' => FILTER_VALIDATE_BOOLEAN,
+]);
 
-if ((!isset($opts['pool']) && !isset($opts['help'])) || isset($opts['help'])) {
+$arg = array_pop($argv);
+$pool = filter_var($arg, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
+
+if ((!isset($pool) && !isset($opts['help'])) || isset($opts['help'])) {
     $script = basename(__FILE__);
     $text = <<<EOF
 $yellow
 Bakame\DiceRoller v1.0 $reset
 
-It's a dice-cup: you put your die in the cup, you shake it and then you get the result.
+Common let's roll the dice: you put your 🎲🎲🎲 in the cup, you shake it and then you get the result.
 =====
 
 Simple Usage:
 
-$yellow php ./$script --pool=2D3 --iteration=3 --info --logs $reset
+$yellow php ./$script --iteration=3 --info --logs 2D3+5$reset
 
-$green--pool$reset      submit the dice string annotation
-$green--iteration$reset submit the number of time the dices must be roll ({$yellow}default:$reset 1)
+$green--pool$reset      submit the dice string expression
+$green--iteration$reset submit the number of time the pool must be roll ({$yellow}default:$reset 1)
 $green--help$reset      show the following help message
-$green--info$reset      show the cup information
+$green--info$reset      show the pool information
 $green--logs$reset      show the command logs
 EOF;
     echo $text, PHP_EOL, PHP_EOL;
     die(0);
 }
+$logger = new Logger();
+$factory = new Factory(new ExpressionParser(), new LogProfiler($logger));
 
 try {
-    $logger = new Logger();
-    $factory = new Factory(new LogProfiler($logger));
-
-    $expression = trim($opts['pool']);
+    $expression = trim($pool);
     $pool = $factory->newInstance($expression);
-    if (isset($opts['info'])) {
-        $text = <<<EOF
-$yellow ====== ROLL INFORMATIONS =======$reset
-$green Expression:$reset $yellow{$pool->toString()}$reset
-$green Minimum Roll:$reset $yellow{$pool->getMinimum()}$reset
-$green Maximum Roll:$reset $yellow{$pool->getMaximum()}$reset
-EOF;
-    echo $text, PHP_EOL, PHP_EOL;
-    }
-    $logger->clear();
-
-echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
-    for ($i = 0; $i < $opts['iteration']; ++$i) {
-        $index = $i+1;
-echo "$cyan Result #$index: $reset $yellow".$pool->roll(), $reset, PHP_EOL;
-    }
-    if (isset($opts['logs'])) {
-echo PHP_EOL, "$yellow ====== ROLL TRACE ======= $reset", PHP_EOL;
-        foreach ($logger->getLogs(LogLevel::DEBUG) as $log) {
-            echo "$cyan $log $reset $yellow $reset", PHP_EOL;
-        }
-    }
-echo PHP_EOL;
-    die(0);
 } catch (Exception $exception) {
-        $text = <<<EOF
+    $text = <<<EOF
 
-The submitted dice annotation $yellow$str$reset could not be parsed$reset
+The submitted dice annotation $yellow$expression$reset could not be parsed$reset
 The Parser issue the following error:
 
 $redbg {$exception->getMessage()} $reset
@@ -119,3 +94,30 @@ EOF;
     echo $text, PHP_EOL, PHP_EOL;
     die(65);
 }
+
+if (isset($opts['info'])) {
+    $text = <<<EOF
+$yellow ====== ROLL INFORMATIONS =======$reset
+$green Expression:$reset $yellow{$pool->toString()}$reset
+$green Minimum Roll:$reset $yellow{$pool->getMinimum()}$reset
+$green Maximum Roll:$reset $yellow{$pool->getMaximum()}$reset
+EOF;
+    echo $text, PHP_EOL, PHP_EOL;
+}
+
+$logger->clear();
+
+echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
+for ($i = 0; $i < $opts['iteration']; ++$i) {
+        $index = $i+1;
+echo "$cyan Result #$index: $reset $yellow".$pool->roll(), $reset, PHP_EOL;
+}
+if (isset($opts['logs'])) {
+    echo PHP_EOL, "$yellow ====== ROLL TRACE ======= $reset", PHP_EOL;
+    foreach ($logger->getLogs(LogLevel::DEBUG) as $log) {
+        echo "$cyan $log $reset $yellow $reset", PHP_EOL;
+    }
+}
+echo PHP_EOL;
+die(0);
+

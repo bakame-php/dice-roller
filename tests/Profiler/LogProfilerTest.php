@@ -11,10 +11,10 @@
 
 namespace Bakame\DiceRoller\Test\Profiler;
 
-use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\SidedDie;
 use Bakame\DiceRoller\Test\Bakame;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -71,7 +71,7 @@ final class LogProfilerTest extends TestCase
     {
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
-        $rollable = Cup::createFromRollable(3, new ClassicDie(6), $this->profiler);
+        $rollable = Cup::createFromRollable(3, new SidedDie(6), $this->profiler);
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear();

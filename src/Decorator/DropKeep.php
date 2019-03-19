@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Decorator;
 
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Pool;
@@ -80,8 +81,12 @@ final class DropKeep implements RollableDecorator, Traceable
      * @throws UnknownAlgorithm if the algorithm is not recognized
      * @throws TooManyObjects   if the RollableCollection is not valid
      */
-    public function __construct(Pool $pool, string $algo, int $threshold)
+    public function __construct(Rollable $pool, string $algo, int $threshold)
     {
+        if (!$pool instanceof Pool) {
+            $pool = new Cup($pool);
+        }
+
         if (count($pool) < $threshold) {
             throw new TooManyObjects(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pool), $threshold));
         }

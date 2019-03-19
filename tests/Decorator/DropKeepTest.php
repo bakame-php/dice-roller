@@ -11,14 +11,15 @@
 
 namespace Bakame\DiceRoller\Test\Decorator;
 
-use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Decorator\DropKeep;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -34,7 +35,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::createFromRollable(4, new ClassicDie(6));
+        $this->cup = Cup::createFromRollable(4, new SidedDie(6));
     }
 
     /**
@@ -61,9 +62,9 @@ final class DropKeepTest extends TestCase
     public function testToString(): void
     {
         $cup = new DropKeep((new Cup())->withAddedRollable(
-            new ClassicDie(3),
+            new SidedDie(3),
             new CustomDie(-3, -2, -1),
-            new ClassicDie(4)
+            new SidedDie(4)
         ), DropKeep::DROP_LOWEST, 2);
 
         self::assertSame('(D3+D[-3,-2,-1]+D4)DL2', $cup->toString());
@@ -193,19 +194,20 @@ final class DropKeepTest extends TestCase
     {
         $logger = new Logger();
         $tracer = new LogProfiler($logger, LogLevel::DEBUG);
-        $pool = new Cup(
-            new ClassicDie(3),
-            new ClassicDie(3),
-            new ClassicDie(4)
-        );
-        $roll = new DropKeep($pool, DropKeep::DROP_LOWEST, 2);
+        $pool = new SidedDie(3);
+        $roll = new DropKeep($pool, DropKeep::DROP_LOWEST, 1);
         $roll->setProfiler($tracer);
         self::assertEmpty($roll->getTrace());
         $roll->roll();
         self::assertNotEmpty($roll->getTrace());
         $roll->getMaximum();
         $roll->getMinimum();
-        self::assertSame($pool, $roll->getInnerRollable());
+        self::assertInstanceOf(Pool::class, $roll->getInnerRollable());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
+
+        $pool = new CustomDie(-1, -2, -3);
+        $roll = new DropKeep($pool, DropKeep::KEEP_LOWEST, 1);
+        $roll->roll();
+        self::assertGreaterThan(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

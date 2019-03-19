@@ -11,10 +11,13 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Traversable;
 
@@ -24,24 +27,35 @@ use Traversable;
 final class FactoryTest extends TestCase
 {
     /**
+     * @var Factory
+     */
+    private $factory;
+
+    public function setUp(): void
+    {
+        $this->factory = new Factory(new ExpressionParser(), new LogProfiler(new Logger()));
+    }
+
+    /**
      * @covers ::__construct
      * @covers ::newInstance
-     * @covers ::explode
+     * @covers \Bakame\DiceRoller\ExpressionParser
      * @covers ::parsePool
-     * @covers ::getPool
+     * @covers ::createPool
      * @covers ::addArithmetic
      * @covers ::addExplode
      * @covers ::addDropKeep
-     * @covers ::addComplexModifier
+     * @covers ::decorate
+     * @covers ::addDecorator
      * @covers ::createSimplePool
-     * @covers ::parseDefinition
+     * @covers ::createDiceFromString
      * @covers ::createComplexPool
      * @dataProvider invalidStringProvider
      */
     public function testInvalidGroupDefinition(string $expected): void
     {
         self::expectException(CanNotBeRolled::class);
-        (new Factory())->newInstance($expected);
+        (new Factory(new ExpressionParser()))->newInstance($expected);
     }
 
     public function invalidStringProvider(): iterable
@@ -61,18 +75,20 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers ::explode
+     * @covers \Bakame\DiceRoller\ExpressionParser
      * @covers ::parsePool
+     * @covers ::flattenRollable
      * @covers ::addArithmetic
      * @covers ::addExplode
      * @covers ::addDropKeep
-     * @covers ::addComplexModifier
+     * @covers ::decorate
+     * @covers ::addDecorator
      * @covers ::createSimplePool
-     * @covers ::parseDefinition
+     * @covers ::createDiceFromString
      * @covers ::createComplexPool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::toString
-     * @covers \Bakame\DiceRoller\ClassicDie::toString
+     * @covers \Bakame\DiceRoller\SidedDie::toString
      * @covers \Bakame\DiceRoller\FudgeDie::toString
      * @covers \Bakame\DiceRoller\Decorator\Arithmetic::toString
      * @covers \Bakame\DiceRoller\Decorator\DropKeep::toString
@@ -81,7 +97,7 @@ final class FactoryTest extends TestCase
      */
     public function testValidParser(string $expected, string $toString): void
     {
-        $cup = (new Factory())->newInstance($expected);
+        $cup = $this->factory->newInstance($expected);
         self::assertSame($toString, $cup->toString());
     }
 
@@ -113,20 +129,19 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers ::explode
+     * @covers \Bakame\DiceRoller\ExpressionParser
      * @covers ::parsePool
-     * @covers ::parseDefinition
+     * @covers ::createDiceFromString
      * @covers ::addArithmetic
      * @covers ::addExplode
      * @covers ::addDropKeep
-     * @covers ::addComplexModifier
+     * @covers ::decorate
+     * @covers ::addDecorator
      * @dataProvider permissiveParserProvider
      */
     public function testPermissiveParser(string $full, string $short): void
     {
-        $factory = new Factory();
-
-        self::assertEquals($factory->newInstance($full), $factory->newInstance($short));
+        self::assertEquals($this->factory->newInstance($full), $this->factory->newInstance($short));
     }
 
     public function permissiveParserProvider(): iterable
@@ -176,33 +191,13 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::getIterator
-     */
-    public function testFiveFourSidedDice(): void
-    {
-        $group = Cup::createFromRollable(5, new ClassicDie(4));
-        self::assertCount(5, $group);
-        self::assertContainsOnlyInstancesOf(ClassicDie::class, $group);
-        foreach ($group as $dice) {
-            self::assertSame(4, $dice->getSize());
-        }
-
-        for ($i = 0; $i < 5; $i++) {
-            $test = $group->roll();
-            self::assertGreaterThanOrEqual($group->getMinimum(), $test);
-            self::assertLessThanOrEqual($group->getMaximum(), $test);
-        }
-    }
-
-    /**
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::roll
      */
     public function testRollWithNoDice(): void
     {
-        $cup = (new Factory())->newInstance('');
+        $cup = $this->factory->newInstance('');
         self::assertSame(0, $cup->getMinimum());
         self::assertSame(0, $cup->getMaximum());
         for ($i = 0; $i < 5; $i++) {
@@ -214,12 +209,12 @@ final class FactoryTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\ClassicDie::getSize
+     * @covers \Bakame\DiceRoller\SidedDie::getSize
      */
     public function testRollWithSingleDice(): void
     {
-        $dice = (new Factory())->newInstance('d8');
-        self::assertInstanceOf(ClassicDie::class, $dice);
+        $dice = $this->factory->newInstance('d8');
+        self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(8, $dice->getSize());
 
         for ($i = 0; $i < 5; $i++) {
@@ -233,12 +228,12 @@ final class FactoryTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\ClassicDie::getSize
+     * @covers \Bakame\DiceRoller\SidedDie::getSize
      */
     public function testRollWithDefaultDice(): void
     {
-        $dice = (new Factory())->newInstance('d');
-        self::assertInstanceOf(ClassicDie::class, $dice);
+        $dice = $this->factory->newInstance('d');
+        self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(6, $dice->getSize());
         self::assertSame(1, $dice->getMinimum());
         self::assertSame(6, $dice->getMaximum());
@@ -255,24 +250,24 @@ final class FactoryTest extends TestCase
      * @covers ::parsePool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\ClassicDie::getSize
+     * @covers \Bakame\DiceRoller\SidedDie::getSize
      */
     public function testRollWithMultipleDice(): void
     {
-        $cup = (new Factory())->newInstance('2D6+3d4');
+        $cup = $this->factory->newInstance('2D6+3d4');
         self::assertInstanceOf(Traversable::class, $cup);
         self::assertCount(2, $cup);
         $res = iterator_to_array($cup, false);
         self::assertInstanceOf(Cup::class, $res[0]);
         self::assertCount(2, $res[0]);
         foreach ($res[0] as $dice) {
-            self::assertInstanceOf(ClassicDie::class, $dice);
+            self::assertInstanceOf(SidedDie::class, $dice);
             self::assertSame(6, $dice->getSize());
         }
 
         self::assertCount(3, $res[1]);
         foreach ($res[1] as $dice) {
-            self::assertInstanceOf(ClassicDie::class, $dice);
+            self::assertInstanceOf(SidedDie::class, $dice);
             self::assertSame(4, $dice->getSize());
         }
 

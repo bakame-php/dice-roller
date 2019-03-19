@@ -23,9 +23,6 @@ use function array_shift;
 use function count;
 use function explode;
 use function iterator_to_array;
-use function preg_match;
-use function sprintf;
-use function stripos;
 use function strpos;
 use const FILTER_REQUIRE_ARRAY;
 use const FILTER_VALIDATE_INT;
@@ -34,39 +31,19 @@ final class Factory
 {
     use ProfilerAware;
 
-    private const POOL_PATTERN = ',^
-        (?<dice>
-            (?<simple>(?<quantity>\d*)d(?<size>\d+|f|\%|\[.*?\])?) # simple dice pattern
-            |
-            (?<complex>\((?<mixed>.+)\))                           # complex dice pattern
-        )
-        (?<modifier>.*)?                                           # modifier pattern
-    $,xi';
-
-    private const MODIFIER_PATTERN = ',^
-        (?<algo>                             # modifier definition pattern
-            (?<type>!|!>|!<|!=|dh|dl|kh|kl)? # modifier types - exploding and sorting
-            (?<threshold>\d+)?               # modifier threshold
-        )?
-        (?<math1>                            # first arithmetic modifier pattern
-            (?<operator1>\+|-|/|\*|\^)       # first arithmetic operator supported
-            (?<value1>\d+)                   # first value to use to modify roll result
-        )?
-        (?<math2>                            # second arithmetic modifier pattern
-            (?<operator2>\+|-|/|\*|\^)       # second arithmetic operator supported
-            (?<value2>\d+)                   # second value to use to modify roll result
-        )?
-    $,xi';
-
-    private const DEFAULT_SIZE_COUNT = '6';
+    /**
+     * @var ExpressionParser
+     */
+    private $parser;
 
     /**
      * Factory constructor.
      *
      * @param ?Profiler $profiler
      */
-    public function __construct(?Profiler $profiler = null)
+    public function __construct(ExpressionParser $parser, ?Profiler $profiler = null)
     {
+        $this->parser = $parser;
         $this->setProfiler($profiler);
     }
 
@@ -75,57 +52,17 @@ final class Factory
      */
     public function newInstance(string $expression): Rollable
     {
-        $parts = $this->explode($expression);
-        if (1 !== count($parts)) {
-            $dices = array_map([$this, 'parsePool'], $parts);
+        $parts = $this->parser->extractPool($expression);
+        $dices = array_map([$this, 'parsePool'], $parts);
 
-            $rollable = new Cup(...$dices);
-            $rollable->setProfiler($this->profiler);
-
-            return $rollable;
+        if (1 === count($dices)) {
+            return array_shift($dices);
         }
 
-        $rollable = $this->parsePool(array_shift($parts));
-        if (!$rollable instanceof Pool || 1 !== count($rollable)) {
-            return $rollable;
-        }
+        $rollable = new Cup(...$dices);
+        $rollable->setProfiler($this->profiler);
 
-        $arr = iterator_to_array($rollable, false);
-
-        return $arr[0];
-    }
-
-    /**
-     * Explodes the given string into separate parts.
-     *
-     * @return string[]
-     */
-    private function explode(string $str): array
-    {
-        $parts = explode('+', $str);
-        $res = [];
-        foreach ($parts as $offset => $value) {
-            if (0 == $offset) {
-                $res[] = $value;
-                continue;
-            }
-
-            $previous_offset = count($res) - 1;
-            if (false === stripos($value, 'd')) {
-                $res[$previous_offset] .= '+'.$value;
-                continue;
-            }
-
-            if (false !== strpos($value, ')')
-                && false !== strpos($res[$previous_offset], '(')) {
-                $res[$previous_offset] .= '+'.$value;
-                continue;
-            }
-
-            $res[] = $value;
-        }
-
-        return $res;
+        return $rollable;
     }
 
     /**
@@ -136,31 +73,40 @@ final class Factory
      */
     private function parsePool(string $expression): Rollable
     {
-        if ('' === $expression) {
+        $parts = $this->parser->parsePool($expression);
+        if ([] === $parts) {
             $rollable = new Cup();
             $rollable->setProfiler($this->profiler);
 
             return $rollable;
         }
 
-        if (1 !== preg_match(self::POOL_PATTERN, $expression, $matches)) {
-            throw new UnknownExpression(sprintf('the submitted dice format `%s` is invalid or not supported', $expression));
+        $pool = $this->createPool($parts['pool']);
+        $pool = $this->decorate($pool, $parts['modifiers']);
+
+        return $this->flattenRollable($pool);
+    }
+
+    /**
+     * Extracts the Rollable object from a Pool with only one item.
+     */
+    private function flattenRollable(Rollable $rollable): Rollable
+    {
+        if (!$rollable instanceof Pool || 1 !== count($rollable)) {
+            return $rollable;
         }
 
-        $pool = $this->getPool($matches);
-        if (1 === preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
-            return $this->addArithmetic($modifier_matches, $this->addComplexModifier($modifier_matches, $pool));
-        }
+        $arr = iterator_to_array($rollable, false);
 
-        throw new UnknownAlgorithm(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
+        return $arr[0];
     }
 
     /**
      * Generates the Cup from the expression matched pattern.
      */
-    private function getPool(array $matches): Pool
+    private function createPool(array $matches): Pool
     {
-        if ('' !== $matches['complex']) {
+        if (isset($matches['mixed'])) {
             return $this->createComplexPool($matches);
         }
 
@@ -172,27 +118,20 @@ final class Factory
      */
     private function createSimplePool(array $matches): Pool
     {
-        $quantity = (int) ($matches['quantity'] ?? 1);
-        if (0 === $quantity) {
-            $quantity = 1;
-        }
-
-        $definition = $matches['size'] ?? self::DEFAULT_SIZE_COUNT;
+        $quantity = (int) $matches['quantity'];
+        $definition = $matches['size'];
         $definition = strtolower($definition);
-        if ('' === $definition) {
-            $definition = self::DEFAULT_SIZE_COUNT;
-        }
 
-        return Cup::createFromRollable($quantity, $this->parseDefinition($definition), $this->profiler);
+        return Cup::createFromRollable($quantity, $this->createDiceFromString($definition), $this->profiler);
     }
 
     /**
      * Parse Rollable definition.
      */
-    private function parseDefinition(string $definition): Rollable
+    private function createDiceFromString(string $definition): Rollable
     {
         if (false !== ($size = filter_var($definition, FILTER_VALIDATE_INT))) {
-            return new ClassicDie($size);
+            return new SidedDie($size);
         }
 
         $definition = strtolower($definition);
@@ -216,7 +155,7 @@ final class Factory
     private function createComplexPool(array $matches): Pool
     {
         $dices = [];
-        foreach ($this->explode($matches['mixed']) as $part) {
+        foreach ($this->parser->extractPool($matches['mixed']) as $part) {
             $dices[] = $this->parsePool($part);
         }
 
@@ -226,23 +165,11 @@ final class Factory
         return $pool;
     }
 
-    /**
-     * Decorates the Rollable object with up to 2 ArithmeticModifier.
-     */
-    private function addArithmetic(array $matches, Rollable $rollable): Rollable
+    private function decorate(Pool $rollable, array $modifiers): Rollable
     {
-        if (!isset($matches['math1'])) {
-            return $rollable;
+        foreach ($modifiers as $modifier) {
+            $rollable = $this->addDecorator($rollable, $modifier);
         }
-
-        $rollable = new Arithmetic($rollable, $matches['operator1'], (int) $matches['value1']);
-        $rollable->setProfiler($this->profiler);
-        if (!isset($matches['math2'])) {
-            return $rollable;
-        }
-
-        $rollable = new Arithmetic($rollable, $matches['operator2'], (int) $matches['value2']);
-        $rollable->setProfiler($this->profiler);
 
         return $rollable;
     }
@@ -250,28 +177,26 @@ final class Factory
     /**
      * Decorates the Rollable object with the DropKeep or the Explode Modifier.
      */
-    private function addComplexModifier(array $matches, Pool $rollable): Rollable
+    private function addDecorator(Rollable $rollable, array $matches): Rollable
     {
-        if ('' === $matches['algo']) {
-            return $rollable;
+        if ('arithmetic' === $matches['type']) {
+            return $this->addArithmetic($rollable, $matches);
         }
 
         $type = strtolower($matches['type']);
         if (0 !== strpos($type, '!')) {
-            return $this->addDropKeep($type, $matches, $rollable);
+            return $this->addDropKeep($rollable, $type, $matches);
         }
 
-        return $this->addExplode(substr($type, 1), $matches, $rollable);
+        return $this->addExplode($rollable, substr($type, 1), $matches);
     }
 
     /**
      * Decorates the Rollable object with the SortModifer modifier.
      */
-    private function addDropKeep(string $algo, array $matches, Pool $rollable): Rollable
+    private function addDropKeep(Rollable $rollable, string $algo, array $matches): Rollable
     {
-        $threshold = $matches['threshold'] ?? 1;
-
-        $rollable = new DropKeep($rollable, $algo, (int) $threshold);
+        $rollable = new DropKeep($rollable, $algo, (int) $matches['threshold']);
         $rollable->setProfiler($this->profiler);
 
         return $rollable;
@@ -280,7 +205,7 @@ final class Factory
     /**
      * Decorates the Rollable object with the ExplodeModifier modifier.
      */
-    private function addExplode(string $compare, array $matches, Pool $rollable): Rollable
+    private function addExplode(Rollable $rollable, string $compare, array $matches): Rollable
     {
         if ('' == $compare) {
             $compare = Explode::EQUALS;
@@ -292,13 +217,20 @@ final class Factory
             return $rollable;
         }
 
-        if (isset($matches['threshold'])) {
-            $rollable = new Explode($rollable, $compare, (int) $matches['threshold']);
-            $rollable->setProfiler($this->profiler);
+        $rollable = new Explode($rollable, $compare, (int) $matches['threshold']);
+        $rollable->setProfiler($this->profiler);
 
-            return $rollable;
-        }
+        return $rollable;
+    }
 
-        throw new UnknownAlgorithm(sprintf('the submitted exploding modifier `%s` is invalid or not supported', $matches['algo']));
+    /**
+     * Decorates the Rollable object with up to 2 ArithmeticModifier.
+     */
+    private function addArithmetic(Rollable $rollable, array $matches): Rollable
+    {
+        $rollable = new Arithmetic($rollable, $matches['operator'], (int) $matches['value']);
+        $rollable->setProfiler($this->profiler);
+
+        return $rollable;
     }
 }

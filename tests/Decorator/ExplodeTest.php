@@ -11,16 +11,17 @@
 
 namespace Bakame\DiceRoller\Test\Decorator;
 
-use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Decorator\Explode;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Rollable;
+use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -36,7 +37,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::createFromRollable(4, new ClassicDie(6));
+        $this->cup = Cup::createFromRollable(4, new SidedDie(6));
     }
 
     /**
@@ -55,7 +56,7 @@ final class ExplodeTest extends TestCase
 
     public function provideInvalidProperties(): iterable
     {
-        $cup = (new Factory())->newInstance('4d6');
+        $cup = (new Factory(new ExpressionParser()))->newInstance('4d6');
         return [
             'invalid comparion' => [
                 'cup' => $cup,
@@ -88,6 +89,7 @@ final class ExplodeTest extends TestCase
     /**
      * @dataProvider provideExplodingModifier
      *
+     * @covers ::__construct
      * @covers ::toString
      * @covers ::getAnnotationSuffix
      *
@@ -101,7 +103,7 @@ final class ExplodeTest extends TestCase
     {
         return [
             [
-                'roll' => new Explode(new Cup(new ClassicDie(3), new ClassicDie(3), new ClassicDie(4)), Explode::EQUALS, 3),
+                'roll' => new Explode(new Cup(new SidedDie(3), new SidedDie(3), new SidedDie(4)), Explode::EQUALS, 3),
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
@@ -109,8 +111,12 @@ final class ExplodeTest extends TestCase
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(4, new ClassicDie(6)), Explode::EQUALS, 1),
+                'roll' => new Explode(Cup::createFromRollable(4, new SidedDie(6)), Explode::EQUALS, 1),
                 'annotation' => '4D6!',
+            ],
+            [
+                'roll' => new Explode(new SidedDie(6), Explode::EQUALS, 3),
+                'annotation' => 'D6!=3',
             ],
         ];
     }
@@ -192,11 +198,7 @@ final class ExplodeTest extends TestCase
     {
         $logger = new Logger();
         $tracer = new LogProfiler($logger, LogLevel::DEBUG);
-        $roll = new Explode(
-            new Cup(new ClassicDie(3), new ClassicDie(3), new ClassicDie(4)),
-            Explode::EQUALS,
-            3
-        );
+        $roll = new Explode(new SidedDie(3), Explode::EQUALS, 3);
         $roll->setProfiler($tracer);
         self::assertEmpty($roll->getTrace());
         $roll->roll();

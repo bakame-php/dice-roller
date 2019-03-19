@@ -11,14 +11,14 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\ClassicDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\ClassicDie
+ * @coversDefaultClass Bakame\DiceRoller\SidedDie
  */
-final class ClassicDieTest extends TestCase
+final class SidedDieTest extends TestCase
 {
     /**
      * @covers ::__construct
@@ -32,10 +32,10 @@ final class ClassicDieTest extends TestCase
     public function testSixSidedValues(): void
     {
         $expected = 6;
-        $dice = new ClassicDie($expected);
+        $dice = new SidedDie($expected);
         self::assertSame($expected, $dice->getSize());
         self::assertSame('D6', $dice->toString());
-        self::assertEquals($dice, ClassicDie::fromString($dice->toString()));
+        self::assertEquals($dice, SidedDie::fromString($dice->toString()));
         self::assertSame($expected, $dice->getMaximum());
         self::assertSame(1, $dice->getMinimum());
         for ($i = 0; $i < 10; $i++) {
@@ -51,7 +51,7 @@ final class ClassicDieTest extends TestCase
     public function testConstructorWithWrongValue(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new ClassicDie(1);
+        new SidedDie(1);
     }
 
     /**
@@ -60,6 +60,6 @@ final class ClassicDieTest extends TestCase
     public function testfromStringWithWrongValue(): void
     {
         self::expectException(CanNotBeRolled::class);
-        ClassicDie::fromString('1');
+        SidedDie::fromString('1');
     }
 }

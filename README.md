@@ -11,8 +11,9 @@ A simple Dice Roller implemented in PHP.
 <?php
 
 use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\ExpressionParser;
 
-$factory = new Factory();
+$factory = new Factory(new ExpressionParser());
 
 echo $factory->newInstance('2D6')->roll();     // returns 6
 ```
@@ -49,7 +50,7 @@ Use the library bundled rollable objects to build a dice pool to roll.
 
 ```php
 $pool = new Decortor\Arithmetic(
-    new Cup(new ClassicDie(6), new ClassicDie(6)),
+    new Cup(new SidedDie(6), new SidedDie(6)),
     Decortor\Arithmetic::ADDITION,
     3
 );
@@ -62,7 +63,7 @@ echo $pool->roll();     // returns 8
 
 ```php
 $profiler = new Profiler\LogProfilter(new Profiler\Logger());
-$cup = new Cup(new ClassicDie(6), new ClassicDie(6);
+$cup = new Cup(new SidedDie(6), new SidedDie(6);
 $cup->setProfiler($profiler);
 
 echo $cup->roll();     // returns 5
@@ -72,6 +73,24 @@ foreach ($profiler->getLogger()->getLogs(LogLevel::DEBUG) as $log) {
     echo $logs, PHP_EOL;
 }
 // [Bakame\DiceRoller\Cup::roll] - 2D6 : 4 + 1 = 5
+```
+
+### Using the bundle cli command
+
+```bash
+$ bin/roll --pool=2D3+5 --iteration=3 --logs
+ ====== ROLL RESULTS ======= 
+ Result #1:  8
+ Result #2:  10
+ Result #3:  10
+
+ ====== ROLL TRACE ======= 
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 1 + 2 = 3   
+ [Bakame\DiceRoller\Decorator\Arithmetic::roll] - 2D3+5 : 3 + 5 = 8   
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
+ [Bakame\DiceRoller\Decorator\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10   
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
+ [Bakame\DiceRoller\Decorator\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10  
 ```
 
 ## Documentation
@@ -109,21 +128,21 @@ The following die type are bundled in the library:
 
 | Class Name |  Definition |
 | ---------- | ---------- |
-| `Bakame\DiceRoller\ClassicDie`| classic die |
-| `Bakame\DiceRoller\FudgeDie` | 3 sided die with side values being `-1`, `0` and `1`. |
-| `Bakame\DiceRoller\PercentileDie` | 100 sided die with values between `1` and `100`. |
-| `Bakame\DiceRoller\CustomDie` | die with custom side values |
+| `SidedDie`| classic die |
+| `FudgeDie` | 3 sided die with side values being `-1`, `0` and `1`. |
+| `PercentileDie` | 100 sided die with values between `1` and `100`. |
+| `CustomDie` | die with custom side values |
 
 #### Object Constructors
 
-- The `ClassicDie` constructor unique argument is the dice sides count.
+- The `SidedDie` constructor unique argument is the dice sides count.
 - The `CustomDie` constructor takes a variadic argument which represents the dice side values.
 - The `FludgeDice` and `PercentileDie` constructor takes no argument.
 
 ```php
 <?php
 
-$basic = new ClassicDie(3);
+$basic = new SidedDie(3);
 echo $basic->toString(); // 'D3';
 $basic->roll();          // may return 1, 2 or 3
 $basic->getSize();       // returns 3
@@ -176,7 +195,7 @@ The `Cup::createFromRollable` named constructor enables creating uniformed `Cup`
 ```php
 <?php
 
-echo Cup::createFromRollable(3, new ClassicDie(5))->toString();                // displays 3D5
+echo Cup::createFromRollable(3, new SidedDie(5))->toString();                // displays 3D5
 echo Cup::createFromRollable(4, new PercentileDie())->toString();       // displays 4D%
 echo Cup::createFromRollable(2, new CustomDie(1, 2, 2, 4))->toString(); // displays 2D[1,2,2,4]
 echo Cup::createFromRollable(1, new FudgeDie())->toString();            // displays DF
@@ -189,7 +208,7 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 ```php
 <?php
 
-foreach (Cup::createFromRollable(3, new ClassicDie(5)) as $rollable) {
+foreach (Cup::createFromRollable(3, new SidedDie(5)) as $rollable) {
     echo $rollable; // will always return D5
 }
 ```
@@ -200,7 +219,7 @@ Once a `Cup` is instantiated there are no method to alter its properties. Howeve
 ```php
 <?php
 
-$cup = Cup::createFromRollable(3, new ClassicDie(5));
+$cup = Cup::createFromRollable(3, new SidedDie(5));
 count($cup);           //returns 3 the number of dices
 echo $cup->toString(); //returns 3D5
 
@@ -233,7 +252,6 @@ final class Arithmetic implements RollableDecorator, Traceable
     public const EXPONENTIATION = '^';
 
     public function __construct(Rollable $rollable, string $operator, int $value, ?Profiler $profiler = null);
-    public function getInnerRollable() : Rollable;
 }
 ```
 
@@ -253,7 +271,7 @@ The value given must be a positive integer or `0`. If the value or the operator 
 <?php
 
 $modifier = new Decorator\Arithmetic(
-    new ClassicDie(6),
+    new SidedDie(6),
     Decorator\Arithmetic::MULTIPLICATION,
     3
 );
@@ -267,7 +285,6 @@ echo $modifier->toString();  // displays D6*3;
 
 namespace Bakame\DiceRoller\Decorator;
 
-use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\RollableDecorator;
 
 final class DropKeep implements RollableDecorator, Traceable
@@ -277,8 +294,7 @@ final class DropKeep implements RollableDecorator, Traceable
     public const KEEP_HIGHEST = 'kh';
     public const KEEP_LOWEST = 'kl';
 
-    public function __construct(Pool $pool, string $algo, int $threshold);
-    public function getInnerRollable() : Rollable;
+    public function __construct(Rollable $pool, string $algo, int $threshold);
 }
 ```
 
@@ -302,7 +318,7 @@ If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRol
 ```php
 <?php
 
-$cup = Cup::createFromRollable(4, new ClassicDie(6));
+$cup = Cup::createFromRollable(4, new SidedDie(6));
 $modifier = new Decorator\DropKeep($cup, Decorator\DropKeep::DROP_HIGHEST, 3);
 echo $modifier->toString(); // displays '4D6DH3'
 ```
@@ -314,7 +330,7 @@ echo $modifier->toString(); // displays '4D6DH3'
 
 namespace Bakame\DiceRoller\Decorator;
 
-use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\RollableDecorator;
 
 final class Explode implements RollableDecorator, Traceable
@@ -323,8 +339,7 @@ final class Explode implements RollableDecorator, Traceable
     public const GREATER_THAN = '>';
     public const LESSER_THAN = '<';
 
-    public function __construct(Pool $pool, string $compare, int $threshold);
-    public function getInnerRollable() : Rollable;
+    public function __construct(Rollable $pool, string $compare, int $threshold);
 }
 ```
 
@@ -345,7 +360,7 @@ If the comparison operator is not recognized a `CanNotBeRolled` will be thrown.
 ```php
 <?php
 
-$cup = new Cup(new ClassicDie(6), new FudgeDie(), new Dice(6), new Dice(6));
+$cup = new Cup(new SidedDie(6), new FudgeDie(), new Dice(6), new Dice(6));
 $modifier = new Decorator\Explode($cup, Decorator\Explode::EQUALS, 3);
 echo $modifier->toString(); // displays (3D6+DF)!=3
 ```
@@ -359,7 +374,7 @@ namespace Bakame\DiceRoller;
 
 final class Factory
 {
-    public function __construct(?Profiler $profiler = null);
+    public function __construct(ExpressionParser $parser, ?Profiler $profiler = null);
     public function newInstance(string $annotation): Rollable;
 }
 ```
@@ -386,9 +401,7 @@ By applying these rules the `Parser` can construct the following `Rollable` obje
 ```php
 <?php
 
-use Bakame\DiceRoller\Factory;
-
-$factory = new Factory();
+$factory = new Factory(new ExpressionParser());
 $cup = $factory->newInstance('3D20+4+D4!>3/4^3');
 
 echo $cup->roll();
