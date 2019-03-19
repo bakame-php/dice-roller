@@ -48,9 +48,9 @@ echo $pool->roll();     // returns 6
 Use the library bundled rollable objects to build a dice pool to roll.
 
 ```php
-$pool = new Decortor\Arithmetic(
+$pool = new Decorator\Arithmetic(
     new Cup(new SidedDie(6), new SidedDie(6)),
-    Decortor\Arithmetic::ADDITION,
+    $Decorator\Arithmetic::ADD,
     3
 );
 
@@ -62,7 +62,7 @@ echo $pool->roll();     // returns 8
 
 ```php
 $profiler = new Profiler\LogProfilter(new Profiler\Logger());
-$cup = new Cup(new SidedDie(6), new SidedDie(6);
+$cup = new Cup(new SidedDie(6), new SidedDie(6));
 $cup->setProfiler($profiler);
 
 echo $cup->roll();     // returns 5
@@ -121,7 +121,7 @@ interface Rollable
 
 In addition to the `Rollable` interface, all dices objects implement the `Dice` interface. The `getSize` method returns the die sides count.
 
-A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\RollException` exception is thrown.
+A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\CanNotBeRolled` exception is thrown.
 
 The following die type are bundled in the library:
 
@@ -194,7 +194,7 @@ The `Cup::createFromRollable` named constructor enables creating uniformed `Cup`
 ```php
 <?php
 
-echo Cup::createFromRollable(3, new SidedDie(5))->toString();                // displays 3D5
+echo Cup::createFromRollable(3, new SidedDie(5))->toString();           // displays 3D5
 echo Cup::createFromRollable(4, new PercentileDie())->toString();       // displays 4D%
 echo Cup::createFromRollable(2, new CustomDie(1, 2, 2, 4))->toString(); // displays 2D[1,2,2,4]
 echo Cup::createFromRollable(1, new FudgeDie())->toString();            // displays DF
@@ -233,6 +233,16 @@ echo $alt_cup->toString(); //returns 3D5+DF
 
 Sometimes you may want to modify the outcome of a roll. The library comes bundle with 3 objects implementing the Decorator pattern, each implementing the `RollableDecorator` interface.
 The `RollableDecorator` interface extends the `Rollable` interface by giving access to the rollable object being decorated through the `RollableDecorator::getInnerRollable` method.  
+
+```php
+<?php
+
+interface RollableDecorator implements Rollable
+{
+    public function getInnerRollable(): Rollable;
+}
+```
+
 #### The Arithmetic decorator
 
 ```php
@@ -410,7 +420,19 @@ If the `Factory` is not able to parse the submitted dice annotation a `CanNotBeR
 
 ##  Tracing and Profiling
 
-If you want to know how internally your roll result is calculated you may want to implement the `Traceable` interface. 
+If you want to know how internally your roll result is calculated your `Rollable` object must implements the `Traceable` interface.
+
+```php
+<?php
+
+interface Traceable
+{
+    public function getTrace(): string;
+
+    public function getProfiler(): Profiler;
+}
+```
+ 
 The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Profiler` implementing object.
 
 The package comes bundle with two (2) profiler implementations:
