@@ -16,6 +16,9 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Decorator\Arithmetic;
 use Bakame\DiceRoller\Decorator\DropKeep;
 use Bakame\DiceRoller\Decorator\Explode;
+use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Exception\TooFewSides;
+use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Profiler\ProfilerAware;
@@ -32,18 +35,19 @@ final class Factory
     use ProfilerAware;
 
     /**
-     * @var ExpressionParser
+     * @var Parser
      */
     private $parser;
 
     /**
      * Factory constructor.
      *
+     * @param ?Parser   $parser
      * @param ?Profiler $profiler
      */
-    public function __construct(ExpressionParser $parser, ?Profiler $profiler = null)
+    public function __construct(?Parser $parser = null, ?Profiler $profiler = null)
     {
-        $this->parser = $parser;
+        $this->parser = $parser ?? new ExpressionParser();
         $this->setProfiler($profiler);
     }
 
@@ -52,14 +56,14 @@ final class Factory
      */
     public function newInstance(string $expression): Rollable
     {
-        $parts = $this->parser->extractPool($expression);
-        $dices = array_map([$this, 'parsePool'], $parts);
+        $poolsArray = $this->parser->extractPool($expression);
+        $pools = array_map([$this, 'createPoolFromString'], $poolsArray);
 
-        if (1 === count($dices)) {
-            return array_shift($dices);
+        if (1 === count($pools)) {
+            return array_shift($pools);
         }
 
-        $rollable = new Cup(...$dices);
+        $rollable = new Cup(...$pools);
         $rollable->setProfiler($this->profiler);
 
         return $rollable;
@@ -68,10 +72,13 @@ final class Factory
     /**
      * Returns a collection of equals dice.
      *
-     * @throws UnknownExpression
+     * @throws IllegalValue
+     * @throws TooFewSides
+     * @throws TooManyObjects
      * @throws UnknownAlgorithm
+     * @throws UnknownExpression
      */
-    private function parsePool(string $expression): Rollable
+    private function createPoolFromString(string $expression): Rollable
     {
         $parts = $this->parser->parsePool($expression);
         if ([] === $parts) {
@@ -103,6 +110,12 @@ final class Factory
 
     /**
      * Generates the Cup from the expression matched pattern.
+     *
+     * @throws IllegalValue
+     * @throws TooFewSides
+     * @throws TooManyObjects
+     * @throws UnknownAlgorithm
+     * @throws UnknownExpression
      */
     private function createPool(array $matches): Pool
     {
@@ -115,6 +128,9 @@ final class Factory
 
     /**
      * Creates a simple Uniformed Pool.
+     *
+     * @throws IllegalValue
+     * @throws TooFewSides
      */
     private function createSimplePool(array $matches): Pool
     {
@@ -127,6 +143,8 @@ final class Factory
 
     /**
      * Parse Rollable definition.
+     *
+     * @throws TooFewSides
      */
     private function createDiceFromString(string $definition): Rollable
     {
@@ -151,12 +169,18 @@ final class Factory
 
     /**
      * Creates a complex mixed Pool.
+     *
+     * @throws IllegalValue
+     * @throws TooFewSides
+     * @throws TooManyObjects
+     * @throws UnknownAlgorithm
+     * @throws UnknownExpression
      */
     private function createComplexPool(array $matches): Pool
     {
         $dices = [];
         foreach ($this->parser->extractPool($matches['mixed']) as $part) {
-            $dices[] = $this->parsePool($part);
+            $dices[] = $this->createPoolFromString($part);
         }
 
         $pool = new Cup(...$dices);
@@ -165,7 +189,14 @@ final class Factory
         return $pool;
     }
 
-    private function decorate(Pool $rollable, array $modifiers): Rollable
+    /**
+     * Decorates the Rollable object with some decorator.
+     *
+     * @throws IllegalValue
+     * @throws TooManyObjects
+     * @throws UnknownAlgorithm
+     */
+    private function decorate(Rollable $rollable, array $modifiers): Rollable
     {
         foreach ($modifiers as $modifier) {
             $rollable = $this->addDecorator($rollable, $modifier);
@@ -176,6 +207,10 @@ final class Factory
 
     /**
      * Decorates the Rollable object with the DropKeep or the Explode Modifier.
+     *
+     * @throws TooManyObjects
+     * @throws IllegalValue
+     * @throws UnknownAlgorithm
      */
     private function addDecorator(Rollable $rollable, array $matches): Rollable
     {
@@ -193,6 +228,9 @@ final class Factory
 
     /**
      * Decorates the Rollable object with the SortModifer modifier.
+     *
+     * @throws TooManyObjects
+     * @throws UnknownAlgorithm
      */
     private function addDropKeep(Rollable $rollable, string $algo, array $matches): Rollable
     {
@@ -204,6 +242,9 @@ final class Factory
 
     /**
      * Decorates the Rollable object with the ExplodeModifier modifier.
+     *
+     * @throws IllegalValue
+     * @throws UnknownAlgorithm
      */
     private function addExplode(Rollable $rollable, string $compare, array $matches): Rollable
     {
@@ -225,6 +266,9 @@ final class Factory
 
     /**
      * Decorates the Rollable object with up to 2 ArithmeticModifier.
+     *
+     * @throws IllegalValue
+     * @throws UnknownAlgorithm
      */
     private function addArithmetic(Rollable $rollable, array $matches): Rollable
     {

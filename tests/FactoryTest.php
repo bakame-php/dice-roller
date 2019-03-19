@@ -40,7 +40,7 @@ final class FactoryTest extends TestCase
      * @covers ::__construct
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::parsePool
+     * @covers ::createPoolFromString
      * @covers ::createPool
      * @covers ::addArithmetic
      * @covers ::addExplode
@@ -76,7 +76,7 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::parsePool
+     * @covers ::createPoolFromString
      * @covers ::flattenRollable
      * @covers ::addArithmetic
      * @covers ::addExplode
@@ -130,7 +130,7 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::parsePool
+     * @covers ::createPoolFromString
      * @covers ::createDiceFromString
      * @covers ::addArithmetic
      * @covers ::addExplode
@@ -206,7 +206,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::parsePool
+     * @covers ::createPoolFromString
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize
@@ -225,7 +225,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::parsePool
+     * @covers ::createPoolFromString
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize
@@ -247,7 +247,7 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers ::parsePool
+     * @covers ::createPoolFromString
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize

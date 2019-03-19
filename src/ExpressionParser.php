@@ -22,11 +22,11 @@ use function sprintf;
 use function stripos;
 use function strpos;
 
-final class ExpressionParser
+final class ExpressionParser implements Parser
 {
-    private const DEFAULT_SIZE_COUNT = '6';
+    private const SIDE_COUNT = '6';
 
-    private const DEFAULT_DIE_COUNT = 1;
+    private const DICE_COUNT = 1;
 
     private const POOL_PATTERN = ',^
         (?<dice>
@@ -53,9 +53,7 @@ final class ExpressionParser
     $,xi';
 
     /**
-     * Extract pool expressions from a generic string expression.
-     *
-     * @return string[]
+     * {@inheritdoc}
      */
     public function extractPool(string $expression): array
     {
@@ -85,15 +83,7 @@ final class ExpressionParser
     }
 
     /**
-     * Returns an array representation of a Pool.
-     *
-     *  - If the string is the empty string a empty array is returned
-     *  - Otherwise an array containing:
-     *         - the pool definition
-     *         - the pool modifiers
-     *
-     * @throws UnknownExpression
-     * @throws UnknownAlgorithm
+     * {@inheritdoc}
      */
     public function parsePool(string $expression): array
     {
@@ -111,8 +101,8 @@ final class ExpressionParser
 
         $pool = ['mixed' => $matches['mixed'] ?? ''];
         if ('' === $pool['mixed']) {
-            $pool['quantity'] = ('' === $matches['quantity']) ? self::DEFAULT_DIE_COUNT : $matches['quantity'];
-            $pool['size'] = ('' === $matches['size']) ? self::DEFAULT_SIZE_COUNT : $matches['size'];
+            $pool['quantity'] = ('' === $matches['quantity']) ? self::DICE_COUNT : $matches['quantity'];
+            $pool['size'] = ('' === $matches['size']) ? self::SIDE_COUNT : $matches['size'];
             unset($pool['mixed']);
         }
 
