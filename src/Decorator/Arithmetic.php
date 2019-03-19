@@ -28,18 +28,18 @@ final class Arithmetic implements RollableDecorator, Traceable
 {
     use ProfilerAware;
 
-    public const ADDITION = '+';
-    public const SUBSTRACTION = '-';
-    public const DIVISION = '/';
-    public const EXPONENTIATION = '^';
-    public const MULTIPLICATION = '*';
+    public const ADD = '+';
+    public const SUB = '-';
+    public const DIV = '/';
+    public const EXP = '^';
+    public const MUL = '*';
 
     private const OPERATOR = [
-        self::ADDITION => 1,
-        self::SUBSTRACTION => 1,
-        self::EXPONENTIATION => 1,
-        self::DIVISION => 1,
-        self::MULTIPLICATION => 1,
+        self::ADD => 1,
+        self::SUB => 1,
+        self::EXP => 1,
+        self::DIV => 1,
+        self::MUL => 1,
     ];
 
     /**
@@ -75,7 +75,7 @@ final class Arithmetic implements RollableDecorator, Traceable
             throw new UnknownAlgorithm(sprintf('Invalid or Unsupported operator `%s`', $operator));
         }
 
-        if (0 > $value || (0 === $value && $operator == self::DIVISION)) {
+        if (0 > $value || (0 === $value && $operator == self::DIV)) {
             throw new IllegalValue(sprintf('The submitted value `%s` is invalid for the given `%s` operator', $value, $operator));
         }
 

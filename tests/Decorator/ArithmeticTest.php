@@ -114,7 +114,7 @@ final class ArithmeticTest extends TestCase
         $dice->method('roll')
             ->will(self::returnValue(-1));
 
-        $cup = new Arithmetic($dice, Arithmetic::EXPONENTIATION, 3);
+        $cup = new Arithmetic($dice, Arithmetic::EXP, 3);
         self::assertSame(-1, $dice->roll());
     }
 
@@ -189,7 +189,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticExponentWithNegativeValue(): void
     {
-        $roll = new Arithmetic(new CustomDie(-1, -1, -1), Arithmetic::EXPONENTIATION, 3);
+        $roll = new Arithmetic(new CustomDie(-1, -1, -1), Arithmetic::EXP, 3);
         $test = $roll->roll();
         self::assertSame(-1, $roll->getMinimum());
         self::assertSame(-1, $roll->getMaximum());
@@ -215,7 +215,7 @@ final class ArithmeticTest extends TestCase
         $logger = new Logger();
         $roll = new Arithmetic(
             new CustomDie(-1, -1, -1),
-            Arithmetic::EXPONENTIATION,
+            Arithmetic::EXP,
             3
         );
         $profiler = new LogProfiler($logger, LogLevel::DEBUG);

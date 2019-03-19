@@ -65,22 +65,22 @@ final class ExplodeTest extends TestCase
             ],
             'greater than invalid threshold' => [
                 'cup' => $cup,
-                'compare' => Explode::GREATER_THAN,
+                'compare' => Explode::GT,
                 'threshold' => 0,
             ],
             'lesser than invalid threshold' => [
                 'cup' => $cup,
-                'compare' => Explode::LESSER_THAN,
+                'compare' => Explode::LT,
                 'threshold' => 7,
             ],
             'equals invalid threshold' => [
                 'cup' => new Cup(new CustomDie(1, 1, 1)),
-                'compare' => Explode::EQUALS,
+                'compare' => Explode::EQ,
                 'threshold' => 1,
             ],
             'empty cup object' => [
                 'cup' => new Cup(),
-                'compare' => Explode::EQUALS,
+                'compare' => Explode::EQ,
                 'threshold' => 2,
             ],
         ];
@@ -103,19 +103,19 @@ final class ExplodeTest extends TestCase
     {
         return [
             [
-                'roll' => new Explode(new Cup(new SidedDie(3), new SidedDie(3), new SidedDie(4)), Explode::EQUALS, 3),
+                'roll' => new Explode(new Cup(new SidedDie(3), new SidedDie(3), new SidedDie(4)), Explode::EQ, 3),
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(4, new CustomDie(-1, -1, -1)), Explode::GREATER_THAN, 1),
+                'roll' => new Explode(Cup::createFromRollable(4, new CustomDie(-1, -1, -1)), Explode::GT, 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(4, new SidedDie(6)), Explode::EQUALS, 1),
+                'roll' => new Explode(Cup::createFromRollable(4, new SidedDie(6)), Explode::EQ, 1),
                 'annotation' => '4D6!',
             ],
             [
-                'roll' => new Explode(new SidedDie(6), Explode::EQUALS, 3),
+                'roll' => new Explode(new SidedDie(6), Explode::EQ, 3),
                 'annotation' => 'D6!=3',
             ],
         ];
@@ -134,7 +134,7 @@ final class ExplodeTest extends TestCase
             ->will(self::onConsecutiveCalls(2, 2, 3));
 
         $pool = new Cup($dice);
-        $cup = new Explode($pool, Explode::EQUALS, 2);
+        $cup = new Explode($pool, Explode::EQ, 2);
         self::assertSame(7, $cup->roll());
         self::assertSame($pool, $cup->getInnerRollable());
     }
@@ -162,19 +162,19 @@ final class ExplodeTest extends TestCase
     {
         return [
             'equals' => [
-                'algo' => Explode::EQUALS,
+                'algo' => Explode::EQ,
                 'threshold' => 3,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
             ],
             'greater than' => [
-                'algo' => Explode::GREATER_THAN,
+                'algo' => Explode::GT,
                 'threshold' => 5,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
             ],
             'lesser than' => [
-                'algo' => Explode::LESSER_THAN,
+                'algo' => Explode::LT,
                 'threshold' => 2,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
@@ -198,7 +198,7 @@ final class ExplodeTest extends TestCase
     {
         $logger = new Logger();
         $tracer = new LogProfiler($logger, LogLevel::DEBUG);
-        $roll = new Explode(new SidedDie(3), Explode::EQUALS, 3);
+        $roll = new Explode(new SidedDie(3), Explode::EQ, 3);
         $roll->setProfiler($tracer);
         self::assertEmpty($roll->getTrace());
         $roll->roll();

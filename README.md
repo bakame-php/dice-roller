@@ -11,9 +11,8 @@ A simple Dice Roller implemented in PHP.
 <?php
 
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\ExpressionParser;
 
-$factory = new Factory(new ExpressionParser());
+$factory = new Factory();
 
 echo $factory->newInstance('2D6')->roll();     // returns 6
 ```
@@ -78,7 +77,7 @@ foreach ($profiler->getLogger()->getLogs(LogLevel::DEBUG) as $log) {
 ### Using the bundle cli command
 
 ```bash
-$ bin/roll --pool=2D3+5 --iteration=3 --logs
+$ bin/roll --iteration=3 --logs 2D3+5
  ====== ROLL RESULTS ======= 
  Result #1:  8
  Result #2:  10
@@ -245,11 +244,11 @@ use Bakame\DiceRoller\RollableDecorator;
 
 final class Arithmetic implements RollableDecorator, Traceable
 {
-    public const ADDITION = '+';
-    public const SUBSTRACTION = '-';
-    public const MULTIPLICATION = '*';
-    public const DIVISION = '/';
-    public const EXPONENTIATION = '^';
+    public const ADD = '+';
+    public const SUB = '-';
+    public const MUL = '*';
+    public const DIV = '/';
+    public const EXP = '^';
 
     public function __construct(Rollable $rollable, string $operator, int $value, ?Profiler $profiler = null);
 }
@@ -259,11 +258,11 @@ This modifier decorates a `Rollable` object by applying an arithmetic operation 
 
 The modifier supports the following operators:
 
-- `+` or `Arithmetic::ADDITION`;
-- `-` or `Arithmetic::SUBSTRACTION`;
-- `*` or `Arithmetic::MULTIPLICATION`;
-- `/` or `Arithmetic::DIVISION`;
-- `^` or `Arithmetic::EXPONENTIATION`;
+- `+` or `Arithmetic::ADD`;
+- `-` or `Arithmetic::SUB`;
+- `*` or `Arithmetic::MUL`;
+- `/` or `Arithmetic::DIV`;
+- `^` or `Arithmetic::EXP`;
 
 The value given must be a positive integer or `0`. If the value or the operator are not valid a `CanNotBeRolled` exception will be thrown.
 
@@ -272,7 +271,7 @@ The value given must be a positive integer or `0`. If the value or the operator 
 
 $modifier = new Decorator\Arithmetic(
     new SidedDie(6),
-    Decorator\Arithmetic::MULTIPLICATION,
+    Decorator\Arithmetic::MUL,
     3
 );
 echo $modifier->toString();  // displays D6*3;
@@ -306,10 +305,10 @@ This modifier decorates a `Rollable` object by applying the one of the dropkeep 
 
 The supported algorithms are:
 
-- `dh` or `DropKeep::DROP_HIGHEST` to drop the `$pThreshold` highest results of a given `Cup` object;
-- `dl` or `DropKeep::DROP_LOWEST` to drop the `$pThreshold` lowest results of a given `Cup` object;
-- `kh` or `DropKeep::KEEP_HIGHEST` to keep the `$pThreshold` highest results of a given `Cup` object;
-- `kl` or `DropKeep::KEEP_LOWEST` to keep the `$pThreshold` lowest results of a given `Cup` object;
+- `dh` or `DropKeep::DROP_HIGHEST` to drop the `$threshold` highest results of a given `Cup` object;
+- `dl` or `DropKeep::DROP_LOWEST` to drop the `$threshold` lowest results of a given `Cup` object;
+- `kh` or `DropKeep::KEEP_HIGHEST` to keep the `$threshold` highest results of a given `Cup` object;
+- `kl` or `DropKeep::KEEP_LOWEST` to keep the `$threshold` lowest results of a given `Cup` object;
 
 The `$threshold` MUST be lower or equals to the total numbers of rollable items in the `Cup` object.
 
@@ -335,9 +334,9 @@ use Bakame\DiceRoller\RollableDecorator;
 
 final class Explode implements RollableDecorator, Traceable
 {
-    public const EQUALS = '=';
-    public const GREATER_THAN = '>';
-    public const LESSER_THAN = '<';
+    public const EQ = '=';
+    public const GT= '>';
+    public const LT = '<';
 
     public function __construct(Rollable $pool, string $compare, int $threshold);
 }
@@ -351,9 +350,9 @@ This modifier decorates a `Pool` object by applying one of the explode algorithm
 
 The supported comparison operator are:
 
-- `=` or `Explode::EQUALS` explodes if any inner rollable roll result is equal to the `$pThreshold`;
-- `>` or `Explode::GREATER_THAN` explodes if any inner rollable roll result is greater than the `$pThreshold`;
-- `<` or `Explode::LESSER_THAN` explodes if any inner rollable roll result is lesser than the `$pThreshold`;
+- `=` or `Explode::EQ` explodes if any inner rollable roll result is equal to the `$threshold`;
+- `>` or `Explode::GT` explodes if any inner rollable roll result is greater than the `$threshold`;
+- `<` or `Explode::LT` explodes if any inner rollable roll result is lesser than the `$threshold`;
 
 If the comparison operator is not recognized a `CanNotBeRolled` will be thrown.
 
@@ -361,7 +360,7 @@ If the comparison operator is not recognized a `CanNotBeRolled` will be thrown.
 <?php
 
 $cup = new Cup(new SidedDie(6), new FudgeDie(), new Dice(6), new Dice(6));
-$modifier = new Decorator\Explode($cup, Decorator\Explode::EQUALS, 3);
+$modifier = new Decorator\Explode($cup, Decorator\Explode::EQ, 3);
 echo $modifier->toString(); // displays (3D6+DF)!=3
 ```
 
@@ -374,7 +373,7 @@ namespace Bakame\DiceRoller;
 
 final class Factory
 {
-    public function __construct(ExpressionParser $parser, ?Profiler $profiler = null);
+    public function __construct(?Parser $parser = null, ?Profiler $profiler = null);
     public function newInstance(string $annotation): Rollable;
 }
 ```

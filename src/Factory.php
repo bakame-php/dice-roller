@@ -249,7 +249,7 @@ final class Factory
     private function addExplode(Rollable $rollable, string $compare, array $matches): Rollable
     {
         if ('' == $compare) {
-            $compare = Explode::EQUALS;
+            $compare = Explode::EQ;
             $threshold = isset($matches['threshold']) ? (int) $matches['threshold'] : null;
 
             $rollable = new Explode($rollable, $compare, $threshold);

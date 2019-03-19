@@ -33,9 +33,9 @@ final class Explode implements RollableDecorator, Traceable
 {
     use ProfilerAware;
 
-    const EQUALS = '=';
-    const GREATER_THAN = '>';
-    const LESSER_THAN = '<';
+    const EQ = '=';
+    const GT = '>';
+    const LT = '<';
 
     /**
      * The RollableCollection to decorate.
@@ -76,7 +76,7 @@ final class Explode implements RollableDecorator, Traceable
             $pool = new Cup($pool);
         }
 
-        if (!in_array($compare, [self::EQUALS, self::GREATER_THAN, self::LESSER_THAN], true)) {
+        if (!in_array($compare, [self::EQ, self::GT, self::LT], true)) {
             throw new UnknownAlgorithm(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
         }
         $this->compare = $compare;
@@ -113,11 +113,11 @@ final class Explode implements RollableDecorator, Traceable
         $max = $rollable->getMaximum();
         $threshold = $this->threshold ?? $max;
 
-        if (self::GREATER_THAN === $this->compare) {
+        if (self::GT === $this->compare) {
             return $threshold > $min;
         }
 
-        if (self::LESSER_THAN === $this->compare) {
+        if (self::LT === $this->compare) {
             $threshold = $this->threshold ?? $min;
             return $threshold < $max;
         }
@@ -159,7 +159,7 @@ final class Explode implements RollableDecorator, Traceable
      */
     private function getAnnotationSuffix(): string
     {
-        if (self::EQUALS === $this->compare && in_array($this->threshold, [null, 1], true)) {
+        if (self::EQ === $this->compare && in_array($this->threshold, [null, 1], true)) {
             return '';
         }
 
@@ -224,11 +224,11 @@ final class Explode implements RollableDecorator, Traceable
      */
     private function isValid(int $result, int $threshold): bool
     {
-        if (self::EQUALS == $this->compare) {
+        if (self::EQ == $this->compare) {
             return $result === $threshold;
         }
 
-        if (self::GREATER_THAN === $this->compare) {
+        if (self::GT === $this->compare) {
             return $result > $threshold;
         }
 
