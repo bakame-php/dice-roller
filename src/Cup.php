@@ -45,9 +45,29 @@ final class Cup implements Pool, Traceable
     private $trace = '';
 
     /**
+     * Cup constructor.
+     *
+     * @param Rollable ...$items
+     */
+    public function __construct(Rollable ...$items)
+    {
+        $this->items = array_filter($items, [$this, 'isValid']);
+        $this->setProfiler();
+    }
+
+    /**
+     * Tell whether the submitted Rollable can be added to the collection.
+     */
+    private static function isValid(Rollable $rollable): bool
+    {
+        return !$rollable instanceof Pool || !$rollable->isEmpty();
+    }
+
+    /**
      * Create a new Cup containing only on type of Rollable object.
      *
      *
+     * @param  ?Profiler    $tracer
      * @throws IllegalValue
      */
     public static function createFromRollable(Rollable $rollable, int $quantity = 1, ?Profiler $tracer = null): self
@@ -75,25 +95,6 @@ final class Cup implements Pool, Traceable
     }
 
     /**
-     * Cup constructor.
-     *
-     * @param Rollable ...$items
-     */
-    public function __construct(Rollable ...$items)
-    {
-        $this->items = array_filter($items, [$this, 'isValid']);
-        $this->setProfiler();
-    }
-
-    /**
-     * Tell whether the submitted Rollable can be added to the collection.
-     */
-    private static function isValid(Rollable $rollable): bool
-    {
-        return !$rollable instanceof Pool || !$rollable->isEmpty();
-    }
-
-    /**
      * Return an instance with the added Rollable object.
      *
      * This method MUST retain the state of the current instance, and return
@@ -103,16 +104,16 @@ final class Cup implements Pool, Traceable
      */
     public function withAddedRollable(Rollable ...$items): self
     {
-        $items = array_filter(array_merge($this->items, $items), [$this, 'isValid']);
-        if ($items === $this->items) {
+        $items = array_filter($items, [$this, 'isValid']);
+        if ([] === $items) {
             return $this;
         }
 
-        $cup = new self();
-        $cup->items = $items;
-        $cup->setProfiler($this->profiler);
+        $pool = new self();
+        $pool->items = array_merge($this->items, $items);
+        $pool->profiler = $this->profiler;
 
-        return $cup;
+        return $pool;
     }
 
     /**

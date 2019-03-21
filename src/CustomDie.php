@@ -44,7 +44,7 @@ final class CustomDie implements Dice
     public function __construct(int ...$values)
     {
         if (2 > count($values)) {
-            throw new TooFewSides(sprintf('Your dice must have at least 2 sides, `%s` given.', count($values)));
+            throw new TooFewSides(sprintf('Your die must have at least 2 sides, `%s` given.', count($values)));
         }
 
         $this->values = $values;
@@ -65,7 +65,7 @@ final class CustomDie implements Dice
             return new self(...$sides);
         }
 
-        throw new UnknownExpression(sprintf('the submitted dice format `%s` is invalid ', $expression));
+        throw new UnknownExpression(sprintf('the submitted die format `%s` is invalid.', $expression));
     }
 
     /**
@@ -106,8 +106,7 @@ final class CustomDie implements Dice
     public function roll(): int
     {
         $index = random_int(1, count($this->values) - 1);
-        $roll = $this->values[$index];
 
-        return $roll;
+        return $this->values[$index];
     }
 }
