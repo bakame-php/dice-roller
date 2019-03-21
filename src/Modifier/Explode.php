@@ -173,7 +173,8 @@ final class Explode implements Modifier, Traceable
     {
         $retval = $this->pool->getMinimum();
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, (string) $retval);
+        $this->trace = (string) $retval;
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
     }
@@ -183,7 +184,8 @@ final class Explode implements Modifier, Traceable
      */
     public function getMaximum(): int
     {
-        $this->profiler->addTrace($this, __METHOD__, PHP_INT_MAX, (string) PHP_INT_MAX);
+        $this->trace = (string) PHP_INT_MAX;
+        $this->profiler->addTrace($this, __METHOD__, PHP_INT_MAX, $this->trace);
 
         return PHP_INT_MAX;
     }
@@ -199,8 +201,9 @@ final class Explode implements Modifier, Traceable
         }
 
         $retval = (int) array_sum($innerRetval);
+        $this->setTrace($innerRetval);
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
     }
@@ -238,18 +241,16 @@ final class Explode implements Modifier, Traceable
     /**
      * Format the trace as string.
      *
-     * @param int[] $traces
+     * @param int[] $innerRetval
      */
-    private function setTrace(array $traces): string
+    private function setTrace(array $innerRetval): void
     {
         $mapper = static function (int $value): string {
             return '('.$value.')';
         };
 
-        $arr = array_map($mapper, $traces);
+        $arr = array_map($mapper, $innerRetval);
 
         $this->trace = implode(' + ', $arr);
-
-        return $this->trace;
     }
 }

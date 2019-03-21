@@ -140,11 +140,7 @@ final class DropKeep implements Modifier, Traceable
             $innerRetval[] = $rollable->roll();
         }
 
-        $retval = (int) array_sum($this->calculate($innerRetval));
-
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
-
-        return $retval;
+        return $this->decorate($innerRetval);
     }
 
     /**
@@ -157,11 +153,7 @@ final class DropKeep implements Modifier, Traceable
             $innerRetval[] = $rollable->getMinimum();
         }
 
-        $retval = (int) array_sum($this->calculate($innerRetval));
-
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
-
-        return $retval;
+        return $this->decorate($innerRetval);
     }
 
     /**
@@ -174,9 +166,18 @@ final class DropKeep implements Modifier, Traceable
             $innerRetval[] = $rollable->getMaximum();
         }
 
-        $retval = (int) array_sum($this->calculate($innerRetval));
+        return $this->decorate($innerRetval);
+    }
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($innerRetval));
+    /**
+     * Decorates the operation returned value.
+     */
+    private function decorate(array $values): int
+    {
+        $retval = (int) array_sum($this->calculate($values));
+
+        $this->setTrace($values);
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
     }
@@ -272,7 +273,7 @@ final class DropKeep implements Modifier, Traceable
      *
      * @param int[] $traces
      */
-    private function setTrace(array $traces): string
+    private function setTrace(array $traces): void
     {
         $mapper = static function (int $value): string {
             $str = ''.$value;
@@ -286,7 +287,5 @@ final class DropKeep implements Modifier, Traceable
         $arr = array_map($mapper, $traces);
 
         $this->trace = implode(' + ', $arr);
-
-        return $this->trace;
     }
 }

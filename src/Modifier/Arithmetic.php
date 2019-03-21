@@ -120,11 +120,8 @@ final class Arithmetic implements Modifier, Traceable
     public function roll(): int
     {
         $value = $this->rollable->roll();
-        $retval = $this->calculate($value);
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
-
-        return $retval;
+        return $this->decorate($value);
     }
 
     /**
@@ -133,11 +130,8 @@ final class Arithmetic implements Modifier, Traceable
     public function getMinimum(): int
     {
         $value = $this->rollable->getMinimum();
-        $retval = $this->calculate($value);
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
-
-        return $retval;
+        return $this->decorate($value);
     }
 
     /**
@@ -146,9 +140,19 @@ final class Arithmetic implements Modifier, Traceable
     public function getMaximum(): int
     {
         $value = $this->rollable->getMaximum();
-        $retval = $this->calculate($value);
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($value));
+        return $this->decorate($value);
+    }
+
+    /**
+     * Decorates the operation returned value.
+     */
+    private function decorate(int $value): int
+    {
+        $retval = $this->calculate($value);
+        $this->setTrace($value);
+
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
     }
@@ -184,10 +188,8 @@ final class Arithmetic implements Modifier, Traceable
     /**
      * Format the trace as string.
      */
-    private function setTrace(int $value): string
+    private function setTrace(int $value): void
     {
         $this->trace = $value.' '.$this->operator.' '.$this->value;
-
-        return $this->trace;
     }
 }

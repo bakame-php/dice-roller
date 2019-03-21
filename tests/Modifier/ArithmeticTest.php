@@ -106,6 +106,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::roll
+     * @covers ::decorate
      * @covers ::calculate
      */
     public function testRollWithNegativeDiceValue(): void
@@ -122,9 +123,10 @@ final class ArithmeticTest extends TestCase
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
+     * @covers ::decorate
      * @covers ::calculate
      * @covers ::roll
-     * @covers ::calculate
+     * @covers ::decorate
      * @dataProvider validParametersProvider
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max): void
@@ -182,9 +184,10 @@ final class ArithmeticTest extends TestCase
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
+     * @covers ::decorate
      * @covers ::calculate
      * @covers ::roll
-     * @covers ::calculate
+     * @covers ::decorate
      * @covers \Bakame\DiceRoller\Profiler\ProfilerAware
      */
     public function testArithmeticExponentWithNegativeValue(): void
@@ -203,6 +206,7 @@ final class ArithmeticTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
+     * @covers ::decorate
      * @covers ::calculate
      * @covers ::setTrace
      * @covers ::getTrace

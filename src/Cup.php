@@ -67,10 +67,10 @@ final class Cup implements Pool, Traceable
      * Create a new Cup containing only on type of Rollable object.
      *
      *
-     * @param  ?Profiler    $tracer
+     * @param  ?Profiler    $profiler
      * @throws IllegalValue
      */
-    public static function createFromRollable(Rollable $rollable, int $quantity = 1, ?Profiler $tracer = null): self
+    public static function createFromRollable(Rollable $rollable, int $quantity = 1, ?Profiler $profiler = null): self
     {
         if ($quantity < 1) {
             throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid', $quantity));
@@ -78,7 +78,7 @@ final class Cup implements Pool, Traceable
 
         if (!self::isValid($rollable)) {
             $new = new self();
-            $new->setProfiler($tracer);
+            $new->setProfiler($profiler);
 
             return $new;
         }
@@ -89,7 +89,7 @@ final class Cup implements Pool, Traceable
         }
 
         $new = new self(...$items);
-        $new->setProfiler($tracer);
+        $new->setProfiler($profiler);
 
         return $new;
     }
@@ -186,8 +186,9 @@ final class Cup implements Pool, Traceable
 
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
+        $this->setTrace($sum);
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
     }
@@ -203,8 +204,9 @@ final class Cup implements Pool, Traceable
 
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
+        $this->setTrace($sum);
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
     }
@@ -220,16 +222,19 @@ final class Cup implements Pool, Traceable
 
         $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
+        $this->setTrace($sum);
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->setTrace($sum));
+        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
     }
 
     /**
      * Format the trace as string.
+     *
+     * @param int[] $traces
      */
-    private function setTrace(array $traces): string
+    private function setTrace(array $traces): void
     {
         $mapper = static function (int $value): string {
             $str = ''.$value;
@@ -243,7 +248,5 @@ final class Cup implements Pool, Traceable
         $arr = array_map($mapper, $traces);
 
         $this->trace = implode(' + ', $arr);
-
-        return $this->trace;
     }
 }

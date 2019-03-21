@@ -73,6 +73,7 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::roll
+     * @covers ::decorate
      */
     public function testGetTrace(): void
     {
@@ -129,6 +130,7 @@ final class DropKeepTest extends TestCase
      * @covers ::__construct
      * @covers ::getMinimum
      * @covers ::getMaximum
+     * @covers ::decorate
      * @covers ::calculate
      * @covers ::keepLowest
      * @covers ::keepHighest
@@ -183,6 +185,7 @@ final class DropKeepTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
+     * @covers ::decorate
      * @covers ::calculate
      * @covers ::setTrace
      * @covers ::getTrace
