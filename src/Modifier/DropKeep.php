@@ -11,16 +11,16 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Decorator;
+namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\Modifier;
+use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\Profiler\ProfilerAware;
-use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\RollableDecorator;
-use Bakame\DiceRoller\Traceable;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -32,7 +32,7 @@ use function strpos;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements RollableDecorator, Traceable
+final class DropKeep implements Modifier, Traceable
 {
     use ProfilerAware;
 

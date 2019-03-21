@@ -11,16 +11,16 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Decorator;
+namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\Modifier;
+use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\Profiler\ProfilerAware;
-use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\RollableDecorator;
-use Bakame\DiceRoller\Traceable;
 use function array_map;
 use function array_sum;
 use function implode;
@@ -29,7 +29,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements RollableDecorator, Traceable
+final class Explode implements Modifier, Traceable
 {
     use ProfilerAware;
 
@@ -40,7 +40,7 @@ final class Explode implements RollableDecorator, Traceable
     /**
      * The RollableCollection to decorate.
      *
-     * @var Pool
+     * @var \Bakame\DiceRoller\Contract\Pool
      */
     private $pool;
 

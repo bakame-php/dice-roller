@@ -9,22 +9,22 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Decorator;
+namespace Bakame\DiceRoller\Test\Modifier;
 
+use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
-use Bakame\DiceRoller\Decorator\DropKeep;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
-use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
-use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Decorator\DropKeep
+ * @coversDefaultClass \Bakame\DiceRoller\Modifier\DropKeep
  */
 final class DropKeepTest extends TestCase
 {
@@ -35,7 +35,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::createFromRollable(4, new SidedDie(6));
+        $this->cup = Cup::createFromRollable(new SidedDie(6), 4);
     }
 
     /**

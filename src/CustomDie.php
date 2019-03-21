@@ -13,14 +13,21 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Bakame\DiceRoller\Exception\UnknownExpression;
+use function array_filter;
 use function count;
+use function explode;
+use function filter_var;
 use function implode;
 use function max;
 use function min;
+use function preg_match;
 use function random_int;
 use function sprintf;
+use const FILTER_REQUIRE_ARRAY;
+use const FILTER_VALIDATE_INT;
 
 final class CustomDie implements Dice
 {
@@ -46,7 +53,8 @@ final class CustomDie implements Dice
     /**
      * new instance from a string expression.
      *
-     * @throws UnknownExpression if the expression is not valid.
+     * @throws TooFewSides
+     * @throws UnknownExpression
      */
     public static function fromString(string $expression): self
     {

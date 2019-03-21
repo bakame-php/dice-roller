@@ -9,22 +9,22 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Decorator;
+namespace Bakame\DiceRoller\Test\Modifier;
 
+use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
-use Bakame\DiceRoller\Decorator\Arithmetic;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Profiler\NullProfiler;
-use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Decorator\Arithmetic
+ * @coversDefaultClass \Bakame\DiceRoller\Modifier\Arithmetic
  */
 final class ArithmeticTest extends TestCase
 {

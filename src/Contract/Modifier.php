@@ -11,9 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Contract;
 
-interface RollableDecorator extends Rollable
+interface Modifier extends Rollable
 {
+    /**
+     * Returns the decorated Rollable object.
+     */
     public function getInnerRollable(): Rollable;
 }

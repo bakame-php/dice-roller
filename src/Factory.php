@@ -13,14 +13,18 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Decorator\Arithmetic;
-use Bakame\DiceRoller\Decorator\DropKeep;
-use Bakame\DiceRoller\Decorator\Explode;
+use Bakame\DiceRoller\Contract\Parser;
+use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Profiler;
+use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Exception\UnknownExpression;
+use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\Modifier\DropKeep;
+use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\Profiler\ProfilerAware;
 use function array_shift;
 use function count;
@@ -138,7 +142,7 @@ final class Factory
         $definition = $matches['size'];
         $definition = strtolower($definition);
 
-        return Cup::createFromRollable($quantity, $this->createDiceFromString($definition), $this->profiler);
+        return Cup::createFromRollable($this->createDiceFromString($definition), $quantity, $this->profiler);
     }
 
     /**

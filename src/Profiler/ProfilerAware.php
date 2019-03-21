@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Profiler;
 
-use Bakame\DiceRoller\Profiler;
+use Bakame\DiceRoller\Contract\Profiler;
 
 trait ProfilerAware
 {

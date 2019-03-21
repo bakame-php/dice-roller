@@ -11,20 +11,20 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Decorator;
+namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\Modifier;
+use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Profiler\ProfilerAware;
-use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\RollableDecorator;
-use Bakame\DiceRoller\Traceable;
 use function abs;
 use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements RollableDecorator, Traceable
+final class Arithmetic implements Modifier, Traceable
 {
     use ProfilerAware;
 

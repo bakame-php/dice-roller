@@ -9,24 +9,24 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Decorator;
+namespace Bakame\DiceRoller\Test\Modifier;
 
+use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
-use Bakame\DiceRoller\Decorator\Explode;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
-use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Decorator\Explode
+ * @coversDefaultClass \Bakame\DiceRoller\Modifier\Explode
  */
 final class ExplodeTest extends TestCase
 {
@@ -37,7 +37,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::createFromRollable(4, new SidedDie(6));
+        $this->cup = Cup::createFromRollable(new SidedDie(6), 4);
     }
 
     /**
@@ -107,11 +107,11 @@ final class ExplodeTest extends TestCase
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(4, new CustomDie(-1, -1, -1)), Explode::GT, 1),
+                'roll' => new Explode(Cup::createFromRollable(new CustomDie(-1, -1, -1), 4), Explode::GT, 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(4, new SidedDie(6)), Explode::EQ, 1),
+                'roll' => new Explode(Cup::createFromRollable(new SidedDie(6), 4), Explode::EQ, 1),
                 'annotation' => '4D6!',
             ],
             [

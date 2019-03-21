@@ -31,6 +31,24 @@ $ composer require bakame-php/dice-roller
 
 All classes are defined under the `Bakame\DiceRoller` namespace.
 
+### Usage through the bundle cli command
+
+```bash
+$ bin/roll --iteration=3 --logs 2D3+5
+ ====== ROLL RESULTS ======= 
+ Result #1:  8
+ Result #2:  10
+ Result #3:  10
+
+ ====== ROLL TRACE ======= 
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 1 + 2 = 3   
+ [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 3 + 5 = 8   
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
+ [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10   
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
+ [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10  
+```
+
 ## Basic usage
 
 Use the library factory to simulate the roll of two six-sided die
@@ -48,9 +66,9 @@ echo $pool->roll();     // returns 6
 Use the library bundled rollable objects to build a dice pool to roll.
 
 ```php
-$pool = new Decorator\Arithmetic(
+$pool = new Modifier\Arithmetic(
     new Cup(new SidedDie(6), new SidedDie(6)),
-    $Decorator\Arithmetic::ADD,
+    $Modifier\Arithmetic::ADD,
     3
 );
 
@@ -61,7 +79,7 @@ echo $pool->roll();     // returns 8
 ## Tracing and profiling an operation
 
 ```php
-$profiler = new Profiler\LogProfilter(new Profiler\Logger());
+$profiler = new Profiler\LogProfiler(new Profiler\Logger());
 $cup = new Cup(new SidedDie(6), new SidedDie(6));
 $cup->setProfiler($profiler);
 
@@ -74,34 +92,16 @@ foreach ($profiler->getLogger()->getLogs(LogLevel::DEBUG) as $log) {
 // [Bakame\DiceRoller\Cup::roll] - 2D6 : 4 + 1 = 5
 ```
 
-### Using the bundle cli command
-
-```bash
-$ bin/roll --iteration=3 --logs 2D3+5
- ====== ROLL RESULTS ======= 
- Result #1:  8
- Result #2:  10
- Result #3:  10
-
- ====== ROLL TRACE ======= 
- [Bakame\DiceRoller\Cup::roll] - 2D3 : 1 + 2 = 3   
- [Bakame\DiceRoller\Decorator\Arithmetic::roll] - 2D3+5 : 3 + 5 = 8   
- [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
- [Bakame\DiceRoller\Decorator\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10   
- [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
- [Bakame\DiceRoller\Decorator\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10  
-```
-
 ## Documentation
 
 ### Rollable
 
-To be rollable, objects MUST implements the `Bakame\DiceRoller\Rollable` interface.
+To be rollable, objects MUST implements the `Bakame\DiceRoller\Contract\Rollable` interface.
 
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Type;
+namespace Bakame\DiceRoller\Contract;
 
 interface Rollable
 {
@@ -164,10 +164,12 @@ $fudge->getSize();             // returns 100
 
 ### Pool
 
-If you need to roll multiple dice at the same time, you need to implement the  `Bakame\DiceRoller\Pool` interface.
+If you need to roll multiple dice at the same time, you need to implement the  `Bakame\DiceRoller\Contract\Pool` interface.
  
 ```php
 <?php
+
+namespace Bakame\DiceRoller\Contract;
 
 interface Pool implements Countable, IteratorAggregate, Rollable
 {
@@ -176,7 +178,7 @@ interface Pool implements Countable, IteratorAggregate, Rollable
 ```
  
 A `Pool` is a collection of `Rollable` objects which also implements the `Rollable` interface. The package comes bundle
-with the `Bakame\DiceRoller\Cup` class which implements the interface. A `Cup` can contains any type of dices but others `Pool` objects as well.
+with the `Bakame\DiceRoller\Cup` class which implements the interface.
 
 ```php
 <?php
@@ -184,7 +186,7 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface. A `Cup` c
 final class Cup implements Pool, Traceable
 {
     public function __construct(Rollable ...$rollable);
-    public static function createFromRollable(int $quantity, Rollable $rollable, ?Profiler $profiler = null): self;
+    public static function createFromRollable(Rollable $rollable, int $quantity = 1, ?Profiler $profiler = null): self;
     public function withAddedRollable(Rollable ...$rollable): self
 }
 ```
@@ -194,10 +196,10 @@ The `Cup::createFromRollable` named constructor enables creating uniformed `Cup`
 ```php
 <?php
 
-echo Cup::createFromRollable(3, new SidedDie(5))->toString();           // displays 3D5
-echo Cup::createFromRollable(4, new PercentileDie())->toString();       // displays 4D%
-echo Cup::createFromRollable(2, new CustomDie(1, 2, 2, 4))->toString(); // displays 2D[1,2,2,4]
-echo Cup::createFromRollable(1, new FudgeDie())->toString();            // displays DF
+echo Cup::createFromRollable(new SidedDie(5), 3)->toString();           // displays 3D5
+echo Cup::createFromRollable(new PercentileDie(), 4)->toString();       // displays 4D%
+echo Cup::createFromRollable(new CustomDie(1, 2, 2, 4), 2)->toString(); // displays 2D[1,2,2,4]
+echo Cup::createFromRollable(new FudgeDie(), 2)->toString();            // displays DF
 ```
 
 A `Cup` created using `createFromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\CanNotBeRolled` is thrown.
@@ -207,7 +209,7 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 ```php
 <?php
 
-foreach (Cup::createFromRollable(3, new SidedDie(5)) as $rollable) {
+foreach (Cup::createFromRollable(new SidedDie(5), 3) as $rollable) {
     echo $rollable; // will always return D5
 }
 ```
@@ -218,7 +220,7 @@ Once a `Cup` is instantiated there are no method to alter its properties. Howeve
 ```php
 <?php
 
-$cup = Cup::createFromRollable(3, new SidedDie(5));
+$cup = Cup::createFromRollable(new SidedDie(5), 3);
 count($cup);           //returns 3 the number of dices
 echo $cup->toString(); //returns 3D5
 
@@ -231,13 +233,13 @@ echo $alt_cup->toString(); //returns 3D5+DF
 
 ### Rollable Decorator
 
-Sometimes you may want to modify the outcome of a roll. The library comes bundle with 3 objects implementing the Decorator pattern, each implementing the `RollableDecorator` interface.
-The `RollableDecorator` interface extends the `Rollable` interface by giving access to the rollable object being decorated through the `RollableDecorator::getInnerRollable` method.  
+Sometimes you may want to modify the outcome of a roll. The library comes bundle with 3 objects implementing the Decorator pattern, each implementing the `Modifier` interface.
+The `Modifier` interface extends the `Rollable` interface by giving access to the rollable object being decorated through the `Modifier::getInnerRollable` method.  
 
 ```php
 <?php
 
-interface RollableDecorator implements Rollable
+interface Modifier implements Rollable
 {
     public function getInnerRollable(): Rollable;
 }
@@ -248,11 +250,13 @@ interface RollableDecorator implements Rollable
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Decorator;
+namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\RollableDecorator;
+use Bakame\DiceRoller\Contract\Modifier;
+use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Traceable;
 
-final class Arithmetic implements RollableDecorator, Traceable
+final class Arithmetic implements Modifier, Traceable
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -279,9 +283,9 @@ The value given must be a positive integer or `0`. If the value or the operator 
 ```php
 <?php
 
-$modifier = new Decorator\Arithmetic(
+$modifier = new Modifier\Arithmetic(
     new SidedDie(6),
-    Decorator\Arithmetic::MUL,
+    Modifier\Arithmetic::MUL,
     3
 );
 echo $modifier->toString();  // displays D6*3;
@@ -292,11 +296,13 @@ echo $modifier->toString();  // displays D6*3;
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Decorator;
+namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\RollableDecorator;
+use Bakame\DiceRoller\Contract\Modifier;
+use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Traceable;
 
-final class DropKeep implements RollableDecorator, Traceable
+final class DropKeep implements Modifier, Traceable
 {
     public const DROP_HIGHEST = 'dh';
     public const DROP_LOWEST = 'dl';
@@ -327,8 +333,8 @@ If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRol
 ```php
 <?php
 
-$cup = Cup::createFromRollable(4, new SidedDie(6));
-$modifier = new Decorator\DropKeep($cup, Decorator\DropKeep::DROP_HIGHEST, 3);
+$cup = Cup::createFromRollable(new SidedDie(6), 4);
+$modifier = new Modifier\DropKeep($cup, Modifier\DropKeep::DROP_HIGHEST, 3);
 echo $modifier->toString(); // displays '4D6DH3'
 ```
 
@@ -337,12 +343,13 @@ echo $modifier->toString(); // displays '4D6DH3'
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Decorator;
+namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\RollableDecorator;
+use Bakame\DiceRoller\Contract\Modifier;
+use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Traceable;
 
-final class Explode implements RollableDecorator, Traceable
+final class Explode implements Modifier, Traceable
 {
     public const EQ = '=';
     public const GT= '>';
@@ -370,7 +377,7 @@ If the comparison operator is not recognized a `CanNotBeRolled` will be thrown.
 <?php
 
 $cup = new Cup(new SidedDie(6), new FudgeDie(), new Dice(6), new Dice(6));
-$modifier = new Decorator\Explode($cup, Decorator\Explode::EQ, 3);
+$modifier = new Modifier\Explode($cup, Modifier\Explode::EQ, 3);
 echo $modifier->toString(); // displays (3D6+DF)!=3
 ```
 
@@ -380,6 +387,10 @@ echo $modifier->toString(); // displays (3D6+DF)!=3
 <?php
 
 namespace Bakame\DiceRoller;
+
+use Bakame\DiceRoller\Contract\Parser;
+use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Profiler;
 
 final class Factory
 {
@@ -425,6 +436,8 @@ If you want to know how internally your roll result is calculated your `Rollable
 ```php
 <?php
 
+namespace Bakame\DiceRoller\Contract;
+
 interface Traceable
 {
     public function getTrace(): string;
@@ -433,12 +446,23 @@ interface Traceable
 }
 ```
  
-The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Profiler` implementing object.
+The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Contract\Profiler` implementing object.
+
+```php
+<?php
+
+namespace Bakame\DiceRoller\Contract;
+
+interface Profiler
+{
+    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void;
+}
+```
 
 The package comes bundle with two (2) profiler implementations:
  
-- a `Bakame\DiceRoller\Profiler\NullProfiler` that does nothing;
-- a `Bakame\DiceRoller\Profiler\LogProfiler` which sends the traces to a PSR-3 compliant log.
+- a `Bakame\DiceRoller\Contract\Profiler\NullProfiler` that does nothing;
+- a `Bakame\DiceRoller\Contract\Profiler\LogProfiler` which sends the traces to a PSR-3 compliant log.
 
 ### The LogProfiler
 
@@ -469,15 +493,15 @@ At any moment you can change, using the profiler setter methods:
 - the PSR-3 logger 
 
 ```php
-use Bakame\DiceRoller\Profiler\Logger;
-use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Contract\Profiler\Logger;
+use Bakame\DiceRoller\Contract\Profiler\LogProfiler;
 use Psr\Log\LogLevel;
 
 $logger = new Logger();
-$tracer = new LogProfiler($logger, LogLevel::DEBUG, '{trace} = {result}');
-$tracer->setLogLevel(LogLevel::INFO);
-$tracer->setLogFormat('{trace} -> {result}');
-$tracer->setLogger(new Psr3CompliantLogger());
+$profiler = new LogProfiler($logger, LogLevel::DEBUG, '{trace} = {result}');
+$profiler->setLogLevel(LogLevel::INFO);
+$profiler->setLogFormat('{trace} -> {result}');
+$profiler->setLogger(new Psr3CompliantLogger());
 ```
 
 Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better fleshout implementation than the one present out of the box.

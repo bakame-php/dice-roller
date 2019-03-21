@@ -90,9 +90,9 @@ final class FactoryTest extends TestCase
      * @covers \Bakame\DiceRoller\Cup::toString
      * @covers \Bakame\DiceRoller\SidedDie::toString
      * @covers \Bakame\DiceRoller\FudgeDie::toString
-     * @covers \Bakame\DiceRoller\Decorator\Arithmetic::toString
-     * @covers \Bakame\DiceRoller\Decorator\DropKeep::toString
-     * @covers \Bakame\DiceRoller\Decorator\Explode::toString
+     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::toString
+     * @covers \Bakame\DiceRoller\Modifier\DropKeep::toString
+     * @covers \Bakame\DiceRoller\Modifier\Explode::toString
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString): void

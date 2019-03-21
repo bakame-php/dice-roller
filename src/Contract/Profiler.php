@@ -11,9 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Contract;
 
 interface Profiler
 {
+    /**
+     * Record a Rollable operation.
+     */
     public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void;
 }

@@ -13,6 +13,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Profiler;
+use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Profiler\ProfilerAware;
 use Iterator;
@@ -43,9 +47,10 @@ final class Cup implements Pool, Traceable
     /**
      * Create a new Cup containing only on type of Rollable object.
      *
-     * @param ?Profiler $tracer
+     *
+     * @throws IllegalValue
      */
-    public static function createFromRollable(int $quantity, Rollable $rollable, ?Profiler $tracer = null): self
+    public static function createFromRollable(Rollable $rollable, int $quantity = 1, ?Profiler $tracer = null): self
     {
         if ($quantity < 1) {
             throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid', $quantity));
@@ -69,6 +74,11 @@ final class Cup implements Pool, Traceable
         return $new;
     }
 
+    /**
+     * Cup constructor.
+     *
+     * @param Rollable ...$items
+     */
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
@@ -154,7 +164,8 @@ final class Cup implements Pool, Traceable
     }
 
     /**
-     * {@inheritdoc}
+     * Returns an external Iterator which enables iteration
+     * on each contained Rollable object.
      */
     public function getIterator(): Iterator
     {

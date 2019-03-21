@@ -11,11 +11,17 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Contract;
 
 interface Traceable
 {
+    /**
+     * Returns the last operation trace.
+     */
     public function getTrace(): string;
 
+    /**
+     * Returns the object profiler.
+     */
     public function getProfiler(): Profiler;
 }
