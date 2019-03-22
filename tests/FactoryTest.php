@@ -42,12 +42,8 @@ final class FactoryTest extends TestCase
      * @covers \Bakame\DiceRoller\ExpressionParser
      * @covers ::createPoolFromString
      * @covers ::createPool
-     * @covers ::addArithmetic
-     * @covers ::addExplode
-     * @covers ::addDropKeep
      * @covers ::decorate
      * @covers ::addDecorator
-     * @covers ::createSimplePool
      * @covers ::createDiceFromString
      * @covers ::createComplexPool
      * @dataProvider invalidStringProvider
@@ -78,12 +74,8 @@ final class FactoryTest extends TestCase
      * @covers \Bakame\DiceRoller\ExpressionParser
      * @covers ::createPoolFromString
      * @covers ::flattenRollable
-     * @covers ::addArithmetic
-     * @covers ::addExplode
-     * @covers ::addDropKeep
      * @covers ::decorate
      * @covers ::addDecorator
-     * @covers ::createSimplePool
      * @covers ::createDiceFromString
      * @covers ::createComplexPool
      * @covers \Bakame\DiceRoller\Cup::count
@@ -132,9 +124,6 @@ final class FactoryTest extends TestCase
      * @covers \Bakame\DiceRoller\ExpressionParser
      * @covers ::createPoolFromString
      * @covers ::createDiceFromString
-     * @covers ::addArithmetic
-     * @covers ::addExplode
-     * @covers ::addDropKeep
      * @covers ::decorate
      * @covers ::addDecorator
      * @dataProvider permissiveParserProvider

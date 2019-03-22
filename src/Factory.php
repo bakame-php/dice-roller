@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Profiler;
@@ -26,13 +27,11 @@ use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\Profiler\ProfilerAware;
-use function array_shift;
+use function array_map;
 use function count;
-use function explode;
 use function iterator_to_array;
 use function strpos;
-use const FILTER_REQUIRE_ARRAY;
-use const FILTER_VALIDATE_INT;
+use function strtoupper;
 
 final class Factory
 {
@@ -60,17 +59,23 @@ final class Factory
      */
     public function newInstance(string $expression): Rollable
     {
-        $poolsArray = $this->parser->extractPool($expression);
-        $pools = array_map([$this, 'createPoolFromString'], $poolsArray);
+        $pool = $this->createComplexPool($expression);
 
-        if (1 === count($pools)) {
-            return array_shift($pools);
-        }
+        return $this->flattenRollable($pool);
+    }
 
-        $rollable = new Cup(...$pools);
-        $rollable->setProfiler($this->profiler);
+    /**
+     * Creates a complex mixed Pool.
+     */
+    private function createComplexPool(string $expression): Pool
+    {
+        $poolsExpArray = $this->parser->extractPool($expression);
+        $poolsObjArray = array_map([$this, 'createPoolFromString'], $poolsExpArray);
 
-        return $rollable;
+        $pool = new Cup(...$poolsObjArray);
+        $pool->setProfiler($this->profiler);
+
+        return $pool;
     }
 
     /**
@@ -117,80 +122,43 @@ final class Factory
      *
      * @throws IllegalValue
      * @throws TooFewSides
-     * @throws TooManyObjects
-     * @throws UnknownAlgorithm
      * @throws UnknownExpression
      */
     private function createPool(array $matches): Pool
     {
         if (isset($matches['mixed'])) {
-            return $this->createComplexPool($matches);
+            return $this->createComplexPool($matches['mixed']);
         }
 
-        return $this->createSimplePool($matches);
-    }
-
-    /**
-     * Creates a simple Uniformed Pool.
-     *
-     * @throws IllegalValue
-     * @throws TooFewSides
-     */
-    private function createSimplePool(array $matches): Pool
-    {
-        $quantity = (int) $matches['quantity'];
-        $definition = $matches['size'];
-        $definition = strtolower($definition);
-
-        return Cup::createFromRollable($this->createDiceFromString($definition), $quantity, $this->profiler);
+        return Cup::createFromRollable(
+            $this->createDiceFromString($matches['type']),
+            (int) $matches['quantity'],
+            $this->profiler
+        );
     }
 
     /**
      * Parse Rollable definition.
      *
      * @throws TooFewSides
+     * @throws UnknownExpression
      */
-    private function createDiceFromString(string $definition): Rollable
+    private function createDiceFromString(string $definition): Dice
     {
-        if (false !== ($size = filter_var($definition, FILTER_VALIDATE_INT))) {
-            return new SidedDie($size);
-        }
-
-        $definition = strtolower($definition);
-        if ('f' === $definition) {
+        $definition = strtoupper($definition);
+        if ('DF' === $definition) {
             return new FudgeDie();
         }
 
-        if ('%' === $definition) {
+        if ('D%' === $definition) {
             return new PercentileDie();
         }
 
-        $sides = explode(',', substr($definition, 1, -1));
-        $sides = (array) filter_var($sides, FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
-
-        return new CustomDie(...$sides);
-    }
-
-    /**
-     * Creates a complex mixed Pool.
-     *
-     * @throws IllegalValue
-     * @throws TooFewSides
-     * @throws TooManyObjects
-     * @throws UnknownAlgorithm
-     * @throws UnknownExpression
-     */
-    private function createComplexPool(array $matches): Pool
-    {
-        $dices = [];
-        foreach ($this->parser->extractPool($matches['mixed']) as $part) {
-            $dices[] = $this->createPoolFromString($part);
+        if (false !== strpos($definition, '[')) {
+            return CustomDie::fromString($definition);
         }
 
-        $pool = new Cup(...$dices);
-        $pool->setProfiler($this->profiler);
-
-        return $pool;
+        return SidedDie::fromString($definition);
     }
 
     /**
@@ -210,7 +178,7 @@ final class Factory
     }
 
     /**
-     * Decorates the Rollable object with the DropKeep or the Explode Modifier.
+     * Decorates the Rollable object with modifiers objects.
      *
      * @throws TooManyObjects
      * @throws IllegalValue
@@ -218,67 +186,23 @@ final class Factory
      */
     private function addDecorator(Rollable $rollable, array $matches): Rollable
     {
-        if ('arithmetic' === $matches['type']) {
-            return $this->addArithmetic($rollable, $matches);
+        if ('arithmetic' === $matches['modifier']) {
+            $modifier = new Arithmetic($rollable, $matches['operator'], $matches['value']);
+            $modifier->setProfiler($this->profiler);
+
+            return $modifier;
         }
 
-        $type = strtolower($matches['type']);
-        if (0 !== strpos($type, '!')) {
-            return $this->addDropKeep($rollable, $type, $matches);
+        if ('dropkeep' === $matches['modifier']) {
+            $modifier = new DropKeep($rollable, $matches['operator'], $matches['value']);
+            $modifier->setProfiler($this->profiler);
+
+            return $modifier;
         }
 
-        return $this->addExplode($rollable, substr($type, 1), $matches);
-    }
+        $modifier = new Explode($rollable, $matches['operator'], $matches['value']);
+        $modifier->setProfiler($this->profiler);
 
-    /**
-     * Decorates the Rollable object with the SortModifer modifier.
-     *
-     * @throws TooManyObjects
-     * @throws UnknownAlgorithm
-     */
-    private function addDropKeep(Rollable $rollable, string $algo, array $matches): Rollable
-    {
-        $rollable = new DropKeep($rollable, $algo, (int) $matches['threshold']);
-        $rollable->setProfiler($this->profiler);
-
-        return $rollable;
-    }
-
-    /**
-     * Decorates the Rollable object with the ExplodeModifier modifier.
-     *
-     * @throws IllegalValue
-     * @throws UnknownAlgorithm
-     */
-    private function addExplode(Rollable $rollable, string $compare, array $matches): Rollable
-    {
-        if ('' == $compare) {
-            $compare = Explode::EQ;
-            $threshold = isset($matches['threshold']) ? (int) $matches['threshold'] : null;
-
-            $rollable = new Explode($rollable, $compare, $threshold);
-            $rollable->setProfiler($this->profiler);
-
-            return $rollable;
-        }
-
-        $rollable = new Explode($rollable, $compare, (int) $matches['threshold']);
-        $rollable->setProfiler($this->profiler);
-
-        return $rollable;
-    }
-
-    /**
-     * Decorates the Rollable object with up to 2 ArithmeticModifier.
-     *
-     * @throws IllegalValue
-     * @throws UnknownAlgorithm
-     */
-    private function addArithmetic(Rollable $rollable, array $matches): Rollable
-    {
-        $rollable = new Arithmetic($rollable, $matches['operator'], (int) $matches['value']);
-        $rollable->setProfiler($this->profiler);
-
-        return $rollable;
+        return $modifier;
     }
 }

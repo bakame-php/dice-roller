@@ -43,18 +43,16 @@ require $dir.'/autoload.php';
 
 $opts = filter_var_array(array_replace(
         ['iteration' => 1],
-        getopt("", ['iteration::', 'help', 'info', 'logs'])
+        getopt("", ['pool::', 'iteration::', 'help', 'info', 'logs'])
     ), [
     'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
     'help' => FILTER_VALIDATE_BOOLEAN,
     'info' => FILTER_VALIDATE_BOOLEAN,
     'logs' => FILTER_VALIDATE_BOOLEAN,
+    'pool' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
 ]);
 
-$arg = array_pop($argv);
-$pool = filter_var($arg, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
-
-if ((!isset($pool) && !isset($opts['help'])) || isset($opts['help'])) {
+if ((!isset($opts['pool']) && !isset($opts['help'])) || isset($opts['help'])) {
     $script = basename(__FILE__);
     $text = <<<EOF
 $yellow
@@ -65,7 +63,7 @@ Common let's roll the dice: you put your 🎲🎲🎲 in the cup, you shake it a
 
 Simple Usage:
 
-$yellow php ./$script --iteration=3 --info --logs 2D3+5$reset
+$yellow php ./$script --iteration=3 --info --logs --pool=2D3+5$reset
 
 $green--pool$reset      submit the dice string expression
 $green--iteration$reset submit the number of time the pool must be roll ({$yellow}default:$reset 1)
@@ -80,7 +78,7 @@ $logger = new Logger();
 $factory = new Factory(new ExpressionParser(), new LogProfiler($logger));
 
 try {
-    $expression = trim($pool);
+    $expression = trim($opts['pool']);
     $pool = $factory->newInstance($expression);
 } catch (Exception $exception) {
     $text = <<<EOF

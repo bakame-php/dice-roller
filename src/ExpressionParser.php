@@ -22,6 +22,8 @@ use function preg_match;
 use function sprintf;
 use function stripos;
 use function strpos;
+use function strtoupper;
+use function substr;
 
 final class ExpressionParser implements Parser
 {
@@ -31,7 +33,7 @@ final class ExpressionParser implements Parser
 
     private const POOL_PATTERN = ',^
         (?<dice>
-            (?<simple>(?<quantity>\d*)d(?<size>\d+|f|\%|\[.*?\])?) # simple dice pattern
+            (?<simple>(?<quantity>\d*)d(?<type>\d+|f|\%|\[.*?\])?) # simple dice pattern
             |
             (?<complex>\((?<mixed>.+)\))                           # complex dice pattern
         )
@@ -100,37 +102,76 @@ final class ExpressionParser implements Parser
             throw new UnknownAlgorithm(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
         }
 
+        return [
+            'pool' => $this->getPoolDefinition($matches),
+            'modifiers' => $this->getPoolModifiersDefinition($modifier_matches),
+        ];
+    }
+
+    /**
+     * Returns the pool definition as an array.
+     */
+    private function getPoolDefinition(array $matches): array
+    {
         $pool = ['mixed' => $matches['mixed'] ?? ''];
         if ('' === $pool['mixed']) {
-            $pool['quantity'] = ('' === $matches['quantity']) ? self::DICE_COUNT : $matches['quantity'];
-            $pool['size'] = ('' === $matches['size']) ? self::SIDE_COUNT : $matches['size'];
             unset($pool['mixed']);
+            $pool['quantity'] = ('' === $matches['quantity']) ? self::DICE_COUNT : $matches['quantity'];
+            $pool['type'] = ('' === $matches['type']) ? self::SIDE_COUNT : $matches['type'];
+            $pool['type'] = 'D'.$pool['type'];
         }
 
+        return $pool;
+    }
+
+    /**
+     * Returns the modifiers definition associated to a specific pool.
+     */
+    private function getPoolModifiersDefinition(array $matches): array
+    {
         $modifiers = [];
-        if ('' !== $modifier_matches['algo']) {
+        if ('' !== $matches['algo']) {
+            $modifiers[] = $this->getAlgorithmDefinition($matches['algo'], $matches['type'], $matches['threshold'] ?? null);
+        }
+
+        if (isset($matches['math1'])) {
             $modifiers[] = [
-                'type' => $modifier_matches['type'],
-                'threshold' => $modifier_matches['threshold'] ?? 1,
+                'modifier' => 'arithmetic',
+                'operator' => $matches['operator1'],
+                'value' => (int) $matches['value1'],
             ];
         }
 
-        if (isset($modifier_matches['math1'])) {
+        if (isset($matches['math2'])) {
             $modifiers[] = [
-                'type' => 'arithmetic',
-                'operator' => $modifier_matches['operator1'],
-                'value' => $modifier_matches['value1'],
+                'modifier' => 'arithmetic',
+                'operator' => $matches['operator2'],
+                'value' => (int) $matches['value2'],
             ];
         }
 
-        if (isset($modifier_matches['math2'])) {
-            $modifiers[] = [
-                'type' => 'arithmetic',
-                'operator' => $modifier_matches['operator2'],
-                'value' => $modifier_matches['value2'],
-            ];
+        return $modifiers;
+    }
+
+    /**
+     * Returns the DropKeep or Explode definition.
+     *
+     * @param ?string $value
+     */
+    private function getAlgorithmDefinition(string $algo, string $operator, ?string $value): array
+    {
+        $operator = strtoupper($operator);
+        $value = $value ?? 1;
+        $value = (int) $value;
+        if (0 !== strpos($algo, '!')) {
+            return ['modifier' => 'dropkeep', 'operator' => $operator, 'value' => $value];
         }
 
-        return ['pool' => $pool, 'modifiers' => $modifiers];
+        $operator = substr($operator, 1);
+        if ('' !== $operator) {
+            return ['modifier' => 'explode', 'operator' => $operator, 'value' => $value];
+        }
+
+        return ['modifier' => 'explode', 'operator' => '=', 'value' => $value];
     }
 }

@@ -36,10 +36,10 @@ final class DropKeep implements Modifier, Traceable
 {
     use ProfilerAware;
 
-    public const DROP_HIGHEST = 'dh';
-    public const DROP_LOWEST = 'dl';
-    public const KEEP_HIGHEST = 'kh';
-    public const KEEP_LOWEST = 'kl';
+    public const DROP_HIGHEST = 'DH';
+    public const DROP_LOWEST = 'DL';
+    public const KEEP_HIGHEST = 'KH';
+    public const KEEP_LOWEST = 'KL';
 
     private const OPERATOR = [
         self::DROP_HIGHEST => 1,
@@ -91,6 +91,7 @@ final class DropKeep implements Modifier, Traceable
             throw new TooManyObjects(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pool), $threshold));
         }
 
+        $algo = strtoupper($algo);
         if (!isset(self::OPERATOR[$algo])) {
             throw new UnknownAlgorithm(sprintf('Unknown or unsupported sortable algorithm `%s`', $algo));
         }
@@ -127,7 +128,7 @@ final class DropKeep implements Modifier, Traceable
             $str = '('.$str.')';
         }
 
-        return $str.strtoupper($this->algo).$this->threshold;
+        return $str.$this->algo.$this->threshold;
     }
 
     /**

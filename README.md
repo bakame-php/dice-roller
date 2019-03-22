@@ -34,7 +34,7 @@ All classes are defined under the `Bakame\DiceRoller` namespace.
 ### Usage through the bundle cli command
 
 ```bash
-$ bin/roll --iteration=3 --logs 2D3+5
+$ bin/roll --iteration=3 --logs --pool=2D3+5
  ====== ROLL RESULTS ======= 
  Result #1:  8
  Result #2:  10
@@ -231,7 +231,7 @@ echo $alt_cup->toString(); //returns 3D5+DF
 
 **WARNING: a `Cup` object can be empty but adding an empty `Cup` object is not possible. The empty `Cup` object will be filtered out.**
 
-### Rollable Decorator
+### Modifiers
 
 Sometimes you may want to modify the outcome of a roll. The library comes bundle with 3 objects implementing the Decorator pattern, each implementing the `Modifier` interface.
 The `Modifier` interface extends the `Rollable` interface by giving access to the rollable object being decorated through the `Modifier::getInnerRollable` method.  
@@ -245,7 +245,7 @@ interface Modifier implements Rollable
 }
 ```
 
-#### The Arithmetic decorator
+#### The Arithmetic modifier
 
 ```php
 <?php
@@ -291,7 +291,7 @@ $modifier = new Modifier\Arithmetic(
 echo $modifier->toString();  // displays D6*3;
 ```
 
-#### The DropKeep decorator
+#### The DropKeep modifier
 
 ```php
 <?php
@@ -338,7 +338,7 @@ $modifier = new Modifier\DropKeep($cup, Modifier\DropKeep::DROP_HIGHEST, 3);
 echo $modifier->toString(); // displays '4D6DH3'
 ```
 
-#### The Explode decorator
+#### The Explode modifier
 
 ```php
 <?php
