@@ -18,24 +18,11 @@ use Bakame\DiceRoller\Exception\UnknownExpression;
 
 interface Parser
 {
-
     /**
      * Extract pool expressions from a generic string expression.
-     *
-     * @return string[]
-     */
-    public function extractPool(string $expression): array;
-
-    /**
-     * Returns an array representation of a Pool.
-     *
-     *  - If the string is the empty string a empty array is returned
-     *  - Otherwise an array containing:
-     *         - the pool definition
-     *         - the pool modifiers
      *
      * @throws UnknownExpression
      * @throws UnknownAlgorithm
      */
-    public function parsePool(string $expression): array;
+    public function parse(string $expression): array;
 }

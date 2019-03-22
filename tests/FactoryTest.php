@@ -40,12 +40,11 @@ final class FactoryTest extends TestCase
      * @covers ::__construct
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::createPoolFromString
+     * @covers ::createPoolFromParser
      * @covers ::createPool
      * @covers ::decorate
      * @covers ::addDecorator
      * @covers ::createDiceFromString
-     * @covers ::createComplexPool
      * @dataProvider invalidStringProvider
      */
     public function testInvalidGroupDefinition(string $expected): void
@@ -72,12 +71,11 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::createPoolFromString
+     * @covers ::createPoolFromParser
      * @covers ::flattenRollable
      * @covers ::decorate
      * @covers ::addDecorator
      * @covers ::createDiceFromString
-     * @covers ::createComplexPool
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::toString
      * @covers \Bakame\DiceRoller\SidedDie::toString
@@ -122,7 +120,7 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::createPoolFromString
+     * @covers ::createPoolFromParser
      * @covers ::createDiceFromString
      * @covers ::decorate
      * @covers ::addDecorator
@@ -195,7 +193,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::createPoolFromString
+     * @covers ::createPoolFromParser
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize
@@ -214,7 +212,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::createPoolFromString
+     * @covers ::createPoolFromParser
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize
@@ -236,7 +234,7 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers ::createPoolFromString
+     * @covers ::createPoolFromParser
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize

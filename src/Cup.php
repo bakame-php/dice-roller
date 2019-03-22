@@ -23,7 +23,6 @@ use Iterator;
 use function array_count_values;
 use function array_filter;
 use function array_map;
-use function array_merge;
 use function array_sum;
 use function array_walk;
 use function count;
@@ -66,8 +65,8 @@ final class Cup implements Pool, Traceable
     /**
      * Create a new Cup containing only on type of Rollable object.
      *
+     * @param ?Profiler $profiler
      *
-     * @param  ?Profiler    $profiler
      * @throws IllegalValue
      */
     public static function createFromRollable(Rollable $rollable, int $quantity = 1, ?Profiler $profiler = null): self
@@ -141,11 +140,11 @@ final class Cup implements Pool, Traceable
             return '0';
         }
 
-        $mapper = static function (Rollable $rollable): string {
+        $mapper = function (Rollable $rollable): string {
             return $rollable->toString();
         };
 
-        $walker = static function (&$value, $offset): void {
+        $walker = function (&$value, $offset): void {
             $value = $value > 1 ? $value.$offset : $offset;
         };
 
@@ -180,11 +179,11 @@ final class Cup implements Pool, Traceable
      */
     public function roll(): int
     {
-        $mapper = static function (Rollable $rollable): int {
-            return $rollable->roll();
-        };
+        $sum = [];
+        foreach ($this->items as $rollable) {
+            $sum[] = $rollable->roll();
+        }
 
-        $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
         $this->setTrace($sum);
 
@@ -198,11 +197,11 @@ final class Cup implements Pool, Traceable
      */
     public function getMinimum(): int
     {
-        $mapper = static function (Rollable $rollable): int {
-            return $rollable->getMinimum();
-        };
+        $sum = [];
+        foreach ($this->items as $rollable) {
+            $sum[] = $rollable->getMinimum();
+        }
 
-        $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
         $this->setTrace($sum);
 
@@ -216,11 +215,11 @@ final class Cup implements Pool, Traceable
      */
     public function getMaximum(): int
     {
-        $mapper = static function (Rollable $rollable): int {
-            return $rollable->getMaximum();
-        };
+        $sum = [];
+        foreach ($this->items as $rollable) {
+            $sum[] = $rollable->getMaximum();
+        }
 
-        $sum = array_map($mapper, $this->items);
         $retval = (int) array_sum($sum);
         $this->setTrace($sum);
 
@@ -236,13 +235,12 @@ final class Cup implements Pool, Traceable
      */
     private function setTrace(array $traces): void
     {
-        $mapper = static function (int $value): string {
-            $str = ''.$value;
+        $mapper = function (int $value): string {
             if (0 > $value) {
-                return '('.$str.')';
+                return '('.$value.')';
             }
 
-            return $str;
+            return (string) $value;
         };
 
         $arr = array_map($mapper, $traces);

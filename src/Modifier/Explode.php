@@ -241,15 +241,19 @@ final class Explode implements Modifier, Traceable
     /**
      * Format the trace as string.
      *
-     * @param int[] $innerRetval
+     * @param int[] $traces
      */
-    private function setTrace(array $innerRetval): void
+    private function setTrace(array $traces): void
     {
-        $mapper = static function (int $value): string {
-            return '('.$value.')';
+        $mapper = function (int $value): string {
+            if (0 > $value) {
+                return '('.$value.')';
+            }
+
+            return ''.$value;
         };
 
-        $arr = array_map($mapper, $innerRetval);
+        $arr = array_map($mapper, $traces);
 
         $this->trace = implode(' + ', $arr);
     }

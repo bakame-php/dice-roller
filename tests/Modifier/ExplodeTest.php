@@ -123,6 +123,8 @@ final class ExplodeTest extends TestCase
 
     /**
      * @covers ::getInnerRollable
+     * @covers ::getTrace
+     * @covers ::setTrace
      * @throws \Bakame\DiceRoller\Exception\IllegalValue
      * @throws \Bakame\DiceRoller\Exception\UnknownAlgorithm
      * @throws \ReflectionException
@@ -131,12 +133,13 @@ final class ExplodeTest extends TestCase
     {
         $dice = $this->createMock(Rollable::class);
         $dice->method('roll')
-            ->will(self::onConsecutiveCalls(2, 2, 3));
+            ->will(self::onConsecutiveCalls(-1, -1, 3));
 
         $pool = new Cup($dice);
-        $cup = new Explode($pool, Explode::EQ, 2);
-        self::assertSame(7, $cup->roll());
+        $cup = new Explode($pool, Explode::EQ, -1);
+        self::assertSame(1, $cup->roll());
         self::assertSame($pool, $cup->getInnerRollable());
+        self::assertSame('(-1) + (-1) + 3', $cup->getTrace());
     }
 
     /**
@@ -197,10 +200,10 @@ final class ExplodeTest extends TestCase
     public function testProfiler(): void
     {
         $logger = new Logger();
-        $tracer = new LogProfiler($logger, LogLevel::DEBUG);
-        $roll = new Explode(new SidedDie(3), Explode::EQ, 3);
-        $roll->setProfiler($tracer);
-        self::assertEmpty($roll->getTrace());
+        $profiler = new LogProfiler($logger, LogLevel::DEBUG);
+        $roll = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
+        $roll->setProfiler($profiler);
+        self::assertSame('', $roll->getTrace());
         $roll->roll();
         self::assertNotEmpty($roll->getTrace());
         $roll->getMaximum();

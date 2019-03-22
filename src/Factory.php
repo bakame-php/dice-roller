@@ -27,11 +27,9 @@ use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\Profiler\ProfilerAware;
-use function array_map;
 use function count;
 use function iterator_to_array;
 use function strpos;
-use function strtoupper;
 
 final class Factory
 {
@@ -55,31 +53,23 @@ final class Factory
     }
 
     /**
-     * Returns a new Cup Instance from a string pattern.
+     * Returns a new rollable object from a string expression.
      */
     public function newInstance(string $expression): Rollable
     {
-        $pool = $this->createComplexPool($expression);
+        $items = [];
+        foreach ($this->parser->parse($expression) as $item) {
+            $items[] = $this->createPoolFromParser($item);
+        }
 
-        return $this->flattenRollable($pool);
+        $rollable = new Cup(...$items);
+        $rollable->setProfiler($this->profiler);
+
+        return $this->flattenRollable($rollable);
     }
 
     /**
-     * Creates a complex mixed Pool.
-     */
-    private function createComplexPool(string $expression): Pool
-    {
-        $poolsExpArray = $this->parser->extractPool($expression);
-        $poolsObjArray = array_map([$this, 'createPoolFromString'], $poolsExpArray);
-
-        $pool = new Cup(...$poolsObjArray);
-        $pool->setProfiler($this->profiler);
-
-        return $pool;
-    }
-
-    /**
-     * Returns a collection of equals dice.
+     * Returns a Pool from the parser expressions.
      *
      * @throws IllegalValue
      * @throws TooFewSides
@@ -87,9 +77,8 @@ final class Factory
      * @throws UnknownAlgorithm
      * @throws UnknownExpression
      */
-    private function createPoolFromString(string $expression): Rollable
+    private function createPoolFromParser(array $parts): Rollable
     {
-        $parts = $this->parser->parsePool($expression);
         if ([] === $parts) {
             $rollable = new Cup();
             $rollable->setProfiler($this->profiler);
@@ -97,8 +86,7 @@ final class Factory
             return $rollable;
         }
 
-        $pool = $this->createPool($parts['pool']);
-        $pool = $this->decorate($pool, $parts['modifiers']);
+        $pool = $this->decorate($this->createPool($parts), $parts['modifiers']);
 
         return $this->flattenRollable($pool);
     }
@@ -118,21 +106,23 @@ final class Factory
     }
 
     /**
-     * Generates the Cup from the expression matched pattern.
+     * Generates the Pool from the expression matched pattern.
      *
      * @throws IllegalValue
      * @throws TooFewSides
      * @throws UnknownExpression
      */
-    private function createPool(array $matches): Pool
+    private function createPool(array $matches): Rollable
     {
-        if (isset($matches['mixed'])) {
-            return $this->createComplexPool($matches['mixed']);
+        if (isset($matches['compositePool'])) {
+            return $this->newInstance($matches['compositePool']['expression']);
         }
 
+        $pool = $matches['pool'];
+
         return Cup::createFromRollable(
-            $this->createDiceFromString($matches['type']),
-            (int) $matches['quantity'],
+            $this->createDiceFromString($pool['type']),
+            (int) $pool['quantity'],
             $this->profiler
         );
     }
@@ -145,7 +135,6 @@ final class Factory
      */
     private function createDiceFromString(string $definition): Dice
     {
-        $definition = strtoupper($definition);
         if ('DF' === $definition) {
             return new FudgeDie();
         }

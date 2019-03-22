@@ -141,7 +141,7 @@ final class DropKeep implements Modifier, Traceable
             $innerRetval[] = $rollable->roll();
         }
 
-        return $this->decorate($innerRetval);
+        return $this->decorate($innerRetval, __METHOD__);
     }
 
     /**
@@ -154,7 +154,7 @@ final class DropKeep implements Modifier, Traceable
             $innerRetval[] = $rollable->getMinimum();
         }
 
-        return $this->decorate($innerRetval);
+        return $this->decorate($innerRetval, __METHOD__);
     }
 
     /**
@@ -167,18 +167,18 @@ final class DropKeep implements Modifier, Traceable
             $innerRetval[] = $rollable->getMaximum();
         }
 
-        return $this->decorate($innerRetval);
+        return $this->decorate($innerRetval, __METHOD__);
     }
 
     /**
      * Decorates the operation returned value.
      */
-    private function decorate(array $values): int
+    private function decorate(array $values, string $method): int
     {
         $retval = (int) array_sum($this->calculate($values));
 
         $this->setTrace($values);
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
+        $this->profiler->addTrace($this, $method, $retval, $this->trace);
 
         return $retval;
     }
@@ -276,13 +276,12 @@ final class DropKeep implements Modifier, Traceable
      */
     private function setTrace(array $traces): void
     {
-        $mapper = static function (int $value): string {
-            $str = ''.$value;
+        $mapper = function (int $value): string {
             if (0 > $value) {
-                return '('.$str.')';
+                return '('.$value.')';
             }
 
-            return $str;
+            return ''.$value;
         };
 
         $arr = array_map($mapper, $traces);

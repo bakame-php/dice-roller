@@ -121,7 +121,7 @@ final class Arithmetic implements Modifier, Traceable
     {
         $value = $this->rollable->roll();
 
-        return $this->decorate($value);
+        return $this->decorate($value, __METHOD__);
     }
 
     /**
@@ -131,7 +131,7 @@ final class Arithmetic implements Modifier, Traceable
     {
         $value = $this->rollable->getMinimum();
 
-        return $this->decorate($value);
+        return $this->decorate($value, __METHOD__);
     }
 
     /**
@@ -141,18 +141,18 @@ final class Arithmetic implements Modifier, Traceable
     {
         $value = $this->rollable->getMaximum();
 
-        return $this->decorate($value);
+        return $this->decorate($value, __METHOD__);
     }
 
     /**
      * Decorates the operation returned value.
      */
-    private function decorate(int $value): int
+    private function decorate(int $value, string $method): int
     {
         $retval = $this->calculate($value);
         $this->setTrace($value);
 
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
+        $this->profiler->addTrace($this, $method, $retval, $this->trace);
 
         return $retval;
     }

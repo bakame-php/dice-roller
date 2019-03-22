@@ -58,6 +58,21 @@ final class ExpressionParser implements Parser
     /**
      * {@inheritdoc}
      */
+    public function parse(string $expression): array
+    {
+        $retval = [];
+        foreach ($this->extractPool($expression) as $part) {
+            $retval[] = $this->parsePool($part);
+        }
+
+        return $retval;
+    }
+
+    /**
+     * Extract pool expressions from a generic string expression.
+     *
+     * @return string[]
+     */
     public function extractPool(string $expression): array
     {
         $parts = explode('+', $expression);
@@ -86,7 +101,15 @@ final class ExpressionParser implements Parser
     }
 
     /**
-     * {@inheritdoc}
+     * Returns an array representation of a Pool.
+     *
+     *  - If the string is the empty string a empty array is returned
+     *  - Otherwise an array containing:
+     *         - the pool definition
+     *         - the pool modifiers
+     *
+     * @throws UnknownExpression
+     * @throws UnknownAlgorithm
      */
     public function parsePool(string $expression): array
     {
@@ -102,10 +125,12 @@ final class ExpressionParser implements Parser
             throw new UnknownAlgorithm(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
         }
 
-        return [
-            'pool' => $this->getPoolDefinition($matches),
-            'modifiers' => $this->getPoolModifiersDefinition($modifier_matches),
-        ];
+        $pool = $this->getPoolDefinition($matches);
+        if (isset($pool['expression'])) {
+            return ['compositePool' => $pool, 'modifiers' => $this->getPoolModifiersDefinition($modifier_matches)];
+        }
+
+        return ['pool' => $pool, 'modifiers' => $this->getPoolModifiersDefinition($modifier_matches)];
     }
 
     /**
@@ -113,13 +138,21 @@ final class ExpressionParser implements Parser
      */
     private function getPoolDefinition(array $matches): array
     {
-        $pool = ['mixed' => $matches['mixed'] ?? ''];
-        if ('' === $pool['mixed']) {
-            unset($pool['mixed']);
-            $pool['quantity'] = ('' === $matches['quantity']) ? self::DICE_COUNT : $matches['quantity'];
-            $pool['type'] = ('' === $matches['type']) ? self::SIDE_COUNT : $matches['type'];
-            $pool['type'] = 'D'.$pool['type'];
+        $expression = $matches['mixed'] ?? '';
+        if ('' !== $expression) {
+            return ['expression' => $expression];
         }
+
+        $pool = ['type' => self::SIDE_COUNT, 'quantity' => self::DICE_COUNT];
+        if ('' !== $matches['type']) {
+            $pool['type'] = $matches['type'];
+        }
+
+        if ('' !== $matches['quantity']) {
+            $pool['quantity'] = $matches['quantity'];
+        }
+
+        $pool['type'] = strtoupper('D'.$pool['type']);
 
         return $pool;
     }
