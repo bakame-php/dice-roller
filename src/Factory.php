@@ -26,7 +26,6 @@ use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\Profiler\ProfilerAware;
 use function count;
 use function iterator_to_array;
 use function strpos;
@@ -122,7 +121,7 @@ final class Factory
 
         return Cup::createFromRollable(
             $this->createDiceFromString($pool['type']),
-            (int) $pool['quantity'],
+            $pool['quantity'],
             $this->profiler
         );
     }

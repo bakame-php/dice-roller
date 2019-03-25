@@ -149,7 +149,7 @@ final class ExpressionParser implements Parser
         }
 
         if ('' !== $matches['quantity']) {
-            $pool['quantity'] = $matches['quantity'];
+            $pool['quantity'] = (int) $matches['quantity'];
         }
 
         $pool['type'] = strtoupper('D'.$pool['type']);
