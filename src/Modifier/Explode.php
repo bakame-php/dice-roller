@@ -20,10 +20,8 @@ use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Profiler\ProfilerAware;
-use function array_map;
+use Bakame\DiceRoller\ProfilerAware;
 use function array_sum;
-use function implode;
 use function in_array;
 use function sprintf;
 use function strpos;
@@ -195,14 +193,14 @@ final class Explode implements Modifier, Traceable
      */
     public function roll(): int
     {
-        $innerRetval = [];
-        foreach ($this->pool as $innerRoll) {
-            $innerRetval = $this->calculate($innerRetval, $innerRoll);
+        $values = [];
+        foreach ($this->pool as $rollable) {
+            $values = $this->calculate($values, $rollable);
         }
 
-        $retval = (int) array_sum($innerRetval);
-        $this->setTrace($innerRetval);
+        $retval = (int) array_sum($values);
 
+        $this->trace = $this->getTraceAsString($values);
         $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
@@ -215,9 +213,9 @@ final class Explode implements Modifier, Traceable
     {
         $threshold = $this->threshold ?? $rollable->getMaximum();
         do {
-            $innerRetval = $rollable->roll();
-            $sum[] = $innerRetval;
-        } while ($this->isValid($innerRetval, $threshold));
+            $value = $rollable->roll();
+            $sum[] = $value;
+        } while ($this->isValid($value, $threshold));
 
         return $sum;
     }
@@ -236,25 +234,5 @@ final class Explode implements Modifier, Traceable
         }
 
         return $result < $threshold;
-    }
-
-    /**
-     * Format the trace as string.
-     *
-     * @param int[] $traces
-     */
-    private function setTrace(array $traces): void
-    {
-        $mapper = function (int $value): string {
-            if (0 > $value) {
-                return '('.$value.')';
-            }
-
-            return ''.$value;
-        };
-
-        $arr = array_map($mapper, $traces);
-
-        $this->trace = implode(' + ', $arr);
     }
 }

@@ -70,6 +70,7 @@ final class CupTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
+     * @covers ::decorate
      * @covers ::count
      * @covers ::getIterator
      * @covers ::isEmpty
@@ -165,7 +166,8 @@ final class CupTest extends TestCase
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::roll
-     * @covers ::setTrace
+     * @covers ::decorate
+     * @covers ::getTraceAsString
      * @covers ::getTrace
      */
     public function testTracer(): void

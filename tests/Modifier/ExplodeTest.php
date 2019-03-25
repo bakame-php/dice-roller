@@ -124,7 +124,7 @@ final class ExplodeTest extends TestCase
     /**
      * @covers ::getInnerRollable
      * @covers ::getTrace
-     * @covers ::setTrace
+     * @covers ::getTraceAsString
      * @throws \Bakame\DiceRoller\Exception\IllegalValue
      * @throws \Bakame\DiceRoller\Exception\UnknownAlgorithm
      * @throws \ReflectionException
@@ -192,7 +192,7 @@ final class ExplodeTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setProfiler
-     * @covers ::setTrace
+     * @covers ::getTraceAsString
      * @covers ::getTrace
      * @covers \Bakame\DiceRoller\Profiler\LogProfiler
      * @covers \Bakame\DiceRoller\Profiler\Logger

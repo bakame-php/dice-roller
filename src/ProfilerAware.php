@@ -11,9 +11,10 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Profiler;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Profiler;
+use Bakame\DiceRoller\Profiler\NullProfiler;
 
 trait ProfilerAware
 {
@@ -22,13 +23,39 @@ trait ProfilerAware
      */
     private $profiler;
 
+    /**
+     * Profiler setter.
+     * @param ?Profiler $profiler
+     */
     public function setProfiler(?Profiler $profiler = null): void
     {
         $this->profiler = $profiler ?? new NullProfiler();
     }
 
+    /**
+     * Profiler getter.
+     */
     public function getProfiler(): Profiler
     {
         return $this->profiler;
+    }
+
+    /**
+     * Get the trace as string from a collection of internal roll results.
+     *
+     * @param int[] $rolls
+     */
+    private function getTraceAsString(array $rolls): string
+    {
+        $arr = [];
+        foreach ($rolls as $value) {
+            if (0 > $value) {
+                $arr[] = '('.$value.')';
+                continue;
+            }
+            $arr[] = $value;
+        }
+
+        return implode(' + ', $arr);
     }
 }

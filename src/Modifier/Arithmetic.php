@@ -18,7 +18,7 @@ use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Profiler\ProfilerAware;
+use Bakame\DiceRoller\ProfilerAware;
 use function abs;
 use function intdiv;
 use function sprintf;
@@ -150,8 +150,8 @@ final class Arithmetic implements Modifier, Traceable
     private function decorate(int $value, string $method): int
     {
         $retval = $this->calculate($value);
-        $this->setTrace($value);
 
+        $this->trace = $value.' '.$this->operator.' '.$this->value;
         $this->profiler->addTrace($this, $method, $retval, $this->trace);
 
         return $retval;
@@ -183,13 +183,5 @@ final class Arithmetic implements Modifier, Traceable
         }
 
         return (int) (abs($value) ** $this->value) * -1;
-    }
-
-    /**
-     * Format the trace as string.
-     */
-    private function setTrace(int $value): void
-    {
-        $this->trace = $value.' '.$this->operator.' '.$this->value;
     }
 }

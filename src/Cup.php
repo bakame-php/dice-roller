@@ -18,7 +18,6 @@ use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
-use Bakame\DiceRoller\Profiler\ProfilerAware;
 use Iterator;
 use function array_count_values;
 use function array_filter;
@@ -184,12 +183,7 @@ final class Cup implements Pool, Traceable
             $sum[] = $rollable->roll();
         }
 
-        $retval = (int) array_sum($sum);
-        $this->setTrace($sum);
-
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
-
-        return $retval;
+        return $this->decorate($sum, __METHOD__);
     }
 
     /**
@@ -202,12 +196,7 @@ final class Cup implements Pool, Traceable
             $sum[] = $rollable->getMinimum();
         }
 
-        $retval = (int) array_sum($sum);
-        $this->setTrace($sum);
-
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
-
-        return $retval;
+        return $this->decorate($sum, __METHOD__);
     }
 
     /**
@@ -220,31 +209,19 @@ final class Cup implements Pool, Traceable
             $sum[] = $rollable->getMaximum();
         }
 
-        $retval = (int) array_sum($sum);
-        $this->setTrace($sum);
-
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
-
-        return $retval;
+        return $this->decorate($sum, __METHOD__);
     }
 
     /**
-     * Format the trace as string.
-     *
-     * @param int[] $traces
+     * Decorates the operation returned value.
      */
-    private function setTrace(array $traces): void
+    private function decorate(array $sum, string $method): int
     {
-        $mapper = function (int $value): string {
-            if (0 > $value) {
-                return '('.$value.')';
-            }
+        $retval = (int) array_sum($sum);
 
-            return (string) $value;
-        };
+        $this->trace = $this->getTraceAsString($sum);
+        $this->profiler->addTrace($this, $method, $retval, $this->trace);
 
-        $arr = array_map($mapper, $traces);
-
-        $this->trace = implode(' + ', $arr);
+        return $retval;
     }
 }

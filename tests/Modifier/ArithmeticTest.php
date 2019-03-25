@@ -188,7 +188,7 @@ final class ArithmeticTest extends TestCase
      * @covers ::calculate
      * @covers ::roll
      * @covers ::decorate
-     * @covers \Bakame\DiceRoller\Profiler\ProfilerAware
+     * @covers \Bakame\DiceRoller\ProfilerAware
      */
     public function testArithmeticExponentWithNegativeValue(): void
     {
@@ -208,9 +208,8 @@ final class ArithmeticTest extends TestCase
      * @covers ::roll
      * @covers ::decorate
      * @covers ::calculate
-     * @covers ::setTrace
      * @covers ::getTrace
-     * @covers \Bakame\DiceRoller\Profiler\ProfilerAware
+     * @covers \Bakame\DiceRoller\ProfilerAware
      * @covers \Bakame\DiceRoller\Profiler\LogProfiler
      * @covers \Bakame\DiceRoller\Profiler\Logger
      */

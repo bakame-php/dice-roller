@@ -20,12 +20,10 @@ use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Profiler\ProfilerAware;
-use function array_map;
+use Bakame\DiceRoller\ProfilerAware;
 use function array_slice;
 use function array_sum;
 use function count;
-use function implode;
 use function rsort;
 use function sprintf;
 use function strpos;
@@ -175,9 +173,10 @@ final class DropKeep implements Modifier, Traceable
      */
     private function decorate(array $values, string $method): int
     {
-        $retval = (int) array_sum($this->calculate($values));
+        $values = $this->filter($values);
+        $retval = (int) array_sum($values);
 
-        $this->setTrace($values);
+        $this->trace = $this->getTraceAsString($values);
         $this->profiler->addTrace($this, $method, $retval, $this->trace);
 
         return $retval;
@@ -186,7 +185,7 @@ final class DropKeep implements Modifier, Traceable
     /**
      * Computes the sum to be return.
      */
-    private function calculate(array $values): array
+    private function filter(array $values): array
     {
         if (self::DROP_HIGHEST === $this->algo) {
             return $this->dropHighest($values);
@@ -267,25 +266,5 @@ final class DropKeep implements Modifier, Traceable
         rsort($sum);
 
         return array_slice($sum, 0, $this->threshold);
-    }
-
-    /**
-     * Format the trace as string.
-     *
-     * @param int[] $traces
-     */
-    private function setTrace(array $traces): void
-    {
-        $mapper = function (int $value): string {
-            if (0 > $value) {
-                return '('.$value.')';
-            }
-
-            return ''.$value;
-        };
-
-        $arr = array_map($mapper, $traces);
-
-        $this->trace = implode(' + ', $arr);
     }
 }
