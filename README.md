@@ -68,7 +68,7 @@ Use the library bundled rollable objects to build a dice pool to roll.
 ```php
 $pool = new Modifier\Arithmetic(
     new Cup(new SidedDie(6), new SidedDie(6)),
-    $Modifier\Arithmetic::ADD,
+    Modifier\Arithmetic::ADD,
     3
 );
 
@@ -210,7 +210,7 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 <?php
 
 foreach (Cup::createFromRollable(new SidedDie(5), 3) as $rollable) {
-    echo $rollable; // will always return D5
+    echo $rollable->toString(); // will always return D5
 }
 ```
 
@@ -313,9 +313,9 @@ final class DropKeep implements Modifier, Traceable
 }
 ```
 
-This modifier decorates a `Rollable` object by applying the one of the dropkeep algorithm on a `Pool` object. The constructor expects:
+This modifier decorates a `Rollable` object by applying one of the dropkeep algorithm. The constructor expects:
 
-- a `Pool` object;
+- a `Rollable` object;
 - a algorithm name;
 - a threshold to trigger the algorithm;
 
@@ -326,7 +326,7 @@ The supported algorithms are:
 - `kh` or `DropKeep::KEEP_HIGHEST` to keep the `$threshold` highest results of a given `Cup` object;
 - `kl` or `DropKeep::KEEP_LOWEST` to keep the `$threshold` lowest results of a given `Cup` object;
 
-The `$threshold` MUST be lower or equals to the total numbers of rollable items in the `Cup` object.
+The `$threshold` MUST be lower or equals to the total numbers of rollable items.
 
 If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRolled` will be thrown.
 
@@ -359,9 +359,9 @@ final class Explode implements Modifier, Traceable
 }
 ```
 
-This modifier decorates a `Pool` object by applying one of the explode algorithm. The constructor expects:
+This modifier decorates a `Rollable` object by applying one of the explode algorithm. The constructor expects:
 
-- a `Pool` implementing object;
+- a `Rollable` implementing object;
 - a comparison operator string;
 - a threshold to trigger the algorithm;
 
@@ -441,7 +441,6 @@ namespace Bakame\DiceRoller\Contract;
 interface Traceable
 {
     public function getTrace(): string;
-
     public function getProfiler(): Profiler;
 }
 ```
