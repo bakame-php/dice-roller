@@ -26,6 +26,7 @@ use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
+use function array_reduce;
 use function count;
 use function iterator_to_array;
 use function strpos;
@@ -56,19 +57,14 @@ final class Factory
      */
     public function newInstance(string $expression): Rollable
     {
-        $items = [];
-        foreach ($this->parser->parse($expression) as $item) {
-            $items[] = $this->createPoolFromParser($item);
-        }
-
-        $rollable = new Cup(...$items);
+        $rollable = array_reduce($this->parser->parse($expression), [$this, 'addRollable'], new Cup());
         $rollable->setProfiler($this->profiler);
 
         return $this->flattenRollable($rollable);
     }
 
     /**
-     * Returns a Pool from the parser expressions.
+     * Adds a Rollable item to a pool.
      *
      * @throws IllegalValue
      * @throws TooFewSides
@@ -76,32 +72,12 @@ final class Factory
      * @throws UnknownAlgorithm
      * @throws UnknownExpression
      */
-    private function createPoolFromParser(array $parts): Rollable
+    private function addRollable(Cup $pool, array $parts): Cup
     {
-        if ([] === $parts) {
-            $rollable = new Cup();
-            $rollable->setProfiler($this->profiler);
+        $modifiers = $parts['modifiers'] ?? [];
+        $rollable = array_reduce($modifiers, [$this, 'decorate'], $this->createRollable($parts));
 
-            return $rollable;
-        }
-
-        $pool = $this->decorate($this->createPool($parts), $parts['modifiers']);
-
-        return $this->flattenRollable($pool);
-    }
-
-    /**
-     * Extracts the Rollable object from a Pool with only one item.
-     */
-    private function flattenRollable(Rollable $rollable): Rollable
-    {
-        if (!$rollable instanceof Pool || 1 !== count($rollable)) {
-            return $rollable;
-        }
-
-        $arr = iterator_to_array($rollable, false);
-
-        return $arr[0];
+        return $pool->withAddedRollable($this->flattenRollable($rollable));
     }
 
     /**
@@ -111,17 +87,22 @@ final class Factory
      * @throws TooFewSides
      * @throws UnknownExpression
      */
-    private function createPool(array $matches): Rollable
+    private function createRollable(array $parts): Rollable
     {
-        if (isset($matches['compositePool'])) {
-            return $this->newInstance($matches['compositePool']['expression']);
+        if ([] === $parts) {
+            $rollable = new Cup();
+            $rollable->setProfiler($this->profiler);
+
+            return $rollable;
         }
 
-        $pool = $matches['pool'];
+        if (isset($parts['compositePool'])) {
+            return $this->newInstance($parts['compositePool']['expression']);
+        }
 
         return Cup::createFromRollable(
-            $this->createDiceFromString($pool['type']),
-            $pool['quantity'],
+            $this->createDice($parts['pool']['type']),
+            $parts['pool']['quantity'],
             $this->profiler
         );
     }
@@ -132,7 +113,7 @@ final class Factory
      * @throws TooFewSides
      * @throws UnknownExpression
      */
-    private function createDiceFromString(string $definition): Dice
+    private function createDice(string $definition): Dice
     {
         if ('DF' === $definition) {
             return new FudgeDie();
@@ -150,29 +131,13 @@ final class Factory
     }
 
     /**
-     * Decorates the Rollable object with some decorator.
-     *
-     * @throws IllegalValue
-     * @throws TooManyObjects
-     * @throws UnknownAlgorithm
-     */
-    private function decorate(Rollable $rollable, array $modifiers): Rollable
-    {
-        foreach ($modifiers as $modifier) {
-            $rollable = $this->addDecorator($rollable, $modifier);
-        }
-
-        return $rollable;
-    }
-
-    /**
      * Decorates the Rollable object with modifiers objects.
      *
      * @throws TooManyObjects
      * @throws IllegalValue
      * @throws UnknownAlgorithm
      */
-    private function addDecorator(Rollable $rollable, array $matches): Rollable
+    private function decorate(Rollable $rollable, array $matches): Rollable
     {
         if ('arithmetic' === $matches['modifier']) {
             $modifier = new Arithmetic($rollable, $matches['operator'], $matches['value']);
@@ -192,5 +157,23 @@ final class Factory
         $modifier->setProfiler($this->profiler);
 
         return $modifier;
+    }
+
+    /**
+     * Extracts the Rollable object from a Pool with only one item.
+     */
+    private function flattenRollable(Rollable $rollable): Rollable
+    {
+        if (!$rollable instanceof Pool) {
+            return $rollable;
+        }
+
+        if (1 !== count($rollable)) {
+            return $rollable;
+        }
+
+        $arr = iterator_to_array($rollable, false);
+
+        return $arr[0];
     }
 }

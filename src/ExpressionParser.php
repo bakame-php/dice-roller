@@ -78,7 +78,7 @@ final class ExpressionParser implements Parser
         $parts = explode('+', $expression);
         $res = [];
         foreach ($parts as $offset => $value) {
-            if (0 == $offset) {
+            if (0 === $offset) {
                 $res[] = $value;
                 continue;
             }
@@ -126,11 +126,12 @@ final class ExpressionParser implements Parser
         }
 
         $pool = $this->getPoolDefinition($matches);
+        $modifiers = $this->getPoolModifiersDefinition($modifier_matches);
         if (isset($pool['expression'])) {
-            return ['compositePool' => $pool, 'modifiers' => $this->getPoolModifiersDefinition($modifier_matches)];
+            return ['compositePool' => $pool, 'modifiers' => $modifiers];
         }
 
-        return ['pool' => $pool, 'modifiers' => $this->getPoolModifiersDefinition($modifier_matches)];
+        return ['pool' => $pool, 'modifiers' => $modifiers];
     }
 
     /**

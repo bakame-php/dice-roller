@@ -40,11 +40,10 @@ final class FactoryTest extends TestCase
      * @covers ::__construct
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::createPoolFromParser
-     * @covers ::createPool
+     * @covers ::addRollable
+     * @covers ::createRollable
      * @covers ::decorate
-     * @covers ::addDecorator
-     * @covers ::createDiceFromString
+     * @covers ::createDice
      * @dataProvider invalidStringProvider
      */
     public function testInvalidGroupDefinition(string $expected): void
@@ -71,11 +70,11 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::createPoolFromParser
+     * @covers ::addRollable
+     * @covers ::createRollable
      * @covers ::flattenRollable
      * @covers ::decorate
-     * @covers ::addDecorator
-     * @covers ::createDiceFromString
+     * @covers ::createDice
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::toString
      * @covers \Bakame\DiceRoller\SidedDie::toString
@@ -120,10 +119,10 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\ExpressionParser
-     * @covers ::createPoolFromParser
-     * @covers ::createDiceFromString
+     * @covers ::addRollable
+     * @covers ::createRollable
+     * @covers ::createDice
      * @covers ::decorate
-     * @covers ::addDecorator
      * @dataProvider permissiveParserProvider
      */
     public function testPermissiveParser(string $full, string $short): void
@@ -193,7 +192,8 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::createPoolFromParser
+     * @covers ::addRollable
+     * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize
@@ -212,7 +212,8 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::createPoolFromParser
+     * @covers ::addRollable
+     * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize
@@ -234,7 +235,8 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers ::createPoolFromParser
+     * @covers ::addRollable
+     * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\SidedDie::getSize
