@@ -16,18 +16,15 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Bakame\DiceRoller\Exception\UnknownExpression;
-use function array_filter;
+use function array_map;
 use function count;
 use function explode;
-use function filter_var;
 use function implode;
 use function max;
 use function min;
 use function preg_match;
 use function random_int;
 use function sprintf;
-use const FILTER_REQUIRE_ARRAY;
-use const FILTER_VALIDATE_INT;
 
 final class CustomDie implements Dice
 {
@@ -40,6 +37,8 @@ final class CustomDie implements Dice
      * New instance.
      *
      * @param int ...$values
+     *
+     * @throws TooFewSides
      */
     public function __construct(int ...$values)
     {
@@ -58,14 +57,17 @@ final class CustomDie implements Dice
      */
     public static function fromString(string $expression): self
     {
-        if (1 === preg_match('/^d\[(?<definition>.*)\]$/i', $expression, $matches)) {
-            $sides = explode(',', $matches['definition']);
-            $sides = (array) filter_var(array_filter($sides, 'trim'), FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
-
-            return new self(...$sides);
+        if (1 !== preg_match('/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i', $expression, $matches)) {
+            throw new UnknownExpression(sprintf('the submitted die format `%s` is invalid.', $expression));
         }
 
-        throw new UnknownExpression(sprintf('the submitted die format `%s` is invalid.', $expression));
+        $mapper = function (string $value): int {
+            return (int) $value;
+        };
+
+        $sides = array_map($mapper, explode(',', $matches['definition']));
+
+        return new self(...$sides);
     }
 
     /**

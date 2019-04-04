@@ -108,7 +108,7 @@ $logger->clear();
 echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
 for ($i = 0; $i < $opts['iteration']; ++$i) {
         $index = $i+1;
-echo "$cyan Result #$index: $reset $yellow".$pool->roll(), $reset, PHP_EOL;
+echo "$cyan Result #$index:$reset $yellow".$pool->roll(), $reset, PHP_EOL;
 }
 if (isset($opts['logs'])) {
     echo PHP_EOL, "$yellow ====== ROLL TRACE ======= $reset", PHP_EOL;

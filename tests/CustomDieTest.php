@@ -54,11 +54,21 @@ final class CustomDieTest extends TestCase
     }
 
     /**
+     * @dataProvider invalidExpression
      * @covers ::fromString
      */
-    public function testfromStringWithWrongValue(): void
+    public function testfromStringWithWrongValue(string $expression): void
     {
         self::expectException(CanNotBeRolled::class);
-        CustomDie::fromString('1');
+        CustomDie::fromString($expression);
+    }
+
+    public function invalidExpression(): iterable
+    {
+        return [
+            'invalid format' => ['1'],
+            'contains non numeric' => ['d[1,0,foobar]'],
+            'contains empty side' => ['d[1,,1]'],
+        ];
     }
 }

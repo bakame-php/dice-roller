@@ -10,11 +10,17 @@ A simple Dice Roller implemented in PHP.
 ```php
 <?php
 
+// First: import needed class
 use Bakame\DiceRoller\Factory;
 
+// Factory allow us to create dice cup.
 $factory = new Factory();
 
-echo $factory->newInstance('2D6')->roll();     // returns 6
+// We create the cup that will contain the two die:
+$cup = $factory->newInstance('2D6');
+
+// Roll and display the result:
+echo $cup->roll(); // returns 6
 ```
 
 This is a fork of [Ethtezahl/Dice-Roller](https://github.com/Ethtezahl/dice-roller). The goal of this package is to build a modern PHP package which follow best practices.
@@ -59,6 +65,7 @@ $pool = $factory->newInstance('2D6');
 
 echo $pool->toString(); // returns 2D6
 echo $pool->roll();     // returns 6
+echo $pool->getTrace(); // returns 2 + 4
 ```
 
 ## Advance usage
@@ -73,7 +80,8 @@ $pool = new Modifier\Arithmetic(
 );
 
 echo $pool->toString(); // returns 2D6+3
-echo $pool->roll();     // returns 8
+echo $pool->roll();     // returns 12
+echo $pool->getTrace(); // returns 9 + 3
 ```
 
 ## Tracing and profiling an operation
