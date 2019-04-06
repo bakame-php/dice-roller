@@ -88,10 +88,11 @@ final class Factory
      */
     private function addRollable(Cup $pool, array $parts): Cup
     {
-        $modifiers = $parts['modifiers'] ?? [];
-        $rollable = array_reduce($modifiers, [$this, 'decorate'], $this->createRollable($parts['pool']));
+        $rollable = $this->createRollable($parts['definition']);
+        $rollable = array_reduce($parts['modifiers'], [$this, 'decorate'], $rollable);
+        $rollable = $this->flattenRollable($rollable);
 
-        return $pool->withAddedRollable($this->flattenRollable($rollable));
+        return $pool->withAddedRollable($rollable);
     }
 
     /**
@@ -107,7 +108,8 @@ final class Factory
             return $this->create($parts['composite']);
         }
 
-        $rollable = Cup::createFromRollable($this->createDice($parts['type']), $parts['quantity']);
+        $die = $this->createDice($parts['simple']['type']);
+        $rollable = Cup::createFromRollable($die, $parts['simple']['quantity']);
         $rollable->setProfiler($this->profiler);
 
         return $rollable;

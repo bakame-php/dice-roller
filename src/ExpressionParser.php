@@ -122,7 +122,7 @@ final class ExpressionParser implements Parser
         }
 
         $retval[] = [
-            'pool' => $this->getPoolDefinition($matches),
+            'definition' => $this->getPoolDefinition($matches),
             'modifiers' => $this->getPoolModifiersDefinition($modifier_matches),
         ];
 
@@ -150,7 +150,7 @@ final class ExpressionParser implements Parser
 
         $pool['type'] = strtoupper('D'.$pool['type']);
 
-        return $pool;
+        return ['simple' => $pool];
     }
 
     /**
