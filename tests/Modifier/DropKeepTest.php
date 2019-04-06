@@ -214,4 +214,14 @@ final class DropKeepTest extends TestCase
         $roll->roll();
         self::assertGreaterThan(3, $logger->getLogs(LogLevel::DEBUG));
     }
+
+    /**
+     * @covers ::getInnerRollable
+     */
+    public function testGetInnerRollableMethod(): void
+    {
+        $custom = CustomDie::fromString('d[1,2,3]');
+        $rollable = new DropKeep($custom, DropKeep::DROP_LOWEST, 1);
+        self::assertSame($custom, $rollable->getInnerRollable());
+    }
 }
