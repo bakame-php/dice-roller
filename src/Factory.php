@@ -93,15 +93,8 @@ final class Factory
      */
     private function createRollable(array $parts): Rollable
     {
-        if ([] === $parts) {
-            $rollable = new Cup();
-            $rollable->setProfiler($this->profiler);
-
-            return $rollable;
-        }
-
-        if (isset($parts['compositePool'])) {
-            return $this->newInstance($parts['compositePool']['expression']);
+        if (isset($parts['pool']['expression'])) {
+            return $this->newInstance($parts['pool']['expression']);
         }
 
         $rollable = Cup::createFromRollable($this->createDice($parts['pool']['type']), $parts['pool']['quantity']);

@@ -16,6 +16,7 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Exception\UnknownExpression;
+use function array_reduce;
 use function count;
 use function explode;
 use function preg_match;
@@ -60,12 +61,7 @@ final class ExpressionParser implements Parser
      */
     public function parse(string $expression): array
     {
-        $retval = [];
-        foreach ($this->extractPool($expression) as $part) {
-            $retval[] = $this->parsePool($part);
-        }
-
-        return $retval;
+        return array_reduce($this->extractPool($expression), [$this, 'parsePool'], []);
     }
 
     /**
@@ -73,7 +69,7 @@ final class ExpressionParser implements Parser
      *
      * @return string[]
      */
-    public function extractPool(string $expression): array
+    private function extractPool(string $expression): array
     {
         $parts = explode('+', $expression);
         $res = [];
@@ -111,10 +107,10 @@ final class ExpressionParser implements Parser
      * @throws UnknownExpression
      * @throws UnknownAlgorithm
      */
-    public function parsePool(string $expression): array
+    private function parsePool(array $retval, string $expression): array
     {
         if ('' === $expression) {
-            return [];
+            return $retval;
         }
 
         if (1 !== preg_match(self::POOL_PATTERN, $expression, $matches)) {
@@ -125,13 +121,12 @@ final class ExpressionParser implements Parser
             throw new UnknownAlgorithm(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
         }
 
-        $pool = $this->getPoolDefinition($matches);
-        $modifiers = $this->getPoolModifiersDefinition($modifier_matches);
-        if (isset($pool['expression'])) {
-            return ['compositePool' => $pool, 'modifiers' => $modifiers];
-        }
+        $retval[] = [
+            'pool' => $this->getPoolDefinition($matches),
+            'modifiers' => $this->getPoolModifiersDefinition($modifier_matches),
+        ];
 
-        return ['pool' => $pool, 'modifiers' => $modifiers];
+        return $retval;
     }
 
     /**
