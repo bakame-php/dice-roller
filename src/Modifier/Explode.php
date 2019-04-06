@@ -26,6 +26,7 @@ use function array_map;
 use function array_sum;
 use function implode;
 use function in_array;
+use function iterator_to_array;
 use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
@@ -68,6 +69,11 @@ final class Explode implements Modifier, Traceable
     private $profiler;
 
     /**
+     * @var bool
+     */
+    private $is_composed = false;
+
+    /**
      * new instance.
      *
      *
@@ -77,6 +83,7 @@ final class Explode implements Modifier, Traceable
     public function __construct(Rollable $pool, string $compare, int $threshold = null)
     {
         if (!$pool instanceof Pool) {
+            $this->is_composed = true;
             $pool = new Cup($pool);
         }
 
@@ -142,7 +149,13 @@ final class Explode implements Modifier, Traceable
      */
     public function getInnerRollable(): Rollable
     {
-        return $this->pool;
+        if (!$this->is_composed) {
+            return $this->pool;
+        }
+        
+        $arr = iterator_to_array($this->pool, false);
+
+        return $arr[0];
     }
 
     /**

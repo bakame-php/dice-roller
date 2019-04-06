@@ -122,6 +122,7 @@ final class ExplodeTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::getInnerRollable
      * @covers ::getMinimum
      * @covers ::getMaximum
      * @covers ::calculate
@@ -131,10 +132,11 @@ final class ExplodeTest extends TestCase
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max): void
     {
-        $cup = new Explode($this->cup, $algo, $threshold);
-        $res = $cup->roll();
-        self::assertSame($min, $cup->getMinimum());
-        self::assertSame($max, $cup->getMaximum());
+        $rollable = new Explode($this->cup, $algo, $threshold);
+        $res = $rollable->roll();
+        self::assertSame($this->cup, $rollable->getInnerRollable());
+        self::assertSame($min, $rollable->getMinimum());
+        self::assertSame($max, $rollable->getMaximum());
         self::assertGreaterThanOrEqual($min, $res);
         self::assertLessThanOrEqual($max, $res);
     }
@@ -172,6 +174,7 @@ final class ExplodeTest extends TestCase
      * @covers ::setProfiler
      * @covers ::getProfiler
      * @covers ::getTrace
+     * @covers ::getInnerRollable
      * @covers \Bakame\DiceRoller\Profiler\LogProfiler
      * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
      */
@@ -188,5 +191,6 @@ final class ExplodeTest extends TestCase
         $roll->getMinimum();
         self::assertSame($profiler, $roll->getProfiler());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
+        self::assertInstanceOf(CustomDie::class, $roll->getInnerRollable());
     }
 }

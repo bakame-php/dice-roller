@@ -27,6 +27,7 @@ use function array_slice;
 use function array_sum;
 use function count;
 use function implode;
+use function iterator_to_array;
 use function rsort;
 use function sprintf;
 use function strpos;
@@ -79,6 +80,11 @@ final class DropKeep implements Modifier, Traceable
     private $profiler;
 
     /**
+     * @var bool
+     */
+    private $is_composed = false;
+
+    /**
      * new instance.
      *
      *
@@ -88,6 +94,7 @@ final class DropKeep implements Modifier, Traceable
     public function __construct(Rollable $pool, string $algo, int $threshold)
     {
         if (!$pool instanceof Pool) {
+            $this->is_composed = true;
             $pool = new Cup($pool);
         }
 
@@ -119,7 +126,13 @@ final class DropKeep implements Modifier, Traceable
      */
     public function getInnerRollable(): Rollable
     {
-        return $this->pool;
+        if (!$this->is_composed) {
+            return $this->pool;
+        }
+        
+        $arr = iterator_to_array($this->pool, false);
+
+        return $arr[0];
     }
 
     /**

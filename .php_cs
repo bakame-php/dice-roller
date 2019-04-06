@@ -12,6 +12,7 @@ EOF;
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/src')
     ->in(__DIR__.'/tests')
+    ->files(__DIR__.'/bin/roll')
 ;
 
 return PhpCsFixer\Config::create()
