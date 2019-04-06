@@ -54,7 +54,7 @@ final class Cup implements Pool, Traceable
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
-        $this->profiler = new NullProfiler();
+        $this->setProfiler(new NullProfiler());
     }
 
     /**

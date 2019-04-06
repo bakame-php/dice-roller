@@ -86,7 +86,7 @@ final class Arithmetic implements Modifier, Traceable
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->profiler = new NullProfiler();
+        $this->setProfiler(new NullProfiler());
     }
 
     /**
