@@ -136,7 +136,7 @@ final class ExpressionParser implements Parser
     {
         $expression = $matches['mixed'] ?? '';
         if ('' !== $expression) {
-            return ['expression' => $expression];
+            return ['composite' => $this->parse($expression)];
         }
 
         $pool = ['type' => self::SIDE_COUNT, 'quantity' => self::DICE_COUNT];

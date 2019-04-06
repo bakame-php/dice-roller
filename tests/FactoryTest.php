@@ -118,6 +118,7 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
+     * @covers ::create
      * @covers \Bakame\DiceRoller\ExpressionParser
      * @covers ::addRollable
      * @covers ::createRollable

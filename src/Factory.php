@@ -61,7 +61,17 @@ final class Factory
      */
     public function newInstance(string $expression): Rollable
     {
-        $rollable = array_reduce($this->parser->parse($expression), [$this, 'addRollable'], new Cup());
+        $parsed = $this->parser->parse($expression);
+
+        return $this->create($parsed);
+    }
+
+    /**
+     * Returns a new rollable object from a parsed expression.
+     */
+    private function create(array $parsed): Rollable
+    {
+        $rollable = array_reduce($parsed, [$this, 'addRollable'], new Cup());
         $rollable->setProfiler($this->profiler);
 
         return $this->flattenRollable($rollable);
@@ -79,7 +89,7 @@ final class Factory
     private function addRollable(Cup $pool, array $parts): Cup
     {
         $modifiers = $parts['modifiers'] ?? [];
-        $rollable = array_reduce($modifiers, [$this, 'decorate'], $this->createRollable($parts));
+        $rollable = array_reduce($modifiers, [$this, 'decorate'], $this->createRollable($parts['pool']));
 
         return $pool->withAddedRollable($this->flattenRollable($rollable));
     }
@@ -93,11 +103,11 @@ final class Factory
      */
     private function createRollable(array $parts): Rollable
     {
-        if (isset($parts['pool']['expression'])) {
-            return $this->newInstance($parts['pool']['expression']);
+        if (isset($parts['composite'])) {
+            return $this->create($parts['composite']);
         }
 
-        $rollable = Cup::createFromRollable($this->createDice($parts['pool']['type']), $parts['pool']['quantity']);
+        $rollable = Cup::createFromRollable($this->createDice($parts['type']), $parts['quantity']);
         $rollable->setProfiler($this->profiler);
 
         return $rollable;
