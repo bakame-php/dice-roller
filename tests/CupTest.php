@@ -19,8 +19,8 @@ use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\FudgeDie;
 use Bakame\DiceRoller\PercentileDie;
-use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\Profiler\NullProfiler;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
@@ -34,11 +34,11 @@ final class CupTest extends TestCase
     /**
      * @var \Bakame\DiceRoller\Contract\Profiler
      */
-    private $tracer;
+    private $profiler;
 
     public function setUp(): void
     {
-        $this->tracer = new NullProfiler();
+        $this->profiler = new NullProfiler();
     }
 
     /**
@@ -167,19 +167,22 @@ final class CupTest extends TestCase
      * @covers ::getMaximum
      * @covers ::roll
      * @covers ::decorate
-     * @covers ::getTraceAsString
      * @covers ::getTrace
+     * @covers ::getProfiler
+     * @covers ::setProfiler
      */
     public function testTracer(): void
     {
-        $logger = new Logger();
-        $tracer = new LogProfiler($logger, LogLevel::DEBUG);
-        $cup = Cup::createFromRollable(new CustomDie(2, -3, -5), 12, $tracer);
+        $logger = new MemoryLogger();
+        $profiler = new LogProfiler($logger, LogLevel::DEBUG);
+        $cup = Cup::createFromRollable(new CustomDie(2, -3, -5), 12);
+        $cup->setProfiler($profiler);
         self::assertEmpty($cup->getTrace());
         $cup->roll();
         self::assertNotEmpty($cup->getTrace());
         $cup->getMaximum();
         $cup->getMinimum();
+        self::assertSame($profiler, $cup->getProfiler());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 

@@ -15,13 +15,16 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\ProfilerAware;
+use Bakame\DiceRoller\Profiler\NullProfiler;
+use function array_map;
 use function array_sum;
+use function implode;
 use function in_array;
 use function sprintf;
 use function strpos;
@@ -29,8 +32,6 @@ use const PHP_INT_MAX;
 
 final class Explode implements Modifier, Traceable
 {
-    use ProfilerAware;
-
     const EQ = '=';
     const GT = '>';
     const LT = '<';
@@ -62,6 +63,11 @@ final class Explode implements Modifier, Traceable
     private $trace = '';
 
     /**
+     * @var Profiler
+     */
+    private $profiler;
+
+    /**
      * new instance.
      *
      *
@@ -83,7 +89,7 @@ final class Explode implements Modifier, Traceable
             throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
-        $this->setProfiler();
+        $this->setProfiler(new NullProfiler());
     }
 
     /**
@@ -200,7 +206,15 @@ final class Explode implements Modifier, Traceable
 
         $retval = (int) array_sum($values);
 
-        $this->trace = $this->getTraceAsString($values);
+        $mapper = function (int $value) {
+            if (0 > $value) {
+                return '('.$value.')';
+            }
+
+            return $value;
+        };
+
+        $this->trace = implode(' + ', array_map($mapper, $values));
         $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
 
         return $retval;
@@ -234,5 +248,21 @@ final class Explode implements Modifier, Traceable
         }
 
         return $result < $threshold;
+    }
+
+    /**
+     * Profiler setter.
+     */
+    public function setProfiler(Profiler $profiler): void
+    {
+        $this->profiler = $profiler;
+    }
+
+    /**
+     * Profiler getter.
+     */
+    public function getProfiler(): Profiler
+    {
+        return $this->profiler;
     }
 }

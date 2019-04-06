@@ -18,6 +18,7 @@ use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Profiler\NullProfiler;
 use Iterator;
 use function array_count_values;
 use function array_filter;
@@ -30,8 +31,6 @@ use function sprintf;
 
 final class Cup implements Pool, Traceable
 {
-    use ProfilerAware;
-
     /**
      * @var Rollable[]
      */
@@ -43,6 +42,11 @@ final class Cup implements Pool, Traceable
     private $trace = '';
 
     /**
+     * @var Profiler
+     */
+    private $profiler;
+
+    /**
      * Cup constructor.
      *
      * @param Rollable ...$items
@@ -50,7 +54,7 @@ final class Cup implements Pool, Traceable
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
-        $this->setProfiler();
+        $this->profiler = new NullProfiler();
     }
 
     /**
@@ -64,11 +68,9 @@ final class Cup implements Pool, Traceable
     /**
      * Create a new Cup containing only on type of Rollable object.
      *
-     * @param ?Profiler $profiler
-     *
      * @throws IllegalValue
      */
-    public static function createFromRollable(Rollable $rollable, int $quantity = 1, ?Profiler $profiler = null): self
+    public static function createFromRollable(Rollable $rollable, int $quantity = 1): self
     {
         if ($quantity < 1) {
             throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid. Should be > 0', $quantity));
@@ -76,7 +78,6 @@ final class Cup implements Pool, Traceable
 
         if (!self::isValid($rollable)) {
             $new = new self();
-            $new->setProfiler($profiler);
 
             return $new;
         }
@@ -87,7 +88,6 @@ final class Cup implements Pool, Traceable
         }
 
         $new = new self(...$items);
-        $new->setProfiler($profiler);
 
         return $new;
     }
@@ -217,11 +217,34 @@ final class Cup implements Pool, Traceable
      */
     private function decorate(array $sum, string $method): int
     {
-        $retval = (int) array_sum($sum);
+        $mapper = function (int $value) {
+            if (0 > $value) {
+                return '('.$value.')';
+            }
 
-        $this->trace = $this->getTraceAsString($sum);
+            return $value;
+        };
+
+        $retval = (int) array_sum($sum);
+        $this->trace = implode(' + ', array_map($mapper, $sum));
         $this->profiler->addTrace($this, $method, $retval, $this->trace);
 
         return $retval;
+    }
+
+    /**
+     * Profiler setter.
+     */
+    public function setProfiler(Profiler $profiler): void
+    {
+        $this->profiler = $profiler;
+    }
+
+    /**
+     * Profiler getter.
+     */
+    public function getProfiler(): Profiler
+    {
+        return $this->profiler;
     }
 }

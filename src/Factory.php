@@ -26,6 +26,7 @@ use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\Profiler\NullProfiler;
 use function array_reduce;
 use function count;
 use function iterator_to_array;
@@ -33,12 +34,15 @@ use function strpos;
 
 final class Factory
 {
-    use ProfilerAware;
-
     /**
      * @var Parser
      */
     private $parser;
+
+    /**
+     * @var Profiler
+     */
+    private $profiler;
 
     /**
      * Factory constructor.
@@ -49,7 +53,7 @@ final class Factory
     public function __construct(?Parser $parser = null, ?Profiler $profiler = null)
     {
         $this->parser = $parser ?? new ExpressionParser();
-        $this->setProfiler($profiler);
+        $this->profiler = $profiler ?? new NullProfiler();
     }
 
     /**
@@ -100,11 +104,10 @@ final class Factory
             return $this->newInstance($parts['compositePool']['expression']);
         }
 
-        return Cup::createFromRollable(
-            $this->createDice($parts['pool']['type']),
-            $parts['pool']['quantity'],
-            $this->profiler
-        );
+        $rollable = Cup::createFromRollable($this->createDice($parts['pool']['type']), $parts['pool']['quantity']);
+        $rollable->setProfiler($this->profiler);
+
+        return $rollable;
     }
 
     /**

@@ -12,20 +12,20 @@
 namespace Bakame\DiceRoller\Test\Profiler;
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\SidedDie;
 use Bakame\DiceRoller\Test\Bakame;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Tracer\LogProfiler
+ * @coversDefaultClass Bakame\DiceRoller\Profiler\LogProfiler
  */
 final class LogProfilerTest extends TestCase
 {
     /**
-     * @var Logger
+     * @var MemoryLogger
      */
     private $logger;
 
@@ -36,15 +36,13 @@ final class LogProfilerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = new Logger();
+        $this->logger = new MemoryLogger();
         $this->profiler = new LogProfiler($this->logger);
     }
 
     public function testLoggerAccesor(): void
     {
         self::assertSame($this->logger, $this->profiler->getLogger());
-        $this->profiler->setLogger(new Logger());
-        self::assertNotSame($this->logger, $this->profiler->getLogger());
     }
 
     public function testLogLevel(): void
@@ -65,13 +63,14 @@ final class LogProfilerTest extends TestCase
     }
 
     /**
-     * @covers \Bakame\DiceRoller\Profiler\Logger
+     * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
      */
     public function testDiceRollerLogger(): void
     {
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
-        $rollable = Cup::createFromRollable(new SidedDie(6), 3, $this->profiler);
+        $rollable = Cup::createFromRollable(new SidedDie(6), 3);
+        $rollable->setProfiler(new LogProfiler($this->logger));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear(LogLevel::DEBUG);

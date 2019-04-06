@@ -15,8 +15,8 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Traversable;
@@ -33,7 +33,7 @@ final class FactoryTest extends TestCase
 
     public function setUp(): void
     {
-        $this->factory = new Factory(new ExpressionParser(), new LogProfiler(new Logger()));
+        $this->factory = new Factory(new ExpressionParser(), new LogProfiler(new MemoryLogger()));
     }
 
     /**

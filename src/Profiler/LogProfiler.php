@@ -87,14 +87,6 @@ final class LogProfiler implements Profiler
     }
 
     /**
-     * Sets the Logger.
-     */
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    /**
      * Sets the LogLevel.
      */
     public function setLogLevel(string $level): void

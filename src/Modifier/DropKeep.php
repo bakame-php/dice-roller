@@ -15,15 +15,18 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\ProfilerAware;
+use Bakame\DiceRoller\Profiler\NullProfiler;
+use function array_map;
 use function array_slice;
 use function array_sum;
 use function count;
+use function implode;
 use function rsort;
 use function sprintf;
 use function strpos;
@@ -32,8 +35,6 @@ use function uasort;
 
 final class DropKeep implements Modifier, Traceable
 {
-    use ProfilerAware;
-
     public const DROP_HIGHEST = 'DH';
     public const DROP_LOWEST = 'DL';
     public const KEEP_HIGHEST = 'KH';
@@ -73,6 +74,11 @@ final class DropKeep implements Modifier, Traceable
     private $trace = '';
 
     /**
+     * @var Profiler
+     */
+    private $profiler;
+
+    /**
      * new instance.
      *
      *
@@ -97,7 +103,7 @@ final class DropKeep implements Modifier, Traceable
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->setProfiler();
+        $this->setProfiler(new NullProfiler());
     }
 
     /**
@@ -176,7 +182,15 @@ final class DropKeep implements Modifier, Traceable
         $values = $this->filter($values);
         $retval = (int) array_sum($values);
 
-        $this->trace = $this->getTraceAsString($values);
+        $mapper = function (int $value) {
+            if (0 > $value) {
+                return '('.$value.')';
+            }
+
+            return $value;
+        };
+
+        $this->trace = implode(' + ', array_map($mapper, $values));
         $this->profiler->addTrace($this, $method, $retval, $this->trace);
 
         return $retval;
@@ -266,5 +280,21 @@ final class DropKeep implements Modifier, Traceable
         rsort($sum);
 
         return array_slice($sum, 0, $this->threshold);
+    }
+
+    /**
+     * Profiler setter.
+     */
+    public function setProfiler(Profiler $profiler): void
+    {
+        $this->profiler = $profiler;
+    }
+
+    /**
+     * Profiler getter.
+     */
+    public function getProfiler(): Profiler
+    {
+        return $this->profiler;
     }
 }

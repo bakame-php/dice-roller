@@ -16,8 +16,8 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\Modifier\Arithmetic;
-use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\Profiler\NullProfiler;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
@@ -188,7 +188,6 @@ final class ArithmeticTest extends TestCase
      * @covers ::calculate
      * @covers ::roll
      * @covers ::decorate
-     * @covers \Bakame\DiceRoller\ProfilerAware
      */
     public function testArithmeticExponentWithNegativeValue(): void
     {
@@ -209,13 +208,14 @@ final class ArithmeticTest extends TestCase
      * @covers ::decorate
      * @covers ::calculate
      * @covers ::getTrace
-     * @covers \Bakame\DiceRoller\ProfilerAware
+     * @covers ::getProfiler
+     * @covers ::setProfiler
      * @covers \Bakame\DiceRoller\Profiler\LogProfiler
-     * @covers \Bakame\DiceRoller\Profiler\Logger
+     * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
      */
     public function testProfiler(): void
     {
-        $logger = new Logger();
+        $logger = new MemoryLogger();
         $roll = new Arithmetic(
             new CustomDie(-1, -1, -1),
             Arithmetic::EXP,

@@ -14,11 +14,12 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
+use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\ProfilerAware;
+use Bakame\DiceRoller\Profiler\NullProfiler;
 use function abs;
 use function intdiv;
 use function sprintf;
@@ -26,8 +27,6 @@ use function strpos;
 
 final class Arithmetic implements Modifier, Traceable
 {
-    use ProfilerAware;
-
     public const ADD = '+';
     public const SUB = '-';
     public const DIV = '/';
@@ -63,6 +62,11 @@ final class Arithmetic implements Modifier, Traceable
     private $trace = '';
 
     /**
+     * @var Profiler
+     */
+    private $profiler;
+
+    /**
      * new instance.
      *
      *
@@ -82,7 +86,7 @@ final class Arithmetic implements Modifier, Traceable
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setProfiler();
+        $this->profiler = new NullProfiler();
     }
 
     /**
@@ -183,5 +187,21 @@ final class Arithmetic implements Modifier, Traceable
         }
 
         return (int) (abs($value) ** $this->value) * -1;
+    }
+
+    /**
+     * Profiler setter.
+     */
+    public function setProfiler(Profiler $profiler): void
+    {
+        $this->profiler = $profiler;
+    }
+
+    /**
+     * Profiler getter.
+     */
+    public function getProfiler(): Profiler
+    {
+        return $this->profiler;
     }
 }

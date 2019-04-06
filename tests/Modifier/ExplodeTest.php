@@ -19,8 +19,8 @@ use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -124,7 +124,6 @@ final class ExplodeTest extends TestCase
     /**
      * @covers ::getInnerRollable
      * @covers ::getTrace
-     * @covers ::getTraceAsString
      * @throws \Bakame\DiceRoller\Exception\IllegalValue
      * @throws \Bakame\DiceRoller\Exception\UnknownAlgorithm
      * @throws \ReflectionException
@@ -192,14 +191,14 @@ final class ExplodeTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setProfiler
-     * @covers ::getTraceAsString
+     * @covers ::getProfiler
      * @covers ::getTrace
      * @covers \Bakame\DiceRoller\Profiler\LogProfiler
-     * @covers \Bakame\DiceRoller\Profiler\Logger
+     * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
      */
     public function testProfiler(): void
     {
-        $logger = new Logger();
+        $logger = new MemoryLogger();
         $profiler = new LogProfiler($logger, LogLevel::DEBUG);
         $roll = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
         $roll->setProfiler($profiler);
@@ -208,6 +207,7 @@ final class ExplodeTest extends TestCase
         self::assertNotEmpty($roll->getTrace());
         $roll->getMaximum();
         $roll->getMinimum();
+        self::assertSame($profiler, $roll->getProfiler());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

@@ -17,7 +17,7 @@ use Psr\Log\AbstractLogger;
 use function array_key_exists;
 use function strtr;
 
-final class Logger extends AbstractLogger
+final class MemoryLogger extends AbstractLogger
 {
     /**
      * @var array

@@ -17,8 +17,8 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\Modifier\DropKeep;
-use Bakame\DiceRoller\Profiler\Logger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -187,18 +187,20 @@ final class DropKeepTest extends TestCase
      * @covers ::roll
      * @covers ::decorate
      * @covers ::filter
-     * @covers ::getTraceAsString
+     * @covers ::setProfiler
+     * @covers ::getProfiler
      * @covers ::getTrace
      * @covers \Bakame\DiceRoller\Profiler\LogProfiler
-     * @covers \Bakame\DiceRoller\Profiler\Logger
+     * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
      * @covers ::getInnerRollable
      */
     public function testProfiler(): void
     {
-        $logger = new Logger();
-        $tracer = new LogProfiler($logger, LogLevel::DEBUG);
+        $logger = new MemoryLogger();
+        $profiler = new LogProfiler($logger, LogLevel::DEBUG);
         $roll = new DropKeep(Cup::createFromRollable(new SidedDie(6), 3), DropKeep::DROP_LOWEST, 2);
-        $roll->setProfiler($tracer);
+        $roll->setProfiler($profiler);
+        self::assertSame($profiler, $roll->getProfiler());
         self::assertEmpty($roll->getTrace());
         $roll->roll();
         self::assertNotEmpty($roll->getTrace());
