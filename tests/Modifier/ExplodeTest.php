@@ -12,7 +12,6 @@
 namespace Bakame\DiceRoller\Test\Modifier;
 
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
@@ -119,26 +118,6 @@ final class ExplodeTest extends TestCase
                 'annotation' => 'D6!=3',
             ],
         ];
-    }
-
-    /**
-     * @covers ::getInnerRollable
-     * @covers ::getTrace
-     * @throws \Bakame\DiceRoller\Exception\IllegalValue
-     * @throws \Bakame\DiceRoller\Exception\UnknownAlgorithm
-     * @throws \ReflectionException
-     */
-    public function testGetTrace(): void
-    {
-        $dice = $this->createMock(Rollable::class);
-        $dice->method('roll')
-            ->will(self::onConsecutiveCalls(-1, -1, 3));
-
-        $pool = new Cup($dice);
-        $cup = new Explode($pool, Explode::EQ, -1);
-        self::assertSame(1, $cup->roll());
-        self::assertSame($pool, $cup->getInnerRollable());
-        self::assertSame('(-1) + (-1) + 3', $cup->getTrace());
     }
 
     /**

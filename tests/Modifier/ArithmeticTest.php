@@ -111,12 +111,10 @@ final class ArithmeticTest extends TestCase
      */
     public function testRollWithNegativeDiceValue(): void
     {
-        $dice = $this->createMock(Rollable::class);
-        $dice->method('roll')
-            ->will(self::returnValue(-1));
+        $dice = new CustomDie(-1, -1, -1);
 
         $cup = new Arithmetic($dice, Arithmetic::EXP, 3);
-        self::assertSame(-1, $dice->roll());
+        self::assertSame(-1, $cup->roll());
     }
 
     /**
