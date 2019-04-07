@@ -70,7 +70,7 @@ final class Cup implements Pool, Traceable
      *
      * @throws IllegalValue
      */
-    public static function createFromRollable(Rollable $rollable, int $quantity = 1): self
+    public static function fromRollable(Rollable $rollable, int $quantity = 1): self
     {
         if ($quantity < 1) {
             throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid. Should be > 0', $quantity));

@@ -69,7 +69,7 @@ final class LogProfilerTest extends TestCase
     {
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
-        $rollable = Cup::createFromRollable(new SidedDie(6), 3);
+        $rollable = Cup::fromRollable(new SidedDie(6), 3);
         $rollable->setProfiler(new LogProfiler($this->logger));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());

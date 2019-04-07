@@ -109,7 +109,7 @@ final class Factory
         }
 
         $die = $this->createDice($parts['simple']['type']);
-        $rollable = Cup::createFromRollable($die, $parts['simple']['quantity']);
+        $rollable = Cup::fromRollable($die, $parts['simple']['quantity']);
         $rollable->setProfiler($this->profiler);
 
         return $rollable;

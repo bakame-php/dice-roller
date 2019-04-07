@@ -36,7 +36,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::createFromRollable(new SidedDie(6), 4);
+        $this->cup = Cup::fromRollable(new SidedDie(6), 4);
     }
 
     /**
@@ -106,11 +106,11 @@ final class ExplodeTest extends TestCase
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(new CustomDie(-1, -1, -1), 4), Explode::GT, 1),
+                'roll' => new Explode(Cup::fromRollable(new CustomDie(-1, -1, -1), 4), Explode::GT, 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => new Explode(Cup::createFromRollable(new SidedDie(6), 4), Explode::EQ, 1),
+                'roll' => new Explode(Cup::fromRollable(new SidedDie(6), 4), Explode::EQ, 1),
                 'annotation' => '4D6!',
             ],
             [

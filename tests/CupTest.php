@@ -14,7 +14,7 @@ namespace Bakame\DiceRoller\Test;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
-use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\FudgeDie;
@@ -94,12 +94,12 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::createFromRollable
+     * @covers ::fromRollable
      * @dataProvider validNamedConstructor
      */
     public function testCreateFromRollable(int $quantity, Rollable $template): void
     {
-        $cup = Cup::createFromRollable($template, $quantity);
+        $cup = Cup::fromRollable($template, $quantity);
         self::assertCount($quantity, $cup);
         self::assertContainsOnlyInstancesOf(get_class($template), $cup);
     }
@@ -129,19 +129,19 @@ final class CupTest extends TestCase
 
     public function testCreateFromRollableThrowsException(): void
     {
-        self::expectException(CanNotBeRolled::class);
-        Cup::createFromRollable(new FudgeDie(), 0);
+        self::expectException(IllegalValue::class);
+        Cup::fromRollable(new FudgeDie(), 0);
     }
 
     /**
      * @covers ::__construct
-     * @covers ::createFromRollable
+     * @covers ::fromRollable
      * @covers ::withAddedRollable
      * @covers ::isValid
      */
     public function testCreateFromRollableReturnsEmptyCollection(): void
     {
-        $cup = Cup::createFromRollable(new Cup(), 12);
+        $cup = Cup::fromRollable(new Cup(), 12);
         $alt_cup = $cup->withAddedRollable(new Cup());
         self::assertCount(0, $cup);
         self::assertSame($cup, $alt_cup);
@@ -175,7 +175,7 @@ final class CupTest extends TestCase
     {
         $logger = new MemoryLogger();
         $profiler = new LogProfiler($logger, LogLevel::DEBUG);
-        $cup = Cup::createFromRollable(new CustomDie(2, -3, -5), 12);
+        $cup = Cup::fromRollable(new CustomDie(2, -3, -5), 12);
         $cup->setProfiler($profiler);
         self::assertEmpty($cup->getTrace());
         $cup->roll();
@@ -192,7 +192,7 @@ final class CupTest extends TestCase
      */
     public function testFiveFourSidedDice(): void
     {
-        $group = Cup::createFromRollable(new SidedDie(4), 5);
+        $group = Cup::fromRollable(new SidedDie(4), 5);
         self::assertCount(5, $group);
         self::assertContainsOnlyInstancesOf(SidedDie::class, $group);
         foreach ($group as $dice) {

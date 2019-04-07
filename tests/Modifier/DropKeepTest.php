@@ -35,7 +35,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::createFromRollable(new SidedDie(6), 4);
+        $this->cup = Cup::fromRollable(new SidedDie(6), 4);
     }
 
     /**
@@ -198,7 +198,7 @@ final class DropKeepTest extends TestCase
     {
         $logger = new MemoryLogger();
         $profiler = new LogProfiler($logger, LogLevel::DEBUG);
-        $roll = new DropKeep(Cup::createFromRollable(new SidedDie(6), 3), DropKeep::DROP_LOWEST, 2);
+        $roll = new DropKeep(Cup::fromRollable(new SidedDie(6), 3), DropKeep::DROP_LOWEST, 2);
         $roll->setProfiler($profiler);
         self::assertSame($profiler, $roll->getProfiler());
         self::assertEmpty($roll->getTrace());

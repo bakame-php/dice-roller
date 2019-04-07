@@ -67,7 +67,6 @@ $pool = $factory->newInstance('2D6');
 
 echo $pool->toString(); // returns 2D6
 echo $pool->roll();     // returns 6
-echo $pool->getTrace(); // returns 2 + 4
 ```
 
 ## Advance usage
@@ -89,7 +88,6 @@ $pool = new Arithmetic(
 
 echo $pool->toString(); // returns 2D6+3
 echo $pool->roll();     // returns 12
-echo $pool->getTrace(); // returns 9 + 3
 ```
 
 ## Tracing and profiling an operation
@@ -99,10 +97,11 @@ echo $pool->getTrace(); // returns 9 + 3
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\SidedDie;
-use Bakame\DiceRoller\Profiler\Logger;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Psr\Log\LogLevel;
 
-$profiler = new LogProfiler(new Logger());
+$profiler = new LogProfiler(new MemoryLogger());
 $cup = new Cup(new SidedDie(6), new SidedDie(6));
 $cup->setProfiler($profiler);
 
@@ -119,7 +118,7 @@ foreach ($profiler->getLogger()->getLogs(LogLevel::DEBUG) as $log) {
 
 ### Rollable
 
-To be rollable, objects MUST implements the `Bakame\DiceRoller\Contract\Rollable` interface.
+To be rollable, objects **MUST** implements the `Bakame\DiceRoller\Contract\Rollable` interface.
 
 ```php
 <?php
@@ -135,25 +134,25 @@ interface Rollable
 }
 ```
 
-- `Rollable::getMinimum` returns the minimum value the rollable object can return during a roll;
-- `Rollable::getMaximum` returns the maximum value the rollable object can return during a roll;
+- `Rollable::getMinimum` returns the minimum value that can be returned during a roll;
+- `Rollable::getMaximum` returns the maximum value that can be returned during a roll;
 - `Rollable::roll` returns a value from a roll.
-- `Rollable::toString` returns the string notation of the Rollable` object.
+- `Rollable::toString` returns the object string notation.
 
 ### Dices Type
 
 In addition to the `Rollable` interface, all dices objects implement the `Dice` interface. The `getSize` method returns the die sides count.
 
-A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\CanNotBeRolled` exception is thrown.
+A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\TooFewSides` exception is thrown.
 
 The following die type are bundled in the library:
 
-| Class Name |  Definition |
-| ---------- | ---------- |
-| `SidedDie`| classic die |
-| `FudgeDie` | 3 sided die with side values being `-1`, `0` and `1`. |
-| `PercentileDie` | 100 sided die with values between `1` and `100`. |
-| `CustomDie` | die with custom side values |
+| Class Name      |  Definition                                           |
+| --------------- | ----------------------------------------------------- |
+| `SidedDie`      | classic die                                           |
+| `FudgeDie`      | 3 sided die with side values being `-1`, `0` and `1`. |
+| `PercentileDie` | 100 sided die with values between `1` and `100`.      |
+| `CustomDie`     | die with custom side values                           |
 
 #### Object Constructors
 
@@ -174,10 +173,17 @@ echo $basic->toString(); // 'D3';
 $basic->roll();          // may return 1, 2 or 3
 $basic->getSize();       // returns 3
 
+$basicbis = SidedDie::fromString('d3');
+$basicbis->toString() === $basic->toString();
+
+
 $custom = new CustomDie(3, 2, 1, 1);
 echo $customc->toString();  // 'D[3,2,1,1]';
 $custom->roll();            // may return 1, 2 or 3
 $custom->getSize();         // returns 4
+
+$customBis = CustomDie::fromString('d[3,2,1,1]');
+$custom->toString() === $customBis->toString();
 
 $fugde = new FudgeDie();
 echo $fudgec->toString(); // displays 'DF'
@@ -192,14 +198,14 @@ $fudge->getSize();             // returns 100
 
 ### Pool
 
-If you need to roll multiple dice at the same time, you need to implement the  `Bakame\DiceRoller\Contract\Pool` interface.
+If you need to roll multiple dice at the same time, you need to implement the `Bakame\DiceRoller\Contract\Pool` interface.
  
 ```php
 <?php
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Pool implements Countable, IteratorAggregate, Rollable
+interface Pool implements \Countable, \IteratorAggregate, Rollable
 {
     public function isEmpty(): bool;
 }
@@ -219,13 +225,13 @@ use Bakame\DiceRoller\Contract\Rollable;
 final class Cup implements Pool, Traceable
 {
     public function __construct(Rollable ...$rollable);
-    public static function createFromRollable(Rollable $rollable, int $quantity = 1): self;
+    public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
     public function setProfiler(Profiler $profiler): void;
     public function withAddedRollable(Rollable ...$rollable): self
 }
 ```
 
-The `Cup::createFromRollable` named constructor enables creating uniformed `Cup` objects which contains only 1 type of rollable object.
+The `Cup::fromRollable` named constructor enables creating uniformed `Cup` objects which contains only 1 type of rollable object.
 
 ```php
 <?php
@@ -236,13 +242,13 @@ use Bakame\DiceRoller\FudgeDie;
 use Bakame\DiceRoller\PercentileDie;
 use Bakame\DiceRoller\SidedDie;
 
-echo Cup::createFromRollable(new SidedDie(5), 3)->toString();           // displays 3D5
-echo Cup::createFromRollable(new PercentileDie(), 4)->toString();       // displays 4D%
-echo Cup::createFromRollable(new CustomDie(1, 2, 2, 4), 2)->toString(); // displays 2D[1,2,2,4]
-echo Cup::createFromRollable(new FudgeDie(), 2)->toString();            // displays DF
+echo Cup::fromRollable(new SidedDie(5), 3)->toString();           // displays 3D5
+echo Cup::fromRollable(new PercentileDie(), 4)->toString();       // displays 4D%
+echo Cup::fromRollable(new CustomDie(1, 2, 2, 4), 2)->toString(); // displays 2D[1,2,2,4]
+echo Cup::fromRollable(new FudgeDie(), 2)->toString();            // displays DF
 ```
 
-A `Cup` created using `createFromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\CanNotBeRolled` is thrown.
+A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\CanNotBeRolled` is thrown.
 
 When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
@@ -252,7 +258,7 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\SidedDie;
 
-foreach (Cup::createFromRollable(new SidedDie(5), 3) as $rollable) {
+foreach (Cup::fromRollable(new SidedDie(5), 3) as $rollable) {
     echo $rollable->toString(); // will always return D5
 }
 ```
@@ -267,7 +273,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\FudgeDie;
 use Bakame\DiceRoller\SidedDie;
 
-$cup = Cup::createFromRollable(new SidedDie(5), 3);
+$cup = Cup::fromRollable(new SidedDie(5), 3);
 count($cup);           //returns 3 the number of dices
 echo $cup->toString(); //returns 3D5
 
@@ -385,7 +391,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\SidedDie;
 use Bakame\DiceRoller\Modifier\DropKeep;
 
-$cup = Cup::createFromRollable(new SidedDie(6), 4);
+$cup = Cup::fromRollable(new SidedDie(6), 4);
 $modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
 echo $modifier->toString(); // displays '4D6DH3'
 ```
