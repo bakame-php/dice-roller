@@ -63,9 +63,9 @@ Use the library factory to simulate the roll of two six-sided die
 use Bakame\DiceRoller\Factory;
 
 $factory = new Factory();
-$pool = $factory->newInstance('2D6');
+$pool = $factory->newInstance('2D6+3');
 
-echo $pool->toString(); // returns 2D6
+echo $pool->toString(); // returns 2D6+3
 echo $pool->roll();     // returns 6
 ```
 
@@ -77,8 +77,8 @@ Use the library bundled rollable objects to build a dice pool to roll.
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\SidedDie;
 
 $pool = new Arithmetic(
     new Cup(new SidedDie(6), new SidedDie(6)),
@@ -95,30 +95,100 @@ echo $pool->roll();     // returns 12
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\SidedDie;
-use Bakame\DiceRoller\Profiler\MemoryLogger;
+use Bakame\DiceRoller\ExpressionParser;
+use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Psr\Log\LogLevel;
 
-$profiler = new LogProfiler(new MemoryLogger());
-$cup = new Cup(new SidedDie(6), new SidedDie(6));
-$cup->setProfiler($profiler);
+$parser = new ExpressionParser();
+$psr3Logger = new MemoryLogger();
+$profiler = new LogProfiler($psr3Logger);
+$factory = new Factory($parser, $profiler);
+$pool = $factory->newInstance('2D6+3');
 
-echo $cup->roll();     // returns 5
-echo $cup->getTrace(); // returns 4 + 1 = 5
+echo $pool->toString(); // returns 2D6+3
+echo $pool->roll();     // displays 7
+echo $pool->getTrace(); // displays 4 + 3
 
-foreach ($profiler->getLogger()->getLogs(LogLevel::DEBUG) as $log) {
+foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
     echo $logs, PHP_EOL;
 }
-// [Bakame\DiceRoller\Cup::roll] - 2D6 : 4 + 1 = 5
+//[Bakame\DiceRoller\Cup::roll] - 2D6 : 2 + 2 = 4
+//[Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 4 + 3 = 7
 ```
 
 ## Documentation
 
+### Parsing Dice notation
+
+The package comes bundles with a parser class to ease instance creation. The parser supports basic roll annotation rules in a case insentitive way:
+
+```php
+<?php
+
+namespace Bakame\DiceRoller;
+
+use Bakame\DiceRoller\Contract\Parser;
+
+final class ExpressionParser implements Parser
+{
+    public function parse(string $expression): array;
+}
+```
+
+| Annotation | Examples  | Description |
+| ---------- | -------- | -------- |
+|  `NDX`     |  `3D4` |  create a dice pool where `N` represents the number of dices and `X` the number of sides. If `X` is omitted this means you are requesting a 6 sides basic dice. If `N` is omitted this means that you are requestion a single dice. |
+|  `NDF`     |  `3DF` |  create a dice pool where `N` represents the number of fudge dices. If `N` is omitted this means that you are requestion a single fugde dice. |
+|  `ND%`     |  `3D%` |  create a dice pool where `N` represents the number of percentile dices. If `N` is omitted this means that you are requestion a single percentile dice. |
+|  `ND[x,x,x,x,...]`     |  `2D[1,2,2,5]` |  create a dice pool where `N` represents the number of custom dices and `x` the value of a specific dice side. The number of `x` represents the side count. If `N` is omitted this means that you are requestion a single custome dice. a Custom dice must contain at least 2 sides. |
+| `oc`       | `^3`| where `o` represents the supported operators (`+`, `-`, `*`, `/`, `^`) and `c` a positive integer |
+|  `!oc`     | `!>3` | an explode modifier where `o` represents one of the supported comparision operator (`>`, `<`, `=`)  and `c` a positive integer |
+|  `[dh,dl,kh,kl]z` | `dh4` | keeping or dropping the lowest or highest z dice |
+
+When using the `ExpressionParser` parser:
+
+- **Only 2 arithmetic modifiers can be appended to a given dice pool.**  
+- *The `=` comparison sign when using the explode modifier can be omitted*
+
+The `Factory` class uses the parser to return a `Rollable` object. Optionnally, the factory can attach a profiler to any traceable object.
+
+```php
+<?php
+
+namespace Bakame\DiceRoller;
+
+use Bakame\DiceRoller\Contract\Parser;
+use Bakame\DiceRoller\Contract\Profiler;
+use Bakame\DiceRoller\Contract\Rollable;
+
+final class Factory
+{
+    public function __construct(?Parser $parser = null, ?Profiler $profiler = null);
+    public function newInstance(string $expression): Rollable;
+}
+```
+
+By applying these rules the `ExpressionParser` can construct the following `Rollable` object:
+
+```php
+<?php
+
+use Bakame\DiceRoller\ExpressionParser;
+use Bakame\DiceRoller\Factory;
+
+$factory = new Factory(new ExpressionParser());
+$cup = $factory->newInstance('3D20+4+D4!>3/4^3');
+
+echo $cup->roll();
+```
+
+If the `Parser` or the `Factory` are not able to parse or the submitted dice annotation or create the corresponding object a `CanNotBeRolled` will be thrown.
+
 ### Rollable
 
-To be rollable, objects **MUST** implements the `Bakame\DiceRoller\Contract\Rollable` interface.
+The `Factory::newInstance` method always returns objects implementing the `Bakame\DiceRoller\Contract\Rollable` interface.
 
 ```php
 <?php
@@ -139,11 +209,22 @@ interface Rollable
 - `Rollable::roll` returns a value from a roll.
 - `Rollable::toString` returns the object string notation.
 
+**All exceptions thrown by the package extends the basic `Bakame\DiceRoller\Exception\CanNotBeRolled` exception.**
+
 ### Dices Type
 
-In addition to the `Rollable` interface, all dices objects implement the `Dice` interface. The `getSize` method returns the die sides count.
+In addition to the `Rollable` interface, all dices objects implement the `Dice` interface. The `getSize` method returns the die sides count.  
 
-A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\TooFewSides` exception is thrown.
+```php
+<?php
+
+namespace Bakame\DiceRoller\Contract;
+
+interface Dice extends Rollable
+{
+    public function getSize(): int;
+}
+```
 
 The following die type are bundled in the library:
 
@@ -154,11 +235,10 @@ The following die type are bundled in the library:
 | `PercentileDie` | 100 sided die with values between `1` and `100`.      |
 | `CustomDie`     | die with custom side values                           |
 
-#### Object Constructors
+- A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\TooFewSides` exception is thrown on instantiation.  
+- If a named constructor does not recognize the string expression a `Bakame\DiceRoller\Exception\UnknownExpression`exception is thrown.
 
-- The `SidedDie` constructor unique argument is the dice sides count.
-- The `CustomDie` constructor takes a variadic argument which represents the dice side values.
-- The `FludgeDice` and `PercentileDie` constructor takes no argument.
+#### Examples
 
 ```php
 <?php
@@ -175,7 +255,6 @@ $basic->getSize();       // returns 3
 
 $basicbis = SidedDie::fromString('d3');
 $basicbis->toString() === $basic->toString();
-
 
 $custom = new CustomDie(3, 2, 1, 1);
 echo $customc->toString();  // 'D[3,2,1,1]';
@@ -218,15 +297,13 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface.
 <?php
 
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Traceable;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Traceable;
 
 final class Cup implements Pool, Traceable
 {
     public function __construct(Rollable ...$rollable);
     public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
-    public function setProfiler(Profiler $profiler): void;
     public function withAddedRollable(Rollable ...$rollable): self
 }
 ```
@@ -248,7 +325,7 @@ echo Cup::fromRollable(new CustomDie(1, 2, 2, 4), 2)->toString(); // displays 2D
 echo Cup::fromRollable(new FudgeDie(), 2)->toString();            // displays DF
 ```
 
-A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\CanNotBeRolled` is thrown.
+A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\IllegalValue` is thrown.
 
 When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
@@ -283,6 +360,16 @@ echo $alt_cup->toString(); //returns 3D5+DF
 ```
 
 **WARNING: a `Cup` object can be empty but adding an empty `Cup` object is not possible. The empty `Cup` object will be filtered out.**
+
+```php
+<?php
+
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\FudgeDie;
+
+$cup = new Cup(new Cup(), new FudgeDie());
+count($cup); // returns 1
+```
 
 ### Modifiers
 
@@ -388,8 +475,8 @@ If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRol
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\SidedDie;
 use Bakame\DiceRoller\Modifier\DropKeep;
+use Bakame\DiceRoller\SidedDie;
 
 $cup = Cup::fromRollable(new SidedDie(6), 4);
 $modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
@@ -436,66 +523,15 @@ If the comparison operator is not recognized a `CanNotBeRolled` will be thrown.
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\FudgeDie;
-use Bakame\DiceRoller\SidedDie;
 use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\SidedDie;
 
 $cup = new Cup(new SidedDie(6), new FudgeDie(), new SidedDie(6), new SidedDie(6));
 $modifier = new Explode($cup, Explode::EQ, 3);
 echo $modifier->toString(); // displays (3D6+DF)!=3
 ```
 
-### Parsing Dice notation
-
-```php
-<?php
-
-namespace Bakame\DiceRoller;
-
-use Bakame\DiceRoller\Contract\Parser;
-use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Profiler;
-
-final class Factory
-{
-    public function __construct(?Parser $parser = null, ?Profiler $profiler = null);
-    public function newInstance(string $annotation): Rollable;
-}
-```
-
-The package comes bundles with a parser class to ease `Rollable` instance creation. The parser supports basic roll annotation rules in a case insentitive way:
-
-
-| Annotation | Examples  | Description |
-| ---------- | -------- | -------- |
-|  `NDX`     |  `3D4` |  create a dice pool where `N` represents the number of dices and `X` the number of sides. If `X` is omitted this means you are requesting a 6 sides basic dice. If `N` is omitted this means that you are requestion a single dice. |
-|  `NDF`     |  `3DF` |  create a dice pool where `N` represents the number of fudge dices. If `N` is omitted this means that you are requestion a single fugde dice. |
-|  `ND%`     |  `3D%` |  create a dice pool where `N` represents the number of percentile dices. If `N` is omitted this means that you are requestion a single percentile dice. |
-|  `ND[x,x,x,x,...]`     |  `2D[1,2,2,5]` |  create a dice pool where `N` represents the number of custom dices and `x` the value of a specific dice side. The number of `x` represents the side count. If `N` is omitted this means that you are requestion a single custome dice. a Custom dice must contain at least 2 sides. |
-| `oc`       | `^3`| where `o` represents the supported operators (`+`, `-`, `*`, `/`, `^`) and `c` a positive integer |
-|  `!oc`     | `!>3` | an explode modifier where `o` represents one of the supported comparision operator (`>`, `<`, `=`)  and `c` a positive integer |
-|  `[dh,dl,kh,kl]z` | `dh4` | keeping or dropping the lowest or highest z dice |
-
-
-- **Only 2 arithmetic modifiers can be appended to a given dice pool.**  
-- *The `=` comparison sign when using the explode modifier can be omitted*
-
-By applying these rules the `Parser` can construct the following `Rollable` object:
-
-```php
-<?php
-
-use Bakame\DiceRoller\ExpressionParser;
-use Bakame\DiceRoller\Factory;
-
-$factory = new Factory(new ExpressionParser());
-$cup = $factory->newInstance('3D20+4+D4!>3/4^3');
-
-echo $cup->roll();
-```
-
-If the `Factory` is not able to parse the submitted dice annotation a `CanNotBeRolled` will be thrown.
-
-##  Tracing and Profiling
+## Tracing and Profiling
 
 If you want to know how internally your roll result is calculated your `Rollable` object must implements the `Traceable` interface.
 
@@ -506,8 +542,9 @@ namespace Bakame\DiceRoller\Contract;
 
 interface Traceable
 {
-    public function getTrace(): string;
+    public function setProfiler(Profiler $profiler): void;
     public function getProfiler(): Profiler;
+    public function getTrace(): string;
 }
 ```
  
@@ -531,10 +568,29 @@ The package comes bundle with two (2) profiler implementations:
 
 ### The LogProfiler
 
+```php
+<?php
+
+namespace Bakame\DiceRoller\Profiler;
+
+use Bakame\DiceRoller\Contract\Profiler;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
+
+final class LogProfiler implements Profiler
+{
+    public function __construct(LoggerInterface $logger, string $logLevel = LogLevel::DEBUG, ?string $logFormat = null);
+    public function getLogger(): LoggerInterface;
+    public function getLogLevel(): string;
+    public function getLogFormat(): string;
+    public function setLogLevel(string $level): void;
+    public function setLogFormat(string $format): void;
+}
+```
+
 The `LogProfiler` log messages, by default, will match this format:
 
     [{method}] - {rollable} : {trace} = {result}
-
 You can customize the message format using the `LogProfiler::setLogFormat()`
 method, like so:
 
@@ -559,8 +615,8 @@ At any moment you can change, using the profiler setter methods:
 ```php
 <?php
 
-use Bakame\DiceRoller\Contract\Profiler\MemoryLogger;
-use Bakame\DiceRoller\Contract\Profiler\LogProfiler;
+use Bakame\DiceRoller\Profiler\MemoryLogger;
+use Bakame\DiceRoller\Profiler\LogProfiler;
 use Psr\Log\LogLevel;
 
 $logger = new MemoryLogger();
@@ -569,6 +625,6 @@ $profiler->setLogLevel(LogLevel::INFO);
 $profiler->setLogFormat('{trace} -> {result}');
 ```
 
-Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better fleshout implementation than the one present out of the box.
+Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better flesh out implementation than the one provided out of the box.
 
 **Happy Coding!**

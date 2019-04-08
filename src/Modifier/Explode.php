@@ -147,6 +147,22 @@ final class Explode implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
+    public function setProfiler(Profiler $profiler): void
+    {
+        $this->profiler = $profiler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProfiler(): Profiler
+    {
+        return $this->profiler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getInnerRollable(): Rollable
     {
         if (!$this->is_rollable_wrapped) {
@@ -261,21 +277,5 @@ final class Explode implements Modifier, Traceable
         }
 
         return $result < $threshold;
-    }
-
-    /**
-     * Profiler setter.
-     */
-    public function setProfiler(Profiler $profiler): void
-    {
-        $this->profiler = $profiler;
-    }
-
-    /**
-     * Profiler getter.
-     */
-    public function getProfiler(): Profiler
-    {
-        return $this->profiler;
     }
 }

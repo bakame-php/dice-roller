@@ -100,6 +100,22 @@ final class Arithmetic implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
+    public function setProfiler(Profiler $profiler): void
+    {
+        $this->profiler = $profiler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProfiler(): Profiler
+    {
+        return $this->profiler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getInnerRollable(): Rollable
     {
         return $this->rollable;
@@ -187,21 +203,5 @@ final class Arithmetic implements Modifier, Traceable
         }
 
         return (int) (abs($value) ** $this->value) * -1;
-    }
-
-    /**
-     * Profiler setter.
-     */
-    public function setProfiler(Profiler $profiler): void
-    {
-        $this->profiler = $profiler;
-    }
-
-    /**
-     * Profiler getter.
-     */
-    public function getProfiler(): Profiler
-    {
-        return $this->profiler;
     }
 }

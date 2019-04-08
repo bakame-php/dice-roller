@@ -24,4 +24,9 @@ interface Traceable
      * Returns the object profiler.
      */
     public function getProfiler(): Profiler;
+
+    /**
+     * Sets the object profiler.
+     */
+    public function setProfiler(Profiler $profiler): void;
 }

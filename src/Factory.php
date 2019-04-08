@@ -45,10 +45,8 @@ final class Factory
     private $profiler;
 
     /**
-     * Factory constructor.
+     * new Instance.
      *
-     * @param ?Parser   $parser
-     * @param ?Profiler $profiler
      */
     public function __construct(?Parser $parser = null, ?Profiler $profiler = null)
     {
@@ -82,8 +80,6 @@ final class Factory
      *
      * @throws IllegalValue
      * @throws TooFewSides
-     * @throws TooManyObjects
-     * @throws UnknownAlgorithm
      * @throws UnknownExpression
      */
     private function addRollable(Cup $pool, array $parts): Cup
@@ -121,21 +117,21 @@ final class Factory
      * @throws TooFewSides
      * @throws UnknownExpression
      */
-    private function createDice(string $definition): Dice
+    private function createDice(string $expression): Dice
     {
-        if ('DF' === $definition) {
+        if ('DF' === $expression) {
             return new FudgeDie();
         }
 
-        if ('D%' === $definition) {
+        if ('D%' === $expression) {
             return new PercentileDie();
         }
 
-        if (false !== strpos($definition, '[')) {
-            return CustomDie::fromString($definition);
+        if (false !== strpos($expression, '[')) {
+            return CustomDie::fromString($expression);
         }
 
-        return SidedDie::fromString($definition);
+        return SidedDie::fromString($expression);
     }
 
     /**

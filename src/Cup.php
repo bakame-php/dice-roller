@@ -125,6 +125,22 @@ final class Cup implements Pool, Traceable
     /**
      * {@inheritdoc}
      */
+    public function setProfiler(Profiler $profiler): void
+    {
+        $this->profiler = $profiler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProfiler(): Profiler
+    {
+        return $this->profiler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function isEmpty(): bool
     {
         return [] === $this->items;
@@ -230,21 +246,5 @@ final class Cup implements Pool, Traceable
         $this->profiler->addTrace($this, $method, $retval, $this->trace);
 
         return $retval;
-    }
-
-    /**
-     * Profiler setter.
-     */
-    public function setProfiler(Profiler $profiler): void
-    {
-        $this->profiler = $profiler;
-    }
-
-    /**
-     * Profiler getter.
-     */
-    public function getProfiler(): Profiler
-    {
-        return $this->profiler;
     }
 }

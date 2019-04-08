@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Profiler;
 
 use Psr\Log\AbstractLogger;
-use function array_key_exists;
 use function strtr;
 
 final class MemoryLogger extends AbstractLogger
@@ -54,6 +53,7 @@ final class MemoryLogger extends AbstractLogger
 
     /**
      * Clear the log messages.
+     *
      * @param ?string $level
      */
     public function clear(?string $level = null): void
@@ -64,8 +64,6 @@ final class MemoryLogger extends AbstractLogger
             return;
         }
 
-        if (array_key_exists($level, $this->logs)) {
-            unset($this->logs[$level]);
-        }
+        unset($this->logs[$level]);
     }
 }
