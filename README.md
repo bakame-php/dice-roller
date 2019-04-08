@@ -561,10 +561,10 @@ interface Profiler
 }
 ```
 
-The package comes bundle with two (2) profiler implementations:
+The package comes bundle with two (2) implementations:
  
-- a `Bakame\DiceRoller\Contract\Profiler\NullProfiler` that does nothing;
-- a `Bakame\DiceRoller\Contract\Profiler\LogProfiler` which sends the traces to a PSR-3 compliant log.
+- a `Bakame\DiceRoller\Profiler\NullProfiler` that does nothing;
+- a `Bakame\DiceRoller\Profiler\LogProfiler` which sends the traces to a PSR-3 compliant logger.
 
 ### The LogProfiler
 

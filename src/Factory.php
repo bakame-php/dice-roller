@@ -47,6 +47,8 @@ final class Factory
     /**
      * new Instance.
      *
+     * @param ?Parser   $parser
+     * @param ?Profiler $profiler
      */
     public function __construct(?Parser $parser = null, ?Profiler $profiler = null)
     {
