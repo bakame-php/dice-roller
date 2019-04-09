@@ -19,7 +19,6 @@ use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Iterator;
-use Psr\Log\NullLogger;
 use function array_count_values;
 use function array_filter;
 use function array_map;
@@ -54,7 +53,7 @@ final class Cup implements Pool, Traceable
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
-        $this->setProfiler(new LogProfiler(new NullLogger()));
+        $this->setProfiler(LogProfiler::fromNullLogger());
     }
 
     /**

@@ -22,7 +22,6 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\LogProfiler;
-use Psr\Log\NullLogger;
 use function array_map;
 use function array_sum;
 use function implode;
@@ -97,7 +96,7 @@ final class Explode implements Modifier, Traceable
             throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
-        $this->setProfiler(new LogProfiler(new NullLogger()));
+        $this->setProfiler(LogProfiler::fromNullLogger());
     }
 
     /**

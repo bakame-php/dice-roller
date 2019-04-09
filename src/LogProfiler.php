@@ -17,6 +17,7 @@ use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
 use ReflectionClass;
 use function array_search;
 
@@ -47,6 +48,14 @@ final class LogProfiler implements Profiler
         $this->logger = $logger;
         $this->logLevel = $logLevel;
         $this->logFormat = $logFormat ?? $this->logFormat;
+    }
+
+    /**
+     * Returns an instance which uses the PSR3 Null Logger.
+     */
+    public static function fromNullLogger(): self
+    {
+        return new self(new NullLogger());
     }
 
     /**

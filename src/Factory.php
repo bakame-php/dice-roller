@@ -19,14 +19,10 @@ use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Exception\IllegalValue;
-use Bakame\DiceRoller\Exception\TooFewSides;
-use Bakame\DiceRoller\Exception\TooManyObjects;
-use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
-use Psr\Log\NullLogger;
 use function array_reduce;
 use function count;
 use function iterator_to_array;
@@ -53,7 +49,7 @@ final class Factory
     public function __construct(?Parser $parser = null, ?Profiler $profiler = null)
     {
         $this->parser = $parser ?? new ExpressionParser();
-        $this->profiler = $profiler ?? new LogProfiler(new NullLogger());
+        $this->profiler = $profiler ?? LogProfiler::fromNullLogger();
     }
 
     /**
@@ -81,7 +77,6 @@ final class Factory
      * Adds a Rollable item to a pool.
      *
      * @throws IllegalValue
-     * @throws TooFewSides
      * @throws UnknownExpression
      */
     private function addRollable(Cup $pool, array $parts): Cup
@@ -97,7 +92,6 @@ final class Factory
      * Generates the Pool from the expression matched pattern.
      *
      * @throws IllegalValue
-     * @throws TooFewSides
      * @throws UnknownExpression
      */
     private function createRollable(array $parts): Rollable
@@ -116,7 +110,7 @@ final class Factory
     /**
      * Parse Rollable definition.
      *
-     * @throws TooFewSides
+     * @throws IllegalValue
      * @throws UnknownExpression
      */
     private function createDice(string $expression): Dice
@@ -139,9 +133,8 @@ final class Factory
     /**
      * Decorates the Rollable object with modifiers objects.
      *
-     * @throws TooManyObjects
      * @throws IllegalValue
-     * @throws UnknownAlgorithm
+     * @throws UnknownExpression
      */
     private function decorate(Rollable $rollable, array $matches): Rollable
     {

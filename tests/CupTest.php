@@ -24,7 +24,6 @@ use Bakame\DiceRoller\PercentileDie;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
-use Psr\Log\NullLogger;
 
 /**
  * @coversDefaultClass Bakame\DiceRoller\Cup
@@ -38,7 +37,7 @@ final class CupTest extends TestCase
 
     public function setUp(): void
     {
-        $this->profiler = new LogProfiler(new NullLogger());
+        $this->profiler = LogProfiler::fromNullLogger();
     }
 
     /**

@@ -22,7 +22,6 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\LogProfiler;
-use Psr\Log\NullLogger;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -111,7 +110,7 @@ final class DropKeep implements Modifier, Traceable
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->setProfiler(new LogProfiler(new NullLogger()));
+        $this->setProfiler(LogProfiler::fromNullLogger());
     }
 
     /**

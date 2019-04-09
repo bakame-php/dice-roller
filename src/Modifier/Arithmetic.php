@@ -20,7 +20,6 @@ use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\LogProfiler;
-use Psr\Log\NullLogger;
 use function abs;
 use function intdiv;
 use function sprintf;
@@ -87,7 +86,7 @@ final class Arithmetic implements Modifier, Traceable
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setProfiler(new LogProfiler(new NullLogger()));
+        $this->setProfiler(LogProfiler::fromNullLogger());
     }
 
     /**
