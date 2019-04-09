@@ -11,6 +11,7 @@
 
 namespace Bakame\DiceRoller\Test;
 
+use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
@@ -31,7 +32,7 @@ use Psr\Log\LogLevel;
 final class CupTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\Contract\Profiler
+     * @var Profiler
      */
     private $profiler;
 

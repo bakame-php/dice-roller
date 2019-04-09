@@ -13,10 +13,7 @@ namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
-use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\LogProfiler;
-use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Traversable;
@@ -33,7 +30,7 @@ final class FactoryTest extends TestCase
 
     public function setUp(): void
     {
-        $this->factory = new Factory(new ExpressionParser(), new LogProfiler(new MemoryLogger()));
+        $this->factory = new Factory();
     }
 
     /**
@@ -49,7 +46,7 @@ final class FactoryTest extends TestCase
     public function testInvalidGroupDefinition(string $expected): void
     {
         self::expectException(CanNotBeRolled::class);
-        (new Factory(new ExpressionParser()))->newInstance($expected);
+        $this->factory->newInstance($expected);
     }
 
     public function invalidStringProvider(): iterable

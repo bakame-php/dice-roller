@@ -13,6 +13,7 @@ namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -23,7 +24,7 @@ use Psr\Log\LogLevel;
 final class LogProfilerTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\MemoryLogger
+     * @var MemoryLogger
      */
     private $logger;
 
@@ -34,8 +35,8 @@ final class LogProfilerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = new \Bakame\DiceRoller\MemoryLogger();
-        $this->profiler = new \Bakame\DiceRoller\LogProfiler($this->logger);
+        $this->logger = new MemoryLogger();
+        $this->profiler = new LogProfiler($this->logger);
     }
 
     public function testLoggerAccesor(): void
@@ -69,7 +70,7 @@ final class LogProfilerTest extends TestCase
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
         $rollable = Cup::fromRollable(new SidedDie(6), 3);
-        $rollable->setProfiler(new \Bakame\DiceRoller\LogProfiler($this->logger, 'foobar'));
+        $rollable->setProfiler(new LogProfiler($this->logger, 'foobar'));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear('foobar');
