@@ -4,7 +4,6 @@
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Build Status](https://img.shields.io/travis/bakame-php/dice-roller/master.svg?style=flat-square)](https://travis-ci.org/bakame-php/dice-roller)
 
-
 A simple Dice Roller implemented in PHP.
 
 ```php
@@ -23,7 +22,7 @@ $cup = $factory->newInstance('2D6');
 echo $cup->roll(); // returns 6
 ```
 
-This is a fork of [Ethtezahl/Dice-Roller](https://github.com/Ethtezahl/dice-roller). The goal of this package is to build a modern PHP package which follow best practices.
+This is a fork of [Ethtezahl/Dice-Roller](https://github.com/Ethtezahl/dice-roller). The goal of this package is to build a modern PHP package which follow best practices while creating a fun OSS project.
 
 ## System Requirements
 
@@ -116,13 +115,21 @@ foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
 }
 //[Bakame\DiceRoller\Cup::roll] - 2D6 : 2 + 2 = 4
 //[Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 4 + 3 = 7
+//the MemoryLogger::getLogs method IS NOT PART OF PSR3 INTERFACE!!
 ```
 
 ## Documentation
 
 ### Parsing Dice notation
 
-The package comes bundles with a parser class to ease instance creation. The parser supports basic roll annotation rules in a case insentitive way:
+#### The parser
+
+In order to roll the dice, the package comes bundles with:
+
+- a parser class, `Bakame\DiceRoller\ExpressionParser`, to split a roll expression into its inner pieces.
+- a factory class, `Bakame\DiceRoller\Factory`, to create a `Rollable` object from the result of such parsing.
+
+The `ExpressionParser` implements a `Parser` interface whose `Parser::parse` must be able to extract roll rules in a case insentitive way from a string expression and convert them into an PHP `array`.
 
 ```php
 <?php
@@ -136,6 +143,8 @@ final class ExpressionParser implements Parser
     public function parse(string $expression): array;
 }
 ```
+
+Here's the list of supported roll rules by `Bakame\DiceRoller\ExpressionParser`.
 
 | Annotation | Examples  | Description |
 | ---------- | -------- | -------- |
@@ -152,7 +161,9 @@ When using the `ExpressionParser` parser:
 - **Only 2 arithmetic modifiers can be appended to a given dice pool.**  
 - *The `=` comparison sign when using the explode modifier can be omitted*
 
-The `Factory` class uses the parser to return a `Rollable` object. Optionnally, the factory can attach a profiler to any traceable object.
+#### The factory
+
+The `Factory` class uses a `Parser` implementation to return a `Rollable` object. Optionnally, the factory can attach a profiler to any traceable object.
 
 ```php
 <?php
@@ -170,7 +181,7 @@ final class Factory
 }
 ```
 
-By applying these rules the `ExpressionParser` can construct the following `Rollable` object:
+Using both classes we can then parse the following expression.
 
 ```php
 <?php
@@ -184,7 +195,7 @@ $cup = $factory->newInstance('3D20+4+D4!>3/4^3');
 echo $cup->roll();
 ```
 
-If the `Parser` or the `Factory` are not able to parse or the submitted dice annotation or create the corresponding object a `CanNotBeRolled` will be thrown.
+If the `Parser` or the `Factory` are not able to parse or create a `Rollable` object from the string expression a `Bakame\DiceRoller\Exception\CanNotBeRolled` exception will be thrown.
 
 ### Rollable
 
@@ -235,10 +246,10 @@ The following die type are bundled in the library:
 | `PercentileDie` | 100 sided die with values between `1` and `100`.      |
 | `CustomDie`     | die with custom side values                           |
 
-- A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\TooFewSides` exception is thrown on instantiation.  
+- A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\IllegalValue` exception is thrown on instantiation.  
 - If a named constructor does not recognize the string expression a `Bakame\DiceRoller\Exception\UnknownExpression`exception is thrown.
 
-#### Examples
+##### Examples
 
 ```php
 <?php
@@ -342,7 +353,6 @@ foreach (Cup::fromRollable(new SidedDie(5), 3) as $rollable) {
 
 Once a `Cup` is instantiated there are no method to alter its properties. However the `Cup::withAddedRollable` method enables you to build complex `Cup` object using the builder pattern. The method will always returns a new `Cup` object but with the added `Rollable` objects while maintaining the state of the current `Cup` object.
 
-
 ```php
 <?php
 
@@ -359,7 +369,7 @@ count($alt_cup);           //returns 4 the number of dices
 echo $alt_cup->toString(); //returns 3D5+DF
 ```
 
-**WARNING: a `Cup` object can be empty but adding an empty `Cup` object is not possible. The empty `Cup` object will be filtered out.**
+**WARNING: a `Cup` object can be empty but adding an empty `Cup` object is not possible. The empty `Cup` object will be filtered out on instantiation or on modification.**
 
 ```php
 <?php
@@ -373,7 +383,7 @@ count($cup); // returns 1
 
 ### Modifiers
 
-Sometimes you may want to modify the outcome of a roll. The library comes bundle with 3 objects implementing the Decorator pattern, each implementing the `Modifier` interface.
+Sometimes you may want to modify the outcome of a roll. The library comes bundle with three (3) objects implementing the `Modifier` interface.  
 The `Modifier` interface extends the `Rollable` interface by giving access to the rollable object being decorated through the `Modifier::getInnerRollable` method.  
 
 ```php
@@ -420,7 +430,7 @@ The modifier supports the following operators:
 - `/` or `Arithmetic::DIV`;
 - `^` or `Arithmetic::EXP`;
 
-The value given must be a positive integer or `0`. If the value or the operator are not valid a `CanNotBeRolled` exception will be thrown.
+The value given must be a positive integer or `0`. If the value or the operator are not valid a `Bakame\DiceRoller\CanNotBeRolled` exception will be thrown.
 
 ```php
 <?php
@@ -469,7 +479,7 @@ The supported algorithms are:
 
 The `$threshold` MUST be lower or equals to the total numbers of rollable items.
 
-If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRolled` will be thrown.
+If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRolled` exception will be thrown.
 
 ```php
 <?php
@@ -516,7 +526,7 @@ The supported comparison operator are:
 - `>` or `Explode::GT` explodes if any inner rollable roll result is greater than the `$threshold`;
 - `<` or `Explode::LT` explodes if any inner rollable roll result is lesser than the `$threshold`;
 
-If the comparison operator is not recognized a `CanNotBeRolled` will be thrown.
+If the comparison operator is not recognized a `Bakame\DiceRoller\CanNotBeRolled` exception will be thrown.
 
 ```php
 <?php
@@ -548,7 +558,7 @@ interface Traceable
 }
 ```
  
-The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Contract\Profiler` implementing object.
+The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Contract\Profiler` implementing object.  
 
 ```php
 <?php
@@ -561,9 +571,11 @@ interface Profiler
 }
 ```
 
+**In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
+
 The package comes bundle with two (2) implementations:
  
-- a `Bakame\DiceRoller\Profiler\NullProfiler` that does nothing;
+- a `Bakame\DiceRoller\Profiler\NullProfiler` which is a null object;
 - a `Bakame\DiceRoller\Profiler\LogProfiler` which sends the traces to a PSR-3 compliant logger.
 
 ### The LogProfiler

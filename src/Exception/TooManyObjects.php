@@ -13,6 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Exception;
 
-class TooManyObjects extends CanNotBeRolled
+class TooManyObjects extends IllegalValue
 {
 }

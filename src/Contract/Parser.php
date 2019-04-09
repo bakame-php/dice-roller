@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Exception\UnknownExpression;
 
 interface Parser
@@ -21,8 +20,7 @@ interface Parser
     /**
      * Extract pool expressions from a generic string expression.
      *
-     * @throws UnknownExpression
-     * @throws UnknownAlgorithm
+     * @throws UnknownExpression If the expression can not be parsed
      */
     public function parse(string $expression): array;
 }
