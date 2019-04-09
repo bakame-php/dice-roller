@@ -33,7 +33,7 @@ final class LogProfiler implements Profiler
     /**
      * @var string
      */
-    protected $logFormat = '[{method}] - {rollable} : {trace} = {result}';
+    private $logFormat = '[{method}] - {rollable} : {trace} = {result}';
 
     /**
      * New instance.
@@ -52,12 +52,30 @@ final class LogProfiler implements Profiler
      */
     public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void
     {
+        static $methodList = [
+            LogLevel::DEBUG => 'debug',
+            LogLevel::INFO => 'info',
+            LogLevel::NOTICE => 'notice',
+            LogLevel::WARNING => 'warning',
+            LogLevel::ERROR => 'error',
+            LogLevel::CRITICAL => 'critical',
+            LogLevel::ALERT => 'alert',
+            LogLevel::EMERGENCY => 'emergency',
+        ];
+
         $context = [
             'method' => $method,
             'rollable' => $rollable->toString(),
             'trace' => $trace,
             'result' => $roll,
         ];
+
+        $method = $methodList[$this->logLevel] ?? null;
+        if (null !== $method) {
+            $this->logger->$method($this->logFormat, $context);
+
+            return;
+        }
 
         $this->logger->log($this->logLevel, $this->logFormat, $context);
     }
