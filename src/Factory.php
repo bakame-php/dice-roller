@@ -26,7 +26,6 @@ use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\Profiler\LogProfiler;
 use Psr\Log\NullLogger;
 use function array_reduce;
 use function count;

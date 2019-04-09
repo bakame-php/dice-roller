@@ -18,7 +18,6 @@ use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
-use Bakame\DiceRoller\Profiler\LogProfiler;
 use Iterator;
 use Psr\Log\NullLogger;
 use function array_count_values;

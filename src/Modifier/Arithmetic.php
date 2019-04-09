@@ -19,7 +19,7 @@ use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\LogProfiler;
 use Psr\Log\NullLogger;
 use function abs;
 use function intdiv;

@@ -9,23 +9,21 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Profiler;
+namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Profiler\LogProfiler;
-use Bakame\DiceRoller\Profiler\MemoryLogger;
+use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\SidedDie;
-use Bakame\DiceRoller\Test\Bakame;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Profiler\LogProfiler
+ * @coversDefaultClass Bakame\DiceRoller\LogProfiler
  */
 final class LogProfilerTest extends TestCase
 {
     /**
-     * @var MemoryLogger
+     * @var \Bakame\DiceRoller\MemoryLogger
      */
     private $logger;
 
@@ -36,8 +34,8 @@ final class LogProfilerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = new MemoryLogger();
-        $this->profiler = new LogProfiler($this->logger);
+        $this->logger = new \Bakame\DiceRoller\MemoryLogger();
+        $this->profiler = new \Bakame\DiceRoller\LogProfiler($this->logger);
     }
 
     public function testLoggerAccesor(): void
@@ -63,7 +61,7 @@ final class LogProfilerTest extends TestCase
     }
 
     /**
-     * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
+     * @covers \Bakame\DiceRoller\MemoryLogger
      * @covers ::addTrace
      */
     public function testDiceRollerLogger(): void
@@ -71,7 +69,7 @@ final class LogProfilerTest extends TestCase
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
         $rollable = Cup::fromRollable(new SidedDie(6), 3);
-        $rollable->setProfiler(new LogProfiler($this->logger, 'foobar'));
+        $rollable->setProfiler(new \Bakame\DiceRoller\LogProfiler($this->logger, 'foobar'));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear('foobar');

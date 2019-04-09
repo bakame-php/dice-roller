@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Profiler;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;

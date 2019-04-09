@@ -15,9 +15,9 @@ use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Arithmetic;
-use Bakame\DiceRoller\Profiler\LogProfiler;
-use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -206,8 +206,8 @@ final class ArithmeticTest extends TestCase
      * @covers ::getTrace
      * @covers ::getProfiler
      * @covers ::setProfiler
-     * @covers \Bakame\DiceRoller\Profiler\LogProfiler
-     * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
+     * @covers \Bakame\DiceRoller\LogProfiler
+     * @covers \Bakame\DiceRoller\MemoryLogger
      */
     public function testProfiler(): void
     {

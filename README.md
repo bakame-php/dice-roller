@@ -96,8 +96,8 @@ echo $pool->roll();     // returns 12
 
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Profiler\LogProfiler;
-use Bakame\DiceRoller\Profiler\MemoryLogger;
+use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\MemoryLogger;
 use Psr\Log\LogLevel;
 
 $parser = new ExpressionParser();
@@ -573,7 +573,7 @@ interface Profiler
 
 **In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
 
-The package comes bundle with the `Bakame\DiceRoller\Profiler\LogProfiler` which sends the traces to a PSR-3 compliant logger.
+The package comes bundle with the `Bakame\DiceRoller\LogProfiler` which sends the traces to a PSR-3 compliant logger.
 
 ### The LogProfiler
 
@@ -624,8 +624,8 @@ At any moment you can change, using the profiler setter methods:
 ```php
 <?php
 
-use Bakame\DiceRoller\Profiler\MemoryLogger;
-use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\MemoryLogger;
+use Bakame\DiceRoller\LogProfiler;
 use Psr\Log\LogLevel;
 
 $logger = new MemoryLogger();

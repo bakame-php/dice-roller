@@ -3,8 +3,8 @@
 
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Profiler\MemoryLogger;
-use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\MemoryLogger;
+use Bakame\DiceRoller\LogProfiler;
 use Psr\Log\LogLevel;
 
 function getAutoloadDirectory(): ?string

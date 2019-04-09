@@ -17,9 +17,9 @@ use Bakame\DiceRoller\CustomDie;
 use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\Profiler\LogProfiler;
-use Bakame\DiceRoller\Profiler\MemoryLogger;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -175,8 +175,8 @@ final class ExplodeTest extends TestCase
      * @covers ::getProfiler
      * @covers ::getTrace
      * @covers ::getInnerRollable
-     * @covers \Bakame\DiceRoller\Profiler\LogProfiler
-     * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
+     * @covers \Bakame\DiceRoller\LogProfiler
+     * @covers \Bakame\DiceRoller\MemoryLogger
      */
     public function testProfiler(): void
     {

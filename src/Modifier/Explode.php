@@ -21,7 +21,7 @@ use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Profiler\LogProfiler;
+use Bakame\DiceRoller\LogProfiler;
 use Psr\Log\NullLogger;
 use function array_map;
 use function array_sum;
