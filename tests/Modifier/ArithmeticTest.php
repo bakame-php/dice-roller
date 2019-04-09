@@ -18,7 +18,6 @@ use Bakame\DiceRoller\Exception\CanNotBeRolled;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Profiler\MemoryLogger;
-use Bakame\DiceRoller\Profiler\NullProfiler;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -195,7 +194,6 @@ final class ArithmeticTest extends TestCase
         self::assertSame(-1, $roll->getMaximum());
         self::assertGreaterThanOrEqual(-1, $test);
         self::assertLessThanOrEqual(-1, $test);
-        self::assertInstanceOf(NullProfiler::class, $roll->getProfiler());
     }
 
     /**

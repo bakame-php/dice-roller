@@ -64,17 +64,18 @@ final class LogProfilerTest extends TestCase
 
     /**
      * @covers \Bakame\DiceRoller\Profiler\MemoryLogger
+     * @covers ::addTrace
      */
     public function testDiceRollerLogger(): void
     {
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
         $rollable = Cup::fromRollable(new SidedDie(6), 3);
-        $rollable->setProfiler(new LogProfiler($this->logger));
+        $rollable->setProfiler(new LogProfiler($this->logger, 'foobar'));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
-        $this->logger->clear(LogLevel::DEBUG);
-        self::assertCount(0, $this->logger->getLogs(LogLevel::DEBUG));
+        $this->logger->clear('foobar');
+        self::assertCount(0, $this->logger->getLogs('foobar'));
         self::assertCount(0, $this->logger->getLogs());
     }
 }

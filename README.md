@@ -573,10 +573,7 @@ interface Profiler
 
 **In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
 
-The package comes bundle with two (2) implementations:
- 
-- a `Bakame\DiceRoller\Profiler\NullProfiler` which is a null object;
-- a `Bakame\DiceRoller\Profiler\LogProfiler` which sends the traces to a PSR-3 compliant logger.
+The package comes bundle with the `Bakame\DiceRoller\Profiler\LogProfiler` which sends the traces to a PSR-3 compliant logger.
 
 ### The LogProfiler
 

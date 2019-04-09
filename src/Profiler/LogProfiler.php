@@ -17,6 +17,8 @@ use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use ReflectionClass;
+use function array_search;
 
 final class LogProfiler implements Profiler
 {
@@ -52,16 +54,9 @@ final class LogProfiler implements Profiler
      */
     public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void
     {
-        static $methodList = [
-            LogLevel::DEBUG => 'debug',
-            LogLevel::INFO => 'info',
-            LogLevel::NOTICE => 'notice',
-            LogLevel::WARNING => 'warning',
-            LogLevel::ERROR => 'error',
-            LogLevel::CRITICAL => 'critical',
-            LogLevel::ALERT => 'alert',
-            LogLevel::EMERGENCY => 'emergency',
-        ];
+        static $methodList = null;
+
+        $methodList = $methodList ?? (new ReflectionClass(LogLevel::class))->getConstants();
 
         $context = [
             'method' => $method,
@@ -70,9 +65,8 @@ final class LogProfiler implements Profiler
             'result' => $roll,
         ];
 
-        $method = $methodList[$this->logLevel] ?? null;
-        if (null !== $method) {
-            $this->logger->$method($this->logFormat, $context);
+        if (false !== array_search($this->logLevel, $methodList, true)) {
+            $this->logger->{$this->logLevel}($this->logFormat, $context);
 
             return;
         }

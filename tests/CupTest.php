@@ -21,10 +21,10 @@ use Bakame\DiceRoller\FudgeDie;
 use Bakame\DiceRoller\PercentileDie;
 use Bakame\DiceRoller\Profiler\LogProfiler;
 use Bakame\DiceRoller\Profiler\MemoryLogger;
-use Bakame\DiceRoller\Profiler\NullProfiler;
 use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
 
 /**
  * @coversDefaultClass Bakame\DiceRoller\Cup
@@ -38,7 +38,7 @@ final class CupTest extends TestCase
 
     public function setUp(): void
     {
-        $this->profiler = new NullProfiler();
+        $this->profiler = new LogProfiler(new NullLogger());
     }
 
     /**
@@ -151,7 +151,6 @@ final class CupTest extends TestCase
      * @covers ::__construct
      * @covers ::toString
      * @covers ::isEmpty
-     * @covers \Bakame\DiceRoller\Profiler\NullProfiler
      */
     public function testEmptyCup(): void
     {
