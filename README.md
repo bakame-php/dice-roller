@@ -161,6 +161,8 @@ When using the `ExpressionParser` parser:
 - **Only 2 arithmetic modifiers can be appended to a given dice pool.**  
 - *The `=` comparison sign when using the explode modifier can be omitted*
 
+*TIP: You should use parenthesis to add more modifiers to your pool*
+
 #### The factory
 
 The `Factory` class uses a `Parser` implementation to return a `Rollable` object. Optionnally, the factory can attach a profiler to any traceable object.
