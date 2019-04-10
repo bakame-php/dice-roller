@@ -1,13 +1,22 @@
 #!/usr/bin/env php
 <?php
 
+ini_set('display_errors', 'stderr');
+
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\MemoryLogger;
 use Psr\Log\LogLevel;
 
-function getAutoloadDirectory(): ?string
+function fail(string $message, int $exit_code): void
+{
+    fwrite(STDERR, $message . PHP_EOL);
+
+    exit($exit_code);
+}
+
+function getAutoloadDirectory(string $errorMessage): string
 {
     for ($i = 1; $i <= 5; $i++) {
         if (is_dir($vendor = dirname(__DIR__, $i).'/vendor')) {
@@ -15,7 +24,7 @@ function getAutoloadDirectory(): ?string
         }
     }
 
-    return null;
+    fail($errorMessage, 1);
 }
 
 /**
@@ -27,59 +36,70 @@ $reset = chr(27)."[0m";
 $redbg = chr(27)."[41m";
 $yellow = chr(27)."[33m";
 
-$dir = getAutoloadDirectory();
-if (null === $dir) {
-    $text = <<<EOF
+$dependencyError = <<<ERROR
 $redbg
     You must set up the project dependencies, using composer
     run composer install
 $reset
-EOF;
-    echo $text, PHP_EOL, PHP_EOL;
-    die(1);
-}
+ERROR;
 
-require $dir.'/autoload.php';
+require getAutoloadDirectory($dependencyError).'/autoload.php';
 
 $opts = filter_var_array(array_replace(
         ['iteration' => 1],
-        getopt("", ['pool::', 'iteration::', 'help', 'info', 'logs'])
+        getopt("h::", ['pool::', 'iteration::', 'help', 'info', 'logs'])
     ), [
     'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
+    'h' => FILTER_VALIDATE_BOOLEAN,
     'help' => FILTER_VALIDATE_BOOLEAN,
     'info' => FILTER_VALIDATE_BOOLEAN,
     'logs' => FILTER_VALIDATE_BOOLEAN,
     'pool' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
 ]);
 
-if ((!isset($opts['pool']) && !isset($opts['help'])) || isset($opts['help'])) {
+if (isset($opts['help']) || isset($opts['h'])) {
     $script = basename(__FILE__);
-    $text = <<<EOF
+    $text = <<<HELP
 $yellow
 Bakame\DiceRoller v1.0 $reset
 
 Common let's roll the dice: you put your 🎲🎲🎲 in the cup, you shake it and then you get the result.
 =====
 
-Simple Usage:
+Usage: $yellow$script [OPTIONS] [EXPRESSION]$reset
 
-$yellow php ./$script --iteration=3 --info --logs --pool=2D3+5$reset
-
-$green--pool$reset      submit the dice string expression
 $green--iteration$reset submit the number of time the pool must be roll ({$yellow}default:$reset 1)
-$green--help$reset      show the following help message
+$green-h, --help$reset  show the following help message
 $green--info$reset      show the pool information
 $green--logs$reset      show the command logs
-EOF;
-    echo $text, PHP_EOL, PHP_EOL;
+
+Examples:
+
+     Getting the result of a single roll
+     $yellow$script 2D+6$reset
+     
+     Getting the result of multiple roll and its associated trace 
+     $yellow$script --iteration=4 --logs 2D+6$reset
+     
+     Getting the roll information
+     $yellow$script --info 2D+6$reset
+HELP;
+    echo $text, PHP_EOL;
     die(0);
 }
+
+$expression = array_pop($argv);
+$expression = trim($expression);
+
+if (0 === strpos($expression, '-')) {
+    fail("$redbg No dice annotation was submitted $reset",65);
+}
+
 $logger = new MemoryLogger();
 $factory = new Factory(new ExpressionParser(), new LogProfiler($logger));
 
 try {
-    $expression = trim($opts['pool']);
-    $pool = $factory->newInstance($expression);
+    $rollable = $factory->newInstance($expression);
 } catch (Exception $exception) {
     $text = <<<EOF
 
@@ -89,16 +109,15 @@ The Parser issue the following error:
 $redbg {$exception->getMessage()} $reset
 
 EOF;
-    echo $text, PHP_EOL, PHP_EOL;
-    die(65);
+    fail($text,65);
 }
 
 if (isset($opts['info'])) {
     $text = <<<EOF
 $yellow ====== ROLL INFORMATIONS =======$reset
-$green Expression:$reset $yellow{$pool->toString()}$reset
-$green Minimum Roll:$reset $yellow{$pool->getMinimum()}$reset
-$green Maximum Roll:$reset $yellow{$pool->getMaximum()}$reset
+$green Expression:$reset $yellow{$rollable->toString()}$reset
+$green Minimum Roll:$reset $yellow{$rollable->getMinimum()}$reset
+$green Maximum Roll:$reset $yellow{$rollable->getMaximum()}$reset
 EOF;
     echo $text, PHP_EOL, PHP_EOL;
 }
@@ -108,7 +127,7 @@ $logger->clear();
 echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
 for ($i = 0; $i < $opts['iteration']; ++$i) {
         $index = $i+1;
-echo "$cyan Result #$index:$reset $yellow".$pool->roll(), $reset, PHP_EOL;
+echo "$cyan Result #$index:$reset $yellow".$rollable->roll(), $reset, PHP_EOL;
 }
 if (isset($opts['logs'])) {
     echo PHP_EOL, "$yellow ====== ROLL TRACE ======= $reset", PHP_EOL;

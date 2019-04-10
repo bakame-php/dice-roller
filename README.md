@@ -39,7 +39,7 @@ All classes are defined under the `Bakame\DiceRoller` namespace.
 ### Usage through the bundle cli command
 
 ```bash
-$ bin/roll --iteration=3 --logs --pool=2D3+5
+$ bin/roll --iteration=3 --logs 2D3+5
  ====== ROLL RESULTS ======= 
  Result #1:  8
  Result #2:  10
