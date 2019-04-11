@@ -9,11 +9,11 @@ use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\MemoryLogger;
 use Psr\Log\LogLevel;
 
-function fail(string $message, int $exit_code): void
+function fail(string $message, int $exitCode): void
 {
     fwrite(STDERR, $message . PHP_EOL);
 
-    exit($exit_code);
+    exit($exitCode);
 }
 
 function getAutoloadDirectory(string $errorMessage): string
@@ -43,23 +43,8 @@ $redbg
 $reset
 ERROR;
 
-require getAutoloadDirectory($dependencyError).'/autoload.php';
-
-$opts = filter_var_array(array_replace(
-        ['iteration' => 1],
-        getopt("h::", ['pool::', 'iteration::', 'help', 'info', 'logs'])
-    ), [
-    'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
-    'h' => FILTER_VALIDATE_BOOLEAN,
-    'help' => FILTER_VALIDATE_BOOLEAN,
-    'info' => FILTER_VALIDATE_BOOLEAN,
-    'logs' => FILTER_VALIDATE_BOOLEAN,
-    'pool' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
-]);
-
-if (isset($opts['help']) || isset($opts['h'])) {
-    $script = basename(__FILE__);
-    $text = <<<HELP
+$script = basename(__FILE__);
+$helpText = <<<HELP
 $yellow
 Bakame\DiceRoller v1.0 $reset
 
@@ -84,7 +69,24 @@ Examples:
      Getting the roll information
      $yellow$script --info 2D+6$reset
 HELP;
-    echo $text, PHP_EOL;
+
+
+require getAutoloadDirectory($dependencyError).'/autoload.php';
+
+$opts = filter_var_array(array_replace(
+        ['iteration' => 1],
+        getopt("h::", ['pool::', 'iteration::', 'help', 'info', 'logs'])
+    ), [
+    'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
+    'h' => FILTER_VALIDATE_BOOLEAN,
+    'help' => FILTER_VALIDATE_BOOLEAN,
+    'info' => FILTER_VALIDATE_BOOLEAN,
+    'logs' => FILTER_VALIDATE_BOOLEAN,
+    'pool' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH],
+]);
+
+if (2 > count($argv) || isset($opts['help']) || isset($opts['h'])) {
+    echo $helpText, PHP_EOL;
     die(0);
 }
 
@@ -92,7 +94,7 @@ $expression = array_pop($argv);
 $expression = trim($expression);
 
 if (0 === strpos($expression, '-')) {
-    fail("$redbg No dice annotation was submitted $reset",65);
+    fail("$redbg Make sure your dice annotation is the last argument of your call! $reset",65);
 }
 
 $logger = new MemoryLogger();
@@ -101,24 +103,24 @@ $factory = new Factory(new ExpressionParser(), new LogProfiler($logger));
 try {
     $rollable = $factory->newInstance($expression);
 } catch (Exception $exception) {
-    $text = <<<EOF
+    $text = <<<PARSERROR
 
 The submitted dice annotation $yellow$expression$reset could not be parsed$reset
 The Parser issue the following error:
 
 $redbg {$exception->getMessage()} $reset
 
-EOF;
+PARSERROR;
     fail($text,65);
 }
 
 if (isset($opts['info'])) {
-    $text = <<<EOF
+    $text = <<<INFO
 $yellow ====== ROLL INFORMATIONS =======$reset
 $green Expression:$reset $yellow{$rollable->toString()}$reset
 $green Minimum Roll:$reset $yellow{$rollable->getMinimum()}$reset
 $green Maximum Roll:$reset $yellow{$rollable->getMaximum()}$reset
-EOF;
+INFO;
     echo $text, PHP_EOL, PHP_EOL;
 }
 
