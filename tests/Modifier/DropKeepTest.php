@@ -78,7 +78,7 @@ final class DropKeepTest extends TestCase
     public function testGetTrace(): void
     {
         $dice1 = new class() implements Rollable {
-            public function getMinimum(): int
+            public function minimum(): int
             {
                 return 1;
             }
@@ -100,7 +100,7 @@ final class DropKeepTest extends TestCase
         };
 
         $dice2 = new class() implements Rollable {
-            public function getMinimum(): int
+            public function minimum(): int
             {
                 return 2;
             }
@@ -128,7 +128,7 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::getMinimum
+     * @covers ::minimum
      * @covers ::getMaximum
      * @covers ::decorate
      * @covers ::filter
@@ -144,7 +144,7 @@ final class DropKeepTest extends TestCase
     {
         $cup = new DropKeep($this->cup, $algo, $threshold);
         $res = $cup->roll();
-        self::assertSame($min, $cup->getMinimum());
+        self::assertSame($min, $cup->minimum());
         self::assertSame($max, $cup->getMaximum());
         self::assertGreaterThanOrEqual($min, $res);
         self::assertLessThanOrEqual($max, $res);
@@ -182,7 +182,7 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::getMinimum
+     * @covers ::minimum
      * @covers ::getMaximum
      * @covers ::roll
      * @covers ::decorate
@@ -205,7 +205,7 @@ final class DropKeepTest extends TestCase
         $roll->roll();
         self::assertNotEmpty($roll->getTrace());
         $roll->getMaximum();
-        $roll->getMinimum();
+        $roll->minimum();
         self::assertInstanceOf(Pool::class, $roll->getInnerRollable());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
 

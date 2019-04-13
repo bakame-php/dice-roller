@@ -38,7 +38,7 @@ final class FudgeDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function getMinimum(): int
+    public function minimum(): int
     {
         return -1;
     }

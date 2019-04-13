@@ -25,7 +25,7 @@ final class CustomDieTest extends TestCase
      * @covers ::fromString
      * @covers ::toString
      * @covers ::getSize
-     * @covers ::getMinimum
+     * @covers ::minimum
      * @covers ::getMaximum
      * @covers ::roll
      */
@@ -34,12 +34,12 @@ final class CustomDieTest extends TestCase
         $dice = new CustomDie(1, 2, 2, 4, 4);
         self::assertSame(5, $dice->getSize());
         self::assertSame(4, $dice->getMaximum());
-        self::assertSame(1, $dice->getMinimum());
+        self::assertSame(1, $dice->minimum());
         self::assertSame('D[1,2,2,4,4]', $dice->toString());
         self::assertEquals($dice, CustomDie::fromString($dice->toString()));
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
-            self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
+            self::assertGreaterThanOrEqual($dice->minimum(), $test);
             self::assertLessThanOrEqual($dice->getMaximum(), $test);
         }
     }

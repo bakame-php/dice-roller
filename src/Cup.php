@@ -204,11 +204,11 @@ final class Cup implements Pool, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getMinimum(): int
+    public function minimum(): int
     {
         $sum = [];
         foreach ($this->items as $rollable) {
-            $sum[] = $rollable->getMinimum();
+            $sum[] = $rollable->minimum();
         }
 
         return $this->decorate($sum, __METHOD__);

@@ -180,11 +180,11 @@ final class DropKeep implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getMinimum(): int
+    public function minimum(): int
     {
         $innerRetval = [];
         foreach ($this->pool as $rollable) {
-            $innerRetval[] = $rollable->getMinimum();
+            $innerRetval[] = $rollable->minimum();
         }
 
         return $this->decorate($innerRetval, __METHOD__);

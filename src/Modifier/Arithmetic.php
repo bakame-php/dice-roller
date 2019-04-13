@@ -147,9 +147,9 @@ final class Arithmetic implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getMinimum(): int
+    public function minimum(): int
     {
-        $value = $this->rollable->getMinimum();
+        $value = $this->rollable->minimum();
 
         return $this->decorate($value, __METHOD__);
     }

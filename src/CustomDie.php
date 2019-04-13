@@ -89,7 +89,7 @@ final class CustomDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function getMinimum(): int
+    public function minimum(): int
     {
         return min($this->values);
     }

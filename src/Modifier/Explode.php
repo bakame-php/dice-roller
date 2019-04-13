@@ -120,7 +120,7 @@ final class Explode implements Modifier, Traceable
      */
     private function isValidRollable(Rollable $rollable): bool
     {
-        $min = $rollable->getMinimum();
+        $min = $rollable->minimum();
         $max = $rollable->getMaximum();
         $threshold = $this->threshold ?? $max;
 
@@ -202,9 +202,9 @@ final class Explode implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getMinimum(): int
+    public function minimum(): int
     {
-        $retval = $this->pool->getMinimum();
+        $retval = $this->pool->minimum();
 
         $this->trace = (string) $retval;
         $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);

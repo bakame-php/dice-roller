@@ -18,7 +18,7 @@ interface Rollable
      *
      * MUST be lesser than or equal to the maximum value
      */
-    public function getMinimum(): int;
+    public function minimum(): int;
 
     /**
      * Returns the rollable maximum result.

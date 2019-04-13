@@ -182,7 +182,7 @@ final class FactoryTest extends TestCase
     public function testRollWithNoDice(): void
     {
         $cup = $this->factory->newInstance('');
-        self::assertSame(0, $cup->getMinimum());
+        self::assertSame(0, $cup->minimum());
         self::assertSame(0, $cup->getMaximum());
         for ($i = 0; $i < 5; $i++) {
             self::assertEquals(0, $cup->roll());
@@ -204,7 +204,7 @@ final class FactoryTest extends TestCase
 
         for ($i = 0; $i < 5; $i++) {
             $test = $dice->roll();
-            self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
+            self::assertGreaterThanOrEqual($dice->minimum(), $test);
             self::assertLessThanOrEqual($dice->getMaximum(), $test);
         }
     }
@@ -221,12 +221,12 @@ final class FactoryTest extends TestCase
         $dice = $this->factory->newInstance('d');
         self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(6, $dice->getSize());
-        self::assertSame(1, $dice->getMinimum());
+        self::assertSame(1, $dice->minimum());
         self::assertSame(6, $dice->getMaximum());
 
         for ($i = 0; $i < 5; $i++) {
             $test = $dice->roll();
-            self::assertGreaterThanOrEqual($dice->getMinimum(), $test);
+            self::assertGreaterThanOrEqual($dice->minimum(), $test);
             self::assertLessThanOrEqual($dice->getMaximum(), $test);
         }
     }
@@ -260,7 +260,7 @@ final class FactoryTest extends TestCase
 
         for ($i = 0; $i < 5; $i++) {
             $test = $cup->roll();
-            self::assertGreaterThanOrEqual($cup->getMinimum(), $test);
+            self::assertGreaterThanOrEqual($cup->minimum(), $test);
             self::assertLessThanOrEqual($cup->getMaximum(), $test);
         }
     }
