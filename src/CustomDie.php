@@ -107,7 +107,7 @@ final class CustomDie implements Dice
      */
     public function roll(): int
     {
-        $index = random_int(1, count($this->values) - 1);
+        $index = random_int(0, count($this->values) - 1);
 
         return $this->values[$index];
     }
