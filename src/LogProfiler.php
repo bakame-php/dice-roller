@@ -63,9 +63,9 @@ final class LogProfiler implements Profiler
      */
     public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void
     {
-        static $psr3logLevelList = null;
+        static $psr3logLevels = null;
 
-        $psr3logLevelList = $psr3logLevelList ?? (new ReflectionClass(LogLevel::class))->getConstants();
+        $psr3logLevels = $psr3logLevels ?? (new ReflectionClass(LogLevel::class))->getConstants();
 
         $context = [
             'method' => $method,
@@ -74,7 +74,7 @@ final class LogProfiler implements Profiler
             'result' => $roll,
         ];
 
-        if (false !== array_search($this->logLevel, $psr3logLevelList, true)) {
+        if (false !== array_search($this->logLevel, $psr3logLevels, true)) {
             $this->logger->{$this->logLevel}($this->logFormat, $context);
 
             return;

@@ -59,7 +59,7 @@ final class Cup implements Pool, Traceable
     /**
      * Tell whether the submitted Rollable can be added to the collection.
      */
-    private static function isValid(Rollable $rollable): bool
+    private function isValid(Rollable $rollable): bool
     {
         return !$rollable instanceof Pool || !$rollable->isEmpty();
     }
@@ -74,21 +74,14 @@ final class Cup implements Pool, Traceable
         if ($quantity < 1) {
             throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid. Should be > 0', $quantity));
         }
-
-        if (!self::isValid($rollable)) {
-            $new = new self();
-
-            return $new;
-        }
+        --$quantity;
 
         $items = [$rollable];
-        for ($i = 0; $i < $quantity - 1; ++$i) {
+        for ($i = 0; $i < $quantity; ++$i) {
             $items[] = clone $rollable;
         }
 
-        $new = new self(...$items);
-
-        return $new;
+        return new self(...$items);
     }
 
     /**
@@ -150,7 +143,7 @@ final class Cup implements Pool, Traceable
      */
     public function toString(): string
     {
-        if (0 == count($this->items)) {
+        if ([] === $this->items) {
             return '0';
         }
 
