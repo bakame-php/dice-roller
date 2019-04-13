@@ -9,22 +9,38 @@ use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\MemoryLogger;
 use Psr\Log\LogLevel;
 
+function writeln(string $message, $output = STDOUT): void
+{
+    fwrite($output, $message . PHP_EOL);
+}
+
 function fail(string $message, int $exitCode): void
 {
-    fwrite(STDERR, $message . PHP_EOL);
+    writeln($message, STDERR);
 
     exit($exitCode);
 }
 
-function getAutoloadDirectory(string $errorMessage): string
+function autoload(string $errorMessage): void
 {
     for ($i = 1; $i <= 5; $i++) {
         if (is_dir($vendor = dirname(__DIR__, $i).'/vendor')) {
-            return $vendor;
+            require $vendor.'/autoload.php';
+
+            return;
         }
     }
 
     fail($errorMessage, 1);
+}
+
+function flushLogger(MemoryLogger $logger, string $format): void
+{
+    foreach ($logger->getLogs(LogLevel::DEBUG) as $log) {
+        writeln(sprintf($format, $log));
+    }
+
+    $logger->clear();
 }
 
 /**
@@ -42,6 +58,15 @@ $redbg
     run composer install
 $reset
 ERROR;
+
+$parseErrorMessage = <<<PARSERROR
+$redbg
+    The submitted dice annotation $yellow%s$reset could
+    not be parsed, the following error occured :
+
+    %s
+$reset
+PARSERROR;
 
 $script = basename(__FILE__);
 $helpText = <<<HELP
@@ -70,8 +95,11 @@ Examples:
      $yellow$script --info 2D+6$reset
 HELP;
 
+$logFormat = "$cyan %s $reset $yellow $reset";
 
-require getAutoloadDirectory($dependencyError).'/autoload.php';
+//Script start now
+
+autoload($dependencyError);
 
 $opts = filter_var_array(array_replace(
         ['iteration' => 1],
@@ -86,7 +114,8 @@ $opts = filter_var_array(array_replace(
 ]);
 
 if (2 > count($argv) || isset($opts['help']) || isset($opts['h'])) {
-    echo $helpText, PHP_EOL;
+    writeln($helpText);
+
     die(0);
 }
 
@@ -94,7 +123,7 @@ $expression = array_pop($argv);
 $expression = trim($expression);
 
 if (0 === strpos($expression, '-')) {
-    fail("$redbg Make sure your dice annotation is the last argument of your call! $reset",65);
+    fail("$redbg Make sure your dice annotation is the last argument of your call! $reset", 65);
 }
 
 $logger = new MemoryLogger();
@@ -103,40 +132,30 @@ $factory = new Factory(new ExpressionParser(), new LogProfiler($logger));
 try {
     $rollable = $factory->newInstance($expression);
 } catch (Exception $exception) {
-    $text = <<<PARSERROR
-
-The submitted dice annotation $yellow$expression$reset could not be parsed$reset
-The Parser issue the following error:
-
-$redbg {$exception->getMessage()} $reset
-
-PARSERROR;
-    fail($text,65);
+    fail(sprintf($parseErrorMessage, $expression, $exception->getMessage()), 65);
 }
 
 if (isset($opts['info'])) {
     $text = <<<INFO
 $yellow ====== ROLL INFORMATIONS =======$reset
 $green Expression:$reset $yellow{$rollable->toString()}$reset
-$green Minimum Roll:$reset $yellow{$rollable->getMinimum()}$reset
-$green Maximum Roll:$reset $yellow{$rollable->getMaximum()}$reset
+$green Minimum Roll:$reset $yellow{$rollable->minimum()}$reset
+$green Maximum Roll:$reset $yellow{$rollable->maximum()}$reset
 INFO;
-    echo $text, PHP_EOL, PHP_EOL;
+   writeln($text);
 }
 
 $logger->clear();
 
-echo "$yellow ====== ROLL RESULTS ======= $reset", PHP_EOL;
+writeln("$yellow ====== ROLL RESULTS ======= $reset");
 for ($i = 0; $i < $opts['iteration']; ++$i) {
-        $index = $i+1;
-echo "$cyan Result #$index:$reset $yellow".$rollable->roll(), $reset, PHP_EOL;
-}
-if (isset($opts['logs'])) {
-    echo PHP_EOL, "$yellow ====== ROLL TRACE ======= $reset", PHP_EOL;
-    foreach ($logger->getLogs(LogLevel::DEBUG) as $log) {
-        echo "$cyan $log $reset $yellow $reset", PHP_EOL;
+    $index = $i+1;
+    writeln("$cyan Result #$index:$reset $yellow".$rollable->roll().$reset);
+    if (isset($opts['logs'])) {
+        flushLogger($logger, $logFormat);
+        writeln('');
     }
 }
-echo PHP_EOL;
-die(0);
 
+writeln('');
+die(0);
