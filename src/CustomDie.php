@@ -97,7 +97,7 @@ final class CustomDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function getMaximum(): int
+    public function maximum(): int
     {
         return max($this->values);
     }

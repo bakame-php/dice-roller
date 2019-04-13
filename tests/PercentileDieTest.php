@@ -23,20 +23,20 @@ final class PercentileDieTest extends TestCase
      * @covers ::getSize
      * @covers ::toString
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::roll
      */
     public function testFudgeDice(): void
     {
         $dice = new PercentileDie();
         self::assertSame(100, $dice->getSize());
-        self::assertSame(100, $dice->getMaximum());
+        self::assertSame(100, $dice->maximum());
         self::assertSame(1, $dice->minimum());
         self::assertSame('D%', $dice->toString());
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
-            self::assertLessThanOrEqual($dice->getMaximum(), $test);
+            self::assertLessThanOrEqual($dice->maximum(), $test);
         }
     }
 }

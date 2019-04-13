@@ -26,7 +26,7 @@ final class SidedDieTest extends TestCase
      * @covers ::toString
      * @covers ::getSize
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::roll
      */
     public function testSixSidedValues(): void
@@ -36,12 +36,12 @@ final class SidedDieTest extends TestCase
         self::assertSame($expected, $dice->getSize());
         self::assertSame('D6', $dice->toString());
         self::assertEquals($dice, SidedDie::fromString($dice->toString()));
-        self::assertSame($expected, $dice->getMaximum());
+        self::assertSame($expected, $dice->maximum());
         self::assertSame(1, $dice->minimum());
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
-            self::assertLessThanOrEqual($dice->getMaximum(), $test);
+            self::assertLessThanOrEqual($dice->maximum(), $test);
         }
     }
 

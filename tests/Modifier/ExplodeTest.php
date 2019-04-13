@@ -124,7 +124,7 @@ final class ExplodeTest extends TestCase
      * @covers ::__construct
      * @covers ::getInnerRollable
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::calculate
      * @covers ::isValid
      * @covers ::roll
@@ -136,7 +136,7 @@ final class ExplodeTest extends TestCase
         $res = $rollable->roll();
         self::assertSame($this->cup, $rollable->getInnerRollable());
         self::assertSame($min, $rollable->minimum());
-        self::assertSame($max, $rollable->getMaximum());
+        self::assertSame($max, $rollable->maximum());
         self::assertGreaterThanOrEqual($min, $res);
         self::assertLessThanOrEqual($max, $res);
     }
@@ -168,7 +168,7 @@ final class ExplodeTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setProfiler
@@ -187,7 +187,7 @@ final class ExplodeTest extends TestCase
         self::assertSame('', $roll->getTrace());
         $roll->roll();
         self::assertNotEmpty($roll->getTrace());
-        $roll->getMaximum();
+        $roll->maximum();
         $roll->minimum();
         self::assertSame($profiler, $roll->getProfiler());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));

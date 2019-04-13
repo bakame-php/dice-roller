@@ -121,7 +121,7 @@ final class Explode implements Modifier, Traceable
     private function isValidRollable(Rollable $rollable): bool
     {
         $min = $rollable->minimum();
-        $max = $rollable->getMaximum();
+        $max = $rollable->maximum();
         $threshold = $this->threshold ?? $max;
 
         if (self::GT === $this->compare) {
@@ -215,7 +215,7 @@ final class Explode implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getMaximum(): int
+    public function maximum(): int
     {
         $this->trace = (string) PHP_INT_MAX;
         $this->profiler->addTrace($this, __METHOD__, PHP_INT_MAX, $this->trace);
@@ -254,7 +254,7 @@ final class Explode implements Modifier, Traceable
      */
     private function calculate(array $sum, Rollable $rollable): array
     {
-        $threshold = $this->threshold ?? $rollable->getMaximum();
+        $threshold = $this->threshold ?? $rollable->maximum();
         do {
             $value = $rollable->roll();
             $sum[] = $value;

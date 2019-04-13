@@ -217,11 +217,11 @@ final class Cup implements Pool, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getMaximum(): int
+    public function maximum(): int
     {
         $sum = [];
         foreach ($this->items as $rollable) {
-            $sum[] = $rollable->getMaximum();
+            $sum[] = $rollable->maximum();
         }
 
         return $this->decorate($sum, __METHOD__);

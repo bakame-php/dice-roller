@@ -22,7 +22,7 @@ final class FudgeDieTest extends TestCase
     /**
      * @covers ::getSize
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::toString
      * @covers ::roll
      */
@@ -31,12 +31,12 @@ final class FudgeDieTest extends TestCase
         $dice = new FudgeDie();
         self::assertSame('DF', $dice->toString());
         self::assertSame(3, $dice->getSize());
-        self::assertSame(1, $dice->getMaximum());
+        self::assertSame(1, $dice->maximum());
         self::assertSame(-1, $dice->minimum());
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
-            self::assertLessThanOrEqual($dice->getMaximum(), $test);
+            self::assertLessThanOrEqual($dice->maximum(), $test);
         }
     }
 }

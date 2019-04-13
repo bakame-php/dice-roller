@@ -82,7 +82,7 @@ final class ArithmeticTest extends TestCase
                 return 1;
             }
 
-            public function getMaximum(): int
+            public function maximum(): int
             {
                 return 1;
             }
@@ -119,7 +119,7 @@ final class ArithmeticTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::decorate
      * @covers ::calculate
      * @covers ::roll
@@ -131,7 +131,7 @@ final class ArithmeticTest extends TestCase
         $roll = new Arithmetic(new SidedDie($size), $operator, $value);
         $test = $roll->roll();
         self::assertSame($min, $roll->minimum());
-        self::assertSame($max, $roll->getMaximum());
+        self::assertSame($max, $roll->maximum());
         self::assertGreaterThanOrEqual($min, $test);
         self::assertLessThanOrEqual($max, $test);
     }
@@ -180,7 +180,7 @@ final class ArithmeticTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::decorate
      * @covers ::calculate
      * @covers ::roll
@@ -191,7 +191,7 @@ final class ArithmeticTest extends TestCase
         $roll = new Arithmetic(new CustomDie(-1, -1, -1), Arithmetic::EXP, 3);
         $test = $roll->roll();
         self::assertSame(-1, $roll->minimum());
-        self::assertSame(-1, $roll->getMaximum());
+        self::assertSame(-1, $roll->maximum());
         self::assertGreaterThanOrEqual(-1, $test);
         self::assertLessThanOrEqual(-1, $test);
     }
@@ -199,7 +199,7 @@ final class ArithmeticTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::roll
      * @covers ::decorate
      * @covers ::calculate
@@ -222,7 +222,7 @@ final class ArithmeticTest extends TestCase
         self::assertEmpty($roll->getTrace());
         $roll->roll();
         self::assertNotEmpty($roll->getTrace());
-        $roll->getMaximum();
+        $roll->maximum();
         $roll->minimum();
         self::assertSame($profiler, $roll->getProfiler());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));

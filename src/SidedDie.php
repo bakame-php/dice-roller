@@ -83,7 +83,7 @@ final class SidedDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function getMaximum(): int
+    public function maximum(): int
     {
         return $this->sides;
     }

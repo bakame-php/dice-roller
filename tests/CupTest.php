@@ -68,7 +68,7 @@ final class CupTest extends TestCase
      * @covers ::__construct
      * @covers ::toString
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::roll
      * @covers ::decorate
      * @covers ::count
@@ -81,14 +81,14 @@ final class CupTest extends TestCase
         $cup = new Cup($factory->newInstance('4D10'), $factory->newInstance('2d4'));
         self::assertFalse($cup->isEmpty());
         self::assertSame(6, $cup->minimum());
-        self::assertSame(48, $cup->getMaximum());
+        self::assertSame(48, $cup->maximum());
         self::assertSame('4D10+2D4', $cup->toString());
         self::assertCount(2, $cup);
         self::assertContainsOnlyInstancesOf(Rollable::class, $cup);
         for ($i = 0; $i < 5; $i++) {
             $test = $cup->roll();
             self::assertGreaterThanOrEqual($cup->minimum(), $test);
-            self::assertLessThanOrEqual($cup->getMaximum(), $test);
+            self::assertLessThanOrEqual($cup->maximum(), $test);
         }
     }
 
@@ -163,7 +163,7 @@ final class CupTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::minimum
-     * @covers ::getMaximum
+     * @covers ::maximum
      * @covers ::roll
      * @covers ::decorate
      * @covers ::getTrace
@@ -179,7 +179,7 @@ final class CupTest extends TestCase
         self::assertEmpty($cup->getTrace());
         $cup->roll();
         self::assertNotEmpty($cup->getTrace());
-        $cup->getMaximum();
+        $cup->maximum();
         $cup->minimum();
         self::assertSame($profiler, $cup->getProfiler());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
@@ -201,7 +201,7 @@ final class CupTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $test = $group->roll();
             self::assertGreaterThanOrEqual($group->minimum(), $test);
-            self::assertLessThanOrEqual($group->getMaximum(), $test);
+            self::assertLessThanOrEqual($group->maximum(), $test);
         }
     }
 }

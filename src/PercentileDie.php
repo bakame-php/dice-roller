@@ -46,7 +46,7 @@ final class PercentileDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function getMaximum(): int
+    public function maximum(): int
     {
         return 100;
     }

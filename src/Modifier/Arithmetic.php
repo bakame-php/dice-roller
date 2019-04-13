@@ -157,9 +157,9 @@ final class Arithmetic implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getMaximum(): int
+    public function maximum(): int
     {
-        $value = $this->rollable->getMaximum();
+        $value = $this->rollable->maximum();
 
         return $this->decorate($value, __METHOD__);
     }

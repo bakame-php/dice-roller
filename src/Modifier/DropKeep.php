@@ -193,11 +193,11 @@ final class DropKeep implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getMaximum(): int
+    public function maximum(): int
     {
         $innerRetval = [];
         foreach ($this->pool as $rollable) {
-            $innerRetval[] = $rollable->getMaximum();
+            $innerRetval[] = $rollable->maximum();
         }
 
         return $this->decorate($innerRetval, __METHOD__);
