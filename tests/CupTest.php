@@ -195,7 +195,7 @@ final class CupTest extends TestCase
         self::assertCount(5, $group);
         self::assertContainsOnlyInstancesOf(SidedDie::class, $group);
         foreach ($group as $dice) {
-            self::assertSame(4, $dice->getSize());
+            self::assertSame(4, $dice->size());
         }
 
         for ($i = 0; $i < 5; $i++) {

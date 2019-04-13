@@ -30,7 +30,7 @@ final class PercentileDie implements Dice
      * Returns the side count.
      *
      */
-    public function getSize(): int
+    public function size(): int
     {
         return 100;
     }

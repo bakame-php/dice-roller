@@ -106,8 +106,8 @@ $profiler = new LogProfiler($psr3Logger);
 $factory = new Factory($parser, $profiler);
 $pool = $factory->newInstance('2D6+3');
 
-echo $pool->toString(); // returns 2D6+3
-echo $pool->roll();     // displays 7
+echo $pool->toString();  // returns 2D6+3
+echo $pool->roll();      // displays 7
 echo $pool->lastTrace(); // displays 4 + 3
 
 foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
@@ -264,7 +264,7 @@ use Bakame\DiceRoller\SidedDie;
 $basic = new SidedDie(3);
 echo $basic->toString(); // 'D3';
 $basic->roll();          // may return 1, 2 or 3
-$basic->size();       // returns 3
+$basic->size();          // returns 3
 
 $basicbis = SidedDie::fromString('d3');
 $basicbis->toString() === $basic->toString();
@@ -272,7 +272,7 @@ $basicbis->toString() === $basic->toString();
 $custom = new CustomDie(3, 2, 1, 1);
 echo $customc->toString();  // 'D[3,2,1,1]';
 $custom->roll();            // may return 1, 2 or 3
-$custom->size();         // returns 4
+$custom->size();            // returns 4
 
 $customBis = CustomDie::fromString('d[3,2,1,1]');
 $custom->toString() === $customBis->toString();
@@ -280,12 +280,12 @@ $custom->toString() === $customBis->toString();
 $fugde = new FudgeDie();
 echo $fudgec->toString(); // displays 'DF'
 $fudge->roll();           // may return -1, 0, or 1
-$fudge->size();        // returns 3
+$fudge->size();           // returns 3
 
 $percentile = new PercentileDie();
 echo $percentilec->toString(); // displays 'D%'
 $percentile->roll();           // returns a value between 1 and 100
-$fudge->size();             // returns 100
+$fudge->size();                // returns 100
 ```
 
 ### Pool

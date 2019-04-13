@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
 final class PercentileDieTest extends TestCase
 {
     /**
-     * @covers ::getSize
+     * @covers ::size
      * @covers ::toString
      * @covers ::minimum
      * @covers ::maximum
@@ -29,7 +29,7 @@ final class PercentileDieTest extends TestCase
     public function testFudgeDice(): void
     {
         $dice = new PercentileDie();
-        self::assertSame(100, $dice->getSize());
+        self::assertSame(100, $dice->size());
         self::assertSame(100, $dice->maximum());
         self::assertSame(1, $dice->minimum());
         self::assertSame('D%', $dice->toString());

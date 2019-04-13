@@ -30,7 +30,7 @@ final class FudgeDie implements Dice
      * Returns the side count.
      *
      */
-    public function getSize(): int
+    public function size(): int
     {
         return 3;
     }

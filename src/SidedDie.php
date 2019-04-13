@@ -67,7 +67,7 @@ final class SidedDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function getSize(): int
+    public function size(): int
     {
         return $this->sides;
     }

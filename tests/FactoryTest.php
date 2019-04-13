@@ -194,13 +194,13 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\SidedDie::getSize
+     * @covers \Bakame\DiceRoller\SidedDie::size
      */
     public function testRollWithSingleDice(): void
     {
         $dice = $this->factory->newInstance('d8');
         self::assertInstanceOf(SidedDie::class, $dice);
-        self::assertSame(8, $dice->getSize());
+        self::assertSame(8, $dice->size());
 
         for ($i = 0; $i < 5; $i++) {
             $test = $dice->roll();
@@ -214,13 +214,13 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\SidedDie::getSize
+     * @covers \Bakame\DiceRoller\SidedDie::size
      */
     public function testRollWithDefaultDice(): void
     {
         $dice = $this->factory->newInstance('d');
         self::assertInstanceOf(SidedDie::class, $dice);
-        self::assertSame(6, $dice->getSize());
+        self::assertSame(6, $dice->size());
         self::assertSame(1, $dice->minimum());
         self::assertSame(6, $dice->maximum());
 
@@ -237,7 +237,7 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\SidedDie::getSize
+     * @covers \Bakame\DiceRoller\SidedDie::size
      */
     public function testRollWithMultipleDice(): void
     {
@@ -249,13 +249,13 @@ final class FactoryTest extends TestCase
         self::assertCount(2, $res[0]);
         foreach ($res[0] as $dice) {
             self::assertInstanceOf(SidedDie::class, $dice);
-            self::assertSame(6, $dice->getSize());
+            self::assertSame(6, $dice->size());
         }
 
         self::assertCount(3, $res[1]);
         foreach ($res[1] as $dice) {
             self::assertInstanceOf(SidedDie::class, $dice);
-            self::assertSame(4, $dice->getSize());
+            self::assertSame(4, $dice->size());
         }
 
         for ($i = 0; $i < 5; $i++) {

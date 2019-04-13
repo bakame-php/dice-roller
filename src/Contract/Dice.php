@@ -18,5 +18,5 @@ interface Dice extends Rollable
     /**
      * Returns the die side count.
      */
-    public function getSize(): int;
+    public function size(): int;
 }

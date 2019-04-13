@@ -95,7 +95,15 @@ Examples:
      $yellow$script --info 2D+6$reset
 HELP;
 
-$logFormat = "$cyan %s $reset $yellow $reset";
+$rollableInfo = <<<INFO
+$yellow ====== ROLL INFORMATIONS =======$reset
+$green Expression:$reset $yellow%s$reset
+$green Minimum Roll:$reset $yellow%d$reset
+$green Maximum Roll:$reset $yellow%d$reset
+INFO;
+
+$logOutputFormat = "$cyan %s $reset $yellow $reset";
+$rollOutputFormat = "$cyan Result #%d:$reset $yellow %s$reset";
 
 //Script start now
 
@@ -136,23 +144,16 @@ try {
 }
 
 if (isset($opts['info'])) {
-    $text = <<<INFO
-$yellow ====== ROLL INFORMATIONS =======$reset
-$green Expression:$reset $yellow{$rollable->toString()}$reset
-$green Minimum Roll:$reset $yellow{$rollable->minimum()}$reset
-$green Maximum Roll:$reset $yellow{$rollable->maximum()}$reset
-INFO;
-   writeln($text);
+   writeln(sprintf($rollableInfo, $rollable->toString(), $rollable->minimum(), $rollable->maximum()));
 }
 
 $logger->clear();
 
 writeln("$yellow ====== ROLL RESULTS ======= $reset");
 for ($i = 0; $i < $opts['iteration']; ++$i) {
-    $index = $i+1;
-    writeln("$cyan Result #$index:$reset $yellow".$rollable->roll().$reset);
+    writeln(sprintf($rollOutputFormat, $i+1, $rollable->roll()));
     if (isset($opts['logs'])) {
-        flushLogger($logger, $logFormat);
+        flushLogger($logger, $logOutputFormat);
         writeln('');
     }
 }
