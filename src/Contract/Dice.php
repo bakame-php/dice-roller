@@ -16,7 +16,7 @@ namespace Bakame\DiceRoller\Contract;
 interface Dice extends Rollable
 {
     /**
-     * Returns the dice side count.
+     * Returns the die side count.
      */
     public function getSize(): int;
 }

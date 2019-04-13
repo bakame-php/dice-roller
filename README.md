@@ -108,7 +108,7 @@ $pool = $factory->newInstance('2D6+3');
 
 echo $pool->toString(); // returns 2D6+3
 echo $pool->roll();     // displays 7
-echo $pool->getTrace(); // displays 4 + 3
+echo $pool->lastTrace(); // displays 4 + 3
 
 foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
     echo $logs, PHP_EOL;
@@ -210,15 +210,15 @@ namespace Bakame\DiceRoller\Contract;
 
 interface Rollable
 {
-    public function getMinimum(): int;
-    public function getMaximum(): int;
+    public function minimum(): int;
+    public function maximum(): int;
     public function roll(): int;
     public function toString(): string;
 }
 ```
 
-- `Rollable::getMinimum` returns the minimum value that can be returned during a roll;
-- `Rollable::getMaximum` returns the maximum value that can be returned during a roll;
+- `Rollable::minimum` returns the minimum value that can be returned during a roll;
+- `Rollable::maximum` returns the maximum value that can be returned during a roll;
 - `Rollable::roll` returns a value from a roll.
 - `Rollable::toString` returns the object string notation.
 
@@ -226,7 +226,7 @@ interface Rollable
 
 ### Dices Type
 
-In addition to the `Rollable` interface, all dices objects implement the `Dice` interface. The `getSize` method returns the die sides count.  
+In addition to the `Rollable` interface, all dices objects implement the `Dice` interface. The `size` method returns the die sides count.  
 
 ```php
 <?php
@@ -235,7 +235,7 @@ namespace Bakame\DiceRoller\Contract;
 
 interface Dice extends Rollable
 {
-    public function getSize(): int;
+    public function size(): int;
 }
 ```
 
@@ -264,7 +264,7 @@ use Bakame\DiceRoller\SidedDie;
 $basic = new SidedDie(3);
 echo $basic->toString(); // 'D3';
 $basic->roll();          // may return 1, 2 or 3
-$basic->getSize();       // returns 3
+$basic->size();       // returns 3
 
 $basicbis = SidedDie::fromString('d3');
 $basicbis->toString() === $basic->toString();
@@ -272,7 +272,7 @@ $basicbis->toString() === $basic->toString();
 $custom = new CustomDie(3, 2, 1, 1);
 echo $customc->toString();  // 'D[3,2,1,1]';
 $custom->roll();            // may return 1, 2 or 3
-$custom->getSize();         // returns 4
+$custom->size();         // returns 4
 
 $customBis = CustomDie::fromString('d[3,2,1,1]');
 $custom->toString() === $customBis->toString();
@@ -280,12 +280,12 @@ $custom->toString() === $customBis->toString();
 $fugde = new FudgeDie();
 echo $fudgec->toString(); // displays 'DF'
 $fudge->roll();           // may return -1, 0, or 1
-$fudge->getSize();        // returns 3
+$fudge->size();        // returns 3
 
 $percentile = new PercentileDie();
 echo $percentilec->toString(); // displays 'D%'
 $percentile->roll();           // returns a value between 1 and 100
-$fudge->getSize();             // returns 100
+$fudge->size();             // returns 100
 ```
 
 ### Pool
@@ -556,7 +556,7 @@ interface Traceable
 {
     public function setProfiler(Profiler $profiler): void;
     public function getProfiler(): Profiler;
-    public function getTrace(): string;
+    public function lastTrace(): string;
 }
 ```
  
