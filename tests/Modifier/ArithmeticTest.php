@@ -203,7 +203,7 @@ final class ArithmeticTest extends TestCase
      * @covers ::roll
      * @covers ::decorate
      * @covers ::calculate
-     * @covers ::getTrace
+     * @covers ::lastTrace
      * @covers ::getProfiler
      * @covers ::setProfiler
      * @covers \Bakame\DiceRoller\LogProfiler
@@ -219,9 +219,9 @@ final class ArithmeticTest extends TestCase
         );
         $profiler = new LogProfiler($logger, LogLevel::DEBUG);
         $roll->setProfiler($profiler);
-        self::assertEmpty($roll->getTrace());
+        self::assertEmpty($roll->lastTrace());
         $roll->roll();
-        self::assertNotEmpty($roll->getTrace());
+        self::assertNotEmpty($roll->lastTrace());
         $roll->maximum();
         $roll->minimum();
         self::assertSame($profiler, $roll->getProfiler());

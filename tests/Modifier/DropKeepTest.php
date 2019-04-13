@@ -189,7 +189,7 @@ final class DropKeepTest extends TestCase
      * @covers ::filter
      * @covers ::setProfiler
      * @covers ::getProfiler
-     * @covers ::getTrace
+     * @covers ::lastTrace
      * @covers \Bakame\DiceRoller\LogProfiler
      * @covers \Bakame\DiceRoller\MemoryLogger
      * @covers ::getInnerRollable
@@ -201,9 +201,9 @@ final class DropKeepTest extends TestCase
         $roll = new DropKeep(Cup::fromRollable(new SidedDie(6), 3), DropKeep::DROP_LOWEST, 2);
         $roll->setProfiler($profiler);
         self::assertSame($profiler, $roll->getProfiler());
-        self::assertEmpty($roll->getTrace());
+        self::assertEmpty($roll->lastTrace());
         $roll->roll();
-        self::assertNotEmpty($roll->getTrace());
+        self::assertNotEmpty($roll->lastTrace());
         $roll->maximum();
         $roll->minimum();
         self::assertInstanceOf(Pool::class, $roll->getInnerRollable());

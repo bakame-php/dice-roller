@@ -18,7 +18,7 @@ interface Traceable
     /**
      * Returns the last operation trace.
      */
-    public function getTrace(): string;
+    public function lastTrace(): string;
 
     /**
      * Returns the object profiler.

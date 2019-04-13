@@ -166,7 +166,7 @@ final class CupTest extends TestCase
      * @covers ::maximum
      * @covers ::roll
      * @covers ::decorate
-     * @covers ::getTrace
+     * @covers ::lastTrace
      * @covers ::getProfiler
      * @covers ::setProfiler
      */
@@ -176,9 +176,9 @@ final class CupTest extends TestCase
         $profiler = new LogProfiler($logger, LogLevel::DEBUG);
         $cup = Cup::fromRollable(new CustomDie(2, -3, -5), 12);
         $cup->setProfiler($profiler);
-        self::assertEmpty($cup->getTrace());
+        self::assertEmpty($cup->lastTrace());
         $cup->roll();
-        self::assertNotEmpty($cup->getTrace());
+        self::assertNotEmpty($cup->lastTrace());
         $cup->maximum();
         $cup->minimum();
         self::assertSame($profiler, $cup->getProfiler());

@@ -92,7 +92,7 @@ final class Arithmetic implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function getTrace(): string
+    public function lastTrace(): string
     {
         return $this->trace;
     }

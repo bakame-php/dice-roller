@@ -173,7 +173,7 @@ final class ExplodeTest extends TestCase
      * @covers ::calculate
      * @covers ::setProfiler
      * @covers ::getProfiler
-     * @covers ::getTrace
+     * @covers ::lastTrace
      * @covers ::getInnerRollable
      * @covers \Bakame\DiceRoller\LogProfiler
      * @covers \Bakame\DiceRoller\MemoryLogger
@@ -184,9 +184,9 @@ final class ExplodeTest extends TestCase
         $profiler = new LogProfiler($logger, LogLevel::DEBUG);
         $roll = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
         $roll->setProfiler($profiler);
-        self::assertSame('', $roll->getTrace());
+        self::assertSame('', $roll->lastTrace());
         $roll->roll();
-        self::assertNotEmpty($roll->getTrace());
+        self::assertNotEmpty($roll->lastTrace());
         $roll->maximum();
         $roll->minimum();
         self::assertSame($profiler, $roll->getProfiler());
