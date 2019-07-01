@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Exception;
 
-class IllegalValue extends CanNotBeRolled
+use Bakame\DiceRoller\Contract\CanNotBeRolled;
+use InvalidArgumentException;
+
+class IllegalValue extends InvalidArgumentException implements CanNotBeRolled
 {
 }

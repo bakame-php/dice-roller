@@ -11,8 +11,8 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Exception;
+namespace Bakame\DiceRoller\Contract;
 
-class CanNotBeRolled extends \Exception
+interface CanNotBeRolled extends \Throwable
 {
 }
