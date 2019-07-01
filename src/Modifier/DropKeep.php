@@ -18,7 +18,7 @@ use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
-use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\LogProfiler;
@@ -145,7 +145,7 @@ final class DropKeep implements Modifier, Traceable
         if (!$this->is_rollable_wrapped) {
             return $this->pool;
         }
-        
+
         $arr = iterator_to_array($this->pool, false);
 
         return $arr[0];
@@ -233,11 +233,11 @@ final class DropKeep implements Modifier, Traceable
         if (self::DROP_HIGHEST === $this->algo) {
             return $this->dropHighest($values);
         }
-        
+
         if (self::DROP_LOWEST === $this->algo) {
             return $this->dropLowest($values);
         }
-        
+
         if (self::KEEP_HIGHEST === $this->algo) {
             return $this->keepHighest($values);
         }

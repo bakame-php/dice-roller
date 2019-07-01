@@ -9,25 +9,25 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Dice;
 
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDie;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\CustomDie;
+use Bakame\DiceRoller\Dice\FudgeDie;
+use Bakame\DiceRoller\Dice\PercentileDie;
+use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\FudgeDie;
 use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\MemoryLogger;
-use Bakame\DiceRoller\PercentileDie;
-use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\Cup
+ * @coversDefaultClass \Bakame\DiceRoller\Dice\Cup
  */
 final class CupTest extends TestCase
 {

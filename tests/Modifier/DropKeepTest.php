@@ -11,15 +11,15 @@
 
 namespace Bakame\DiceRoller\Test\Modifier;
 
+use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDie;
-use Bakame\DiceRoller\Exception\CanNotBeRolled;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\CustomDie;
+use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\DropKeep;
-use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -29,7 +29,7 @@ use Psr\Log\LogLevel;
 final class DropKeepTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\Cup
+     * @var \Bakame\DiceRoller\Dice\Cup
      */
     private $cup;
 

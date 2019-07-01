@@ -9,16 +9,16 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Dice;
 
-use Bakame\DiceRoller\Exception\CanNotBeRolled;
-use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\Contract\CanNotBeRolled;
+use Bakame\DiceRoller\Dice\CustomDie;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\SidedDie
+ * @coversDefaultClass \Bakame\DiceRoller\Dice\CustomDie
  */
-final class SidedDieTest extends TestCase
+final class CustomDieTest extends TestCase
 {
     /**
      * @covers ::__construct
@@ -29,15 +29,14 @@ final class SidedDieTest extends TestCase
      * @covers ::maximum
      * @covers ::roll
      */
-    public function testSixSidedValues(): void
+    public function testDice(): void
     {
-        $expected = 6;
-        $dice = new SidedDie($expected);
-        self::assertSame($expected, $dice->size());
-        self::assertSame('D6', $dice->toString());
-        self::assertEquals($dice, SidedDie::fromString($dice->toString()));
-        self::assertSame($expected, $dice->maximum());
+        $dice = new CustomDie(1, 2, 2, 4, 4);
+        self::assertSame(5, $dice->size());
+        self::assertSame(4, $dice->maximum());
         self::assertSame(1, $dice->minimum());
+        self::assertSame('D[1,2,2,4,4]', $dice->toString());
+        self::assertEquals($dice, CustomDie::fromString($dice->toString()));
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
@@ -51,15 +50,25 @@ final class SidedDieTest extends TestCase
     public function testConstructorWithWrongValue(): void
     {
         self::expectException(CanNotBeRolled::class);
-        new SidedDie(1);
+        new CustomDie(1);
     }
 
     /**
+     * @dataProvider invalidExpression
      * @covers ::fromString
      */
-    public function testfromStringWithWrongValue(): void
+    public function testfromStringWithWrongValue(string $expression): void
     {
         self::expectException(CanNotBeRolled::class);
-        SidedDie::fromString('1');
+        CustomDie::fromString($expression);
+    }
+
+    public function invalidExpression(): iterable
+    {
+        return [
+            'invalid format' => ['1'],
+            'contains non numeric' => ['d[1,0,foobar]'],
+            'contains empty side' => ['d[1,,1]'],
+        ];
     }
 }

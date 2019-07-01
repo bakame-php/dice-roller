@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\Dice;
 use function random_int;

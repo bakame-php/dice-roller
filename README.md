@@ -46,11 +46,11 @@ $ bin/roll --iteration=3 --logs 2D3+5
  Result #3:  10
 
  ====== ROLL TRACE ======= 
- [Bakame\DiceRoller\Cup::roll] - 2D3 : 1 + 2 = 3   
+ [Bakame\DiceRoller\Dice\Cup::roll] - 2D3 : 1 + 2 = 3   
  [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 3 + 5 = 8   
- [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
+ [Bakame\DiceRoller\Dice\Cup::roll] - 2D3 : 3 + 2 = 5   
  [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10   
- [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
+ [Bakame\DiceRoller\Dice\Cup::roll] - 2D3 : 3 + 2 = 5   
  [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10  
 ```
 
@@ -75,9 +75,9 @@ Use the library bundled rollable objects to build a dice pool to roll.
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
-use Bakame\DiceRoller\SidedDie;
 
 $pool = new Arithmetic(
     new Cup(new SidedDie(6), new SidedDie(6)),
@@ -113,7 +113,7 @@ echo $pool->lastTrace(); // displays 4 + 3
 foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
     echo $logs, PHP_EOL;
 }
-//[Bakame\DiceRoller\Cup::roll] - 2D6 : 2 + 2 = 4
+Bakame\DiceRoller\Dice\Cup
 //[Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 4 + 3 = 7
 //the MemoryLogger::getLogs method IS NOT PART OF PSR3 INTERFACE!!
 ```
@@ -197,7 +197,7 @@ $cup = $factory->newInstance('3D20+4+D4!>3/4^3');
 echo $cup->roll();
 ```
 
-If the `Parser` or the `Factory` are not able to parse or create a `Rollable` object from the string expression a `Bakame\DiceRoller\Exception\CanNotBeRolled` exception will be thrown.
+If the `Parser` or the `Factory` are not able to parse or create a `Rollable` object from the string expression a `Bakame\DiceRoller\Contract\CanNotBeRolled` exception will be thrown.
 
 ### Rollable
 
@@ -222,7 +222,7 @@ interface Rollable
 - `Rollable::roll` returns a value from a roll.
 - `Rollable::toString` returns the object string notation.
 
-**All exceptions thrown by the package extends the basic `Bakame\DiceRoller\Exception\CanNotBeRolled` exception.**
+**All exceptions thrown by the package extends the basic `Bakame\DiceRoller\Contract\CanNotBeRolled` exception.**
 
 ### Dices Type
 
@@ -256,10 +256,10 @@ The following die type are bundled in the library:
 ```php
 <?php
 
-use Bakame\DiceRoller\CustomDie;
-use Bakame\DiceRoller\FudgeDie;
-use Bakame\DiceRoller\PercentileDie;
-use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\Dice\CustomDie;
+use Bakame\DiceRoller\Dice\FudgeDie;
+use Bakame\DiceRoller\Dice\PercentileDie;
+use Bakame\DiceRoller\Dice\SidedDie;
 
 $basic = new SidedDie(3);
 echo $basic->toString(); // 'D3';
@@ -304,7 +304,7 @@ interface Pool implements \Countable, \IteratorAggregate, Rollable
 ```
  
 A `Pool` is a collection of `Rollable` objects which also implements the `Rollable` interface. The package comes bundle
-with the `Bakame\DiceRoller\Cup` class which implements the interface.
+with the `Bakame\DiceRoller\Cup` Bakame\DiceRoller\Dice\Cups the interface.
 
 ```php
 <?php
@@ -326,11 +326,11 @@ The `Cup::fromRollable` named constructor enables creating uniformed `Cup` objec
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\CustomDie;
-use Bakame\DiceRoller\FudgeDie;
-use Bakame\DiceRoller\PercentileDie;
-use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\CustomDie;
+use Bakame\DiceRoller\Dice\FudgeDie;
+use Bakame\DiceRoller\Dice\PercentileDie;
+use Bakame\DiceRoller\Dice\SidedDie;
 
 echo Cup::fromRollable(new SidedDie(5), 3)->toString();           // displays 3D5
 echo Cup::fromRollable(new PercentileDie(), 4)->toString();       // displays 4D%
@@ -345,8 +345,8 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\SidedDie;
 
 foreach (Cup::fromRollable(new SidedDie(5), 3) as $rollable) {
     echo $rollable->toString(); // will always return D5
@@ -358,9 +358,9 @@ Once a `Cup` is instantiated there are no method to alter its properties. Howeve
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\FudgeDie;
-use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\FudgeDie;
+use Bakame\DiceRoller\Dice\SidedDie;
 
 $cup = Cup::fromRollable(new SidedDie(5), 3);
 count($cup);           //returns 3 the number of dices
@@ -376,8 +376,8 @@ echo $alt_cup->toString(); //returns 3D5+DF
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\FudgeDie;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\FudgeDie;
 
 $cup = new Cup(new Cup(), new FudgeDie());
 count($cup); // returns 1
@@ -437,8 +437,8 @@ The value given must be a positive integer or `0`. If the value or the operator 
 ```php
 <?php
 
+use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
-use Bakame\DiceRoller\SidedDie;
 
 $modifier = new Arithmetic(new SidedDie(6), Arithmetic::MUL, 3);
 echo $modifier->toString();  // displays D6*3;
@@ -486,9 +486,9 @@ If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRol
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\DropKeep;
-use Bakame\DiceRoller\SidedDie;
 
 $cup = Cup::fromRollable(new SidedDie(6), 4);
 $modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
@@ -533,10 +533,10 @@ If the comparison operator is not recognized a `Bakame\DiceRoller\CanNotBeRolled
 ```php
 <?php
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\FudgeDie;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\FudgeDie;
+use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\SidedDie;
 
 $cup = new Cup(new SidedDie(6), new FudgeDie(), new SidedDie(6), new SidedDie(6));
 $modifier = new Explode($cup, Explode::EQ, 3);

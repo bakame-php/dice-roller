@@ -11,15 +11,15 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\MemoryLogger;
-use Bakame\DiceRoller\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass Bakame\DiceRoller\LogProfiler
+ * @coversDefaultClass \Bakame\DiceRoller\LogProfiler
  */
 final class LogProfilerTest extends TestCase
 {
