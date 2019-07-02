@@ -12,7 +12,7 @@
 namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Factory;
 use PHPUnit\Framework\TestCase;
@@ -72,8 +72,8 @@ final class FactoryTest extends TestCase
      * @covers ::flattenRollable
      * @covers ::decorate
      * @covers ::createDice
-     * @covers \Bakame\DiceRoller\Dice\Cup::count
-     * @covers \Bakame\DiceRoller\Dice\Cup::toString
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::toString
      * @covers \Bakame\DiceRoller\Dice\SidedDie::toString
      * @covers \Bakame\DiceRoller\Dice\FudgeDie::toString
      * @covers \Bakame\DiceRoller\Modifier\Arithmetic::toString
@@ -116,11 +116,11 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::newInstance
      * @covers ::create
-     * @covers \Bakame\DiceRoller\ExpressionParser
      * @covers ::addRollable
      * @covers ::createRollable
      * @covers ::createDice
      * @covers ::decorate
+     * @covers \Bakame\DiceRoller\ExpressionParser
      * @dataProvider permissiveParserProvider
      */
     public function testPermissiveParser(string $full, string $short): void
@@ -176,8 +176,8 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers \Bakame\DiceRoller\Dice\Cup::count
-     * @covers \Bakame\DiceRoller\Dice\Cup::roll
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::roll
      */
     public function testRollWithNoDice(): void
     {
@@ -192,8 +192,8 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::addRollable
      * @covers ::createRollable
-     * @covers \Bakame\DiceRoller\Dice\Cup::count
-     * @covers \Bakame\DiceRoller\Dice\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\Dice\SidedDie::size
      */
     public function testRollWithSingleDice(): void
@@ -212,8 +212,8 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::addRollable
      * @covers ::createRollable
-     * @covers \Bakame\DiceRoller\Dice\Cup::count
-     * @covers \Bakame\DiceRoller\Dice\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\Dice\SidedDie::size
      */
     public function testRollWithDefaultDice(): void
@@ -235,8 +235,8 @@ final class FactoryTest extends TestCase
      * @covers ::newInstance
      * @covers ::addRollable
      * @covers ::createRollable
-     * @covers \Bakame\DiceRoller\Dice\Cup::count
-     * @covers \Bakame\DiceRoller\Dice\Cup::getIterator
+     * @covers \Bakame\DiceRoller\Cup::count
+     * @covers \Bakame\DiceRoller\Cup::getIterator
      * @covers \Bakame\DiceRoller\Dice\SidedDie::size
      */
     public function testRollWithMultipleDice(): void

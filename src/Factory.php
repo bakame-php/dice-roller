@@ -18,7 +18,6 @@ use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Dice\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;

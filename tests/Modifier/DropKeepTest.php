@@ -14,7 +14,7 @@ namespace Bakame\DiceRoller\Test\Modifier;
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\LogProfiler;
@@ -29,7 +29,7 @@ use Psr\Log\LogLevel;
 final class DropKeepTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\Dice\Cup
+     * @var Cup
      */
     private $cup;
 

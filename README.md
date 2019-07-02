@@ -46,11 +46,11 @@ $ bin/roll --iteration=3 --logs 2D3+5
  Result #3:  10
 
  ====== ROLL TRACE ======= 
- [Bakame\DiceRoller\Dice\Cup::roll] - 2D3 : 1 + 2 = 3   
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 1 + 2 = 3   
  [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 3 + 5 = 8   
- [Bakame\DiceRoller\Dice\Cup::roll] - 2D3 : 3 + 2 = 5   
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
  [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10   
- [Bakame\DiceRoller\Dice\Cup::roll] - 2D3 : 3 + 2 = 5   
+ [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
  [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10  
 ```
 
@@ -75,7 +75,7 @@ Use the library bundled rollable objects to build a dice pool to roll.
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 
@@ -113,7 +113,7 @@ echo $pool->lastTrace(); // displays 4 + 3
 foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
     echo $logs, PHP_EOL;
 }
-Bakame\DiceRoller\Dice\Cup
+Bakame\DiceRoller\Cup
 //[Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 4 + 3 = 7
 //the MemoryLogger::getLogs method IS NOT PART OF PSR3 INTERFACE!!
 ```
@@ -326,7 +326,7 @@ The `Cup::fromRollable` named constructor enables creating uniformed `Cup` objec
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
@@ -345,7 +345,7 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 
 foreach (Cup::fromRollable(new SidedDie(5), 3) as $rollable) {
@@ -358,7 +358,7 @@ Once a `Cup` is instantiated there are no method to alter its properties. Howeve
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 
@@ -376,7 +376,7 @@ echo $alt_cup->toString(); //returns 3D5+DF
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\FudgeDie;
 
 $cup = new Cup(new Cup(), new FudgeDie());
@@ -486,7 +486,7 @@ If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRol
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\DropKeep;
 
@@ -533,7 +533,7 @@ If the comparison operator is not recognized a `Bakame\DiceRoller\CanNotBeRolled
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Explode;

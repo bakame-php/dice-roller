@@ -11,7 +11,7 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\MemoryLogger;

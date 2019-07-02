@@ -18,7 +18,7 @@ use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\LogProfiler;
@@ -49,7 +49,7 @@ final class DropKeep implements Modifier, Traceable
     ];
 
     /**
-     * The RollableCollection to decorate.
+     * The Collection of Rollable object to decorate.
      *
      * @var Pool
      */

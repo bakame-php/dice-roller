@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Dice;
+namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Dice\Cup;
+use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Dice\Cup
+ * @coversDefaultClass \Bakame\DiceRoller\Cup
  */
 final class CupTest extends TestCase
 {
@@ -59,7 +59,7 @@ final class CupTest extends TestCase
     public function testWithRollableReturnsSameInstance(): void
     {
         $cup = new Cup(new FudgeDie());
-        $altCup = $cup->withAddedRollable(new Cup());
+        $altCup = $cup->withAddedRollable(new \Bakame\DiceRoller\Cup());
 
         self::assertSame($cup, $altCup);
     }

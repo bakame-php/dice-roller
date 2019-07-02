@@ -11,14 +11,13 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Dice;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Exception\IllegalValue;
-use Bakame\DiceRoller\LogProfiler;
 use Iterator;
 use function array_count_values;
 use function array_filter;
