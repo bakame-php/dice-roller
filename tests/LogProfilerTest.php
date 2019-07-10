@@ -51,7 +51,7 @@ final class LogProfilerTest extends TestCase
 
     public function testLogFormat(): void
     {
-        self::assertSame(LogProfiler::DEFAULT_FORMAT, $this->profiler->logFormat());
+        self::assertSame(LogProfiler::DEFAULT_LOG_FORMAT, $this->profiler->logFormat());
     }
 
     /**

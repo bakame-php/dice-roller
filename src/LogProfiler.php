@@ -23,7 +23,7 @@ use function array_search;
 
 final class LogProfiler implements Profiler
 {
-    public const DEFAULT_FORMAT =  '[{method}] - {rollable} : {trace} = {result}';
+    public const DEFAULT_LOG_FORMAT =  '[{method}] - {rollable} : {trace} = {result}';
 
     /**
      * @var LoggerInterface
@@ -49,7 +49,7 @@ final class LogProfiler implements Profiler
     {
         $this->logger = $logger;
         $this->logLevel = $logLevel;
-        $this->logFormat = $logFormat ?? self::DEFAULT_FORMAT;
+        $this->logFormat = $logFormat ?? self::DEFAULT_LOG_FORMAT;
     }
 
     /**
