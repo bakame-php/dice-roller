@@ -591,11 +591,9 @@ use Psr\Log\LogLevel;
 final class LogProfiler implements Profiler
 {
     public function __construct(LoggerInterface $logger, string $logLevel = LogLevel::DEBUG, ?string $logFormat = null);
-    public function getLogger(): LoggerInterface;
-    public function getLogLevel(): string;
-    public function getLogFormat(): string;
-    public function setLogLevel(string $level): void;
-    public function setLogFormat(string $format): void;
+    public function logger(): LoggerInterface;
+    public function logLevel(): string;
+    public function logFormat(): string;
 }
 ```
 
@@ -632,8 +630,6 @@ use Psr\Log\LogLevel;
 
 $logger = new MemoryLogger();
 $profiler = new LogProfiler($logger, LogLevel::DEBUG, '{trace} = {result}');
-$profiler->setLogLevel(LogLevel::INFO);
-$profiler->setLogFormat('{trace} -> {result}');
 ```
 
 Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better flesh out implementation than the one provided out of the box.
