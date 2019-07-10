@@ -9,16 +9,25 @@ use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\MemoryLogger;
 use Psr\Log\LogLevel;
 
-function writeln(string $message, $output = STDOUT): void
+function writeln(array $messages, $output): int
 {
-    fwrite($output, $message . PHP_EOL);
+    $message = implode(PHP_EOL, $messages). PHP_EOL;
+
+    return fwrite($output, $message);
 }
 
-function fail(string $message, int $exitCode): void
+function success($message, $output = STDOUT): int
 {
-    writeln($message, STDERR);
+    $messages = (array) $message;
 
-    exit($exitCode);
+    return writeln($messages, $output);
+}
+
+function fail(string $message, $output = STDERR): int
+{
+    $messages = (array) $message;
+
+    return writeln($messages, $output);
 }
 
 function autoload(string $errorMessage): void
@@ -31,15 +40,19 @@ function autoload(string $errorMessage): void
         }
     }
 
-    fail($errorMessage, 1);
+    fail($errorMessage);
+
+    die(1);
 }
 
 function flushLogger(MemoryLogger $logger, string $format): void
 {
-    foreach ($logger->getLogs(LogLevel::DEBUG) as $log) {
-        writeln(sprintf($format, $log));
-    }
+    $mapper = function ($log) use ($format) {
+        return sprintf($format, $log);
+    };
 
+    $messages = array_map($mapper, $logger->getLogs(LogLevel::DEBUG));
+    success($messages);
     $logger->clear();
 }
 
@@ -122,7 +135,7 @@ $opts = filter_var_array(array_replace(
 ]);
 
 if (2 > count($argv) || isset($opts['help']) || isset($opts['h'])) {
-    writeln($helpText);
+    success($helpText);
 
     die(0);
 }
@@ -131,7 +144,9 @@ $expression = array_pop($argv);
 $expression = trim($expression);
 
 if (0 === strpos($expression, '-')) {
-    fail("$redbg Make sure your dice annotation is the last argument of your call! $reset", 65);
+    fail("$redbg Make sure your dice annotation is the last argument of your call! $reset");
+
+    die(65);
 }
 
 $logger = new MemoryLogger();
@@ -140,23 +155,22 @@ $factory = new Factory(new ExpressionParser(), new LogProfiler($logger));
 try {
     $rollable = $factory->newInstance($expression);
 } catch (Exception $exception) {
-    fail(sprintf($parseErrorMessage, $expression, $exception->getMessage()), 65);
+    fail(sprintf($parseErrorMessage, $expression, $exception->getMessage()));
+
+    die(65);
 }
 
 if (isset($opts['info'])) {
-   writeln(sprintf($rollableInfo, $rollable->toString(), $rollable->minimum(), $rollable->maximum()));
+   success(sprintf($rollableInfo, $rollable->toString(), $rollable->minimum(), $rollable->maximum()));
 }
 
 $logger->clear();
 
-writeln("$yellow ====== ROLL RESULTS ======= $reset");
+success("$yellow ====== ROLL RESULTS ======= $reset");
 for ($i = 0; $i < $opts['iteration']; ++$i) {
-    writeln(sprintf($rollOutputFormat, $i+1, $rollable->roll()));
+    success(sprintf($rollOutputFormat, $i+1, $rollable->roll()));
     if (isset($opts['logs'])) {
         flushLogger($logger, $logOutputFormat);
-        writeln('');
     }
 }
-
-writeln('');
 die(0);
