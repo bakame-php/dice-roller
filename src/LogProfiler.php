@@ -23,6 +23,8 @@ use function array_search;
 
 final class LogProfiler implements Profiler
 {
+    public const DEFAULT_FORMAT =  '[{method}] - {rollable} : {trace} = {result}';
+
     /**
      * @var LoggerInterface
      */
@@ -36,10 +38,10 @@ final class LogProfiler implements Profiler
     /**
      * @var string
      */
-    private $logFormat = '[{method}] - {rollable} : {trace} = {result}';
+    private $logFormat;
 
     /**
-     * New instance.
+     * LogProfiler constructor.
      *
      * @param ?string $logFormat
      */
@@ -47,7 +49,7 @@ final class LogProfiler implements Profiler
     {
         $this->logger = $logger;
         $this->logLevel = $logLevel;
-        $this->logFormat = $logFormat ?? $this->logFormat;
+        $this->logFormat = $logFormat ?? self::DEFAULT_FORMAT;
     }
 
     /**
@@ -59,7 +61,7 @@ final class LogProfiler implements Profiler
     }
 
     /**
-     * Records the Rollable action.
+     * {@inheritDoc}
      */
     public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void
     {
@@ -86,7 +88,7 @@ final class LogProfiler implements Profiler
     /**
      * Returns the underlying LoggerInterface object.
      */
-    public function getLogger(): LoggerInterface
+    public function logger(): LoggerInterface
     {
         return $this->logger;
     }
@@ -94,7 +96,7 @@ final class LogProfiler implements Profiler
     /**
      * Returns the LogLevel.
      */
-    public function getLogLevel(): string
+    public function logLevel(): string
     {
         return $this->logLevel;
     }
@@ -102,24 +104,8 @@ final class LogProfiler implements Profiler
     /**
      * Returns the LogFormat.
      */
-    public function getLogFormat(): string
+    public function logFormat(): string
     {
         return $this->logFormat;
-    }
-
-    /**
-     * Sets the LogLevel.
-     */
-    public function setLogLevel(string $level): void
-    {
-        $this->logLevel = $level;
-    }
-
-    /**
-     * Sets the LogFormat.
-     */
-    public function setLogFormat(string $format): void
-    {
-        $this->logFormat = $format;
     }
 }

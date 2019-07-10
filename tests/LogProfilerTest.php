@@ -39,26 +39,19 @@ final class LogProfilerTest extends TestCase
         $this->profiler = new LogProfiler($this->logger);
     }
 
-    public function testLoggerAccesor(): void
+    public function testLogger(): void
     {
-        self::assertSame($this->logger, $this->profiler->getLogger());
+        self::assertSame($this->logger, $this->profiler->logger());
     }
 
     public function testLogLevel(): void
     {
-        self::assertSame(LogLevel::DEBUG, $this->profiler->getLogLevel());
-        $this->profiler->setLogLevel(LogLevel::INFO);
-        self::assertSame(LogLevel::INFO, $this->profiler->getLogLevel());
+        self::assertSame(LogLevel::DEBUG, $this->profiler->logLevel());
     }
 
     public function testLogFormat(): void
     {
-        $format = '[{method}] - {rollable} : {trace} = {result}';
-        self::assertSame($format, $this->profiler->getLogFormat());
-
-        $format = '{trace} -> {result}';
-        $this->profiler->setLogFormat($format);
-        self::assertSame($format, $this->profiler->getLogFormat());
+        self::assertSame(LogProfiler::DEFAULT_FORMAT, $this->profiler->logFormat());
     }
 
     /**
