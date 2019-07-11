@@ -605,12 +605,6 @@ final class LogProfiler implements Profiler
 The `LogProfiler` log messages, by default, will match this format:
 
     [{method}] - {rollable} : {trace} = {result}
-You can customize the message format using the `LogProfiler::setLogFormat()`
-method, like so:
-
-```php
-$profiler->setLogFormat("{trace} -> {result}")
-```
 
 The context keys are:
 
@@ -619,12 +613,7 @@ The context keys are:
 - `{trace}`: The operation trace.
 - `{result}`: The result from performing the calculation.
 
-### Configuring the LogProfiler
-
-At any moment you can change, using the profiler setter methods:
-
-- the log level
-- the log format
+Configuring the logger is done on instantiation.
 
 ```php
 <?php
