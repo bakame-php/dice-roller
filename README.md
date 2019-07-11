@@ -590,7 +590,12 @@ use Psr\Log\LogLevel;
 
 final class LogProfiler implements Profiler
 {
-    public function __construct(LoggerInterface $logger, string $logLevel = LogLevel::DEBUG, ?string $logFormat = null);
+    public const DEFAULT_LOG_FORMAT = '[{method}] - {rollable} : {trace} = {result}';
+    public function __construct(
+        LoggerInterface $logger,
+        string $logLevel = LogLevel::DEBUG,
+        string $logFormat = self::DEFAULT_LOG_FORMAT
+    );
     public function logger(): LoggerInterface;
     public function logLevel(): string;
     public function logFormat(): string;
