@@ -107,14 +107,16 @@ $factory = new Factory($parser, $profiler);
 $pool = $factory->newInstance('2D6+3');
 
 echo $pool->toString();  // returns 2D6+3
-echo $pool->roll();      // displays 7
-echo $pool->lastTrace(); // displays 4 + 3
+echo $pool->roll();      // displays 12
+echo $pool->lastTrace(); // displays 9 + 3
 
 foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
-    echo $logs, PHP_EOL;
+    echo $log, PHP_EOL;
 }
-Bakame\DiceRoller\Cup
-//[Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 4 + 3 = 7
+
+// [Bakame\DiceRoller\Cup::roll] - 2D6 : 5 + 4 = 9
+// [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 9 + 3 = 12
+
 //the MemoryLogger::getLogs method IS NOT PART OF PSR3 INTERFACE!!
 ```
 
