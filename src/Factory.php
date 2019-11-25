@@ -16,8 +16,8 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
@@ -40,20 +40,20 @@ final class Factory
     private $parser;
 
     /**
-     * @var Profiler
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * new Instance.
      *
-     * @param ?Parser   $parser
-     * @param ?Profiler $profiler
+     * @param ?Parser $parser
+     * @param ?Tracer $tracer
      */
-    public function __construct(?Parser $parser = null, ?Profiler $profiler = null)
+    public function __construct(?Parser $parser = null, ?Tracer $tracer = null)
     {
         $this->parser = $parser ?? new ExpressionParser();
-        $this->profiler = $profiler ?? LogProfiler::fromNullLogger();
+        $this->tracer = $tracer ?? LogTracer::fromNullLogger();
     }
 
     /**
@@ -72,7 +72,7 @@ final class Factory
     private function create(array $parsed): Rollable
     {
         $rollable = array_reduce($parsed, [$this, 'addRollable'], new Cup());
-        $rollable->setProfiler($this->profiler);
+        $rollable->setTracer($this->tracer);
 
         return $this->flattenRollable($rollable);
     }
@@ -106,7 +106,7 @@ final class Factory
 
         $die = $this->createDice($parts['simple']['type']);
         $rollable = Cup::fromRollable($die, $parts['simple']['quantity']);
-        $rollable->setProfiler($this->profiler);
+        $rollable->setTracer($this->tracer);
 
         return $rollable;
     }
@@ -144,20 +144,20 @@ final class Factory
     {
         if ('arithmetic' === $matches['modifier']) {
             $modifier = new Arithmetic($rollable, $matches['operator'], $matches['value']);
-            $modifier->setProfiler($this->profiler);
+            $modifier->setTracer($this->tracer);
 
             return $modifier;
         }
 
         if ('dropkeep' === $matches['modifier']) {
             $modifier = new DropKeep($rollable, $matches['operator'], $matches['value']);
-            $modifier->setProfiler($this->profiler);
+            $modifier->setTracer($this->tracer);
 
             return $modifier;
         }
 
         $modifier = new Explode($rollable, $matches['operator'], $matches['value']);
-        $modifier->setProfiler($this->profiler);
+        $modifier->setTracer($this->tracer);
 
         return $modifier;
     }

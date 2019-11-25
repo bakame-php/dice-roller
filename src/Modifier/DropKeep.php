@@ -16,13 +16,13 @@ namespace Bakame\DiceRoller\Modifier;
 use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -76,9 +76,9 @@ final class DropKeep implements Modifier, CanBeTraced
     private $trace;
 
     /**
-     * @var Profiler
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * @var bool
@@ -111,7 +111,7 @@ final class DropKeep implements Modifier, CanBeTraced
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->setProfiler(LogProfiler::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -125,17 +125,17 @@ final class DropKeep implements Modifier, CanBeTraced
     /**
      * {@inheritdoc}
      */
-    public function setProfiler(Profiler $profiler): void
+    public function setTracer(Tracer $tracer): void
     {
-        $this->profiler = $profiler;
+        $this->tracer = $tracer;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProfiler(): Profiler
+    public function getTracer(): Tracer
     {
-        return $this->profiler;
+        return $this->tracer;
     }
 
     /**
@@ -221,9 +221,9 @@ final class DropKeep implements Modifier, CanBeTraced
         };
 
         $operation = implode(' + ', array_map($mapper, $values));
-        $trace = $this->profiler->createTrace($method, $this, $operation, $retval);
+        $trace = $this->tracer->createTrace($method, $this, $operation, $retval);
 
-        $this->profiler->addTrace($trace);
+        $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
         return $retval;

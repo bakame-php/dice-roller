@@ -15,12 +15,12 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use function abs;
 use function intdiv;
 use function sprintf;
@@ -63,9 +63,9 @@ final class Arithmetic implements Modifier, CanBeTraced
     private $trace;
 
     /**
-     * @var Profiler
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * new instance.
@@ -87,7 +87,7 @@ final class Arithmetic implements Modifier, CanBeTraced
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setProfiler(LogProfiler::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -101,17 +101,17 @@ final class Arithmetic implements Modifier, CanBeTraced
     /**
      * {@inheritdoc}
      */
-    public function setProfiler(Profiler $profiler): void
+    public function setTracer(Tracer $tracer): void
     {
-        $this->profiler = $profiler;
+        $this->tracer = $tracer;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProfiler(): Profiler
+    public function getTracer(): Tracer
     {
-        return $this->profiler;
+        return $this->tracer;
     }
 
     /**
@@ -172,9 +172,9 @@ final class Arithmetic implements Modifier, CanBeTraced
     {
         $retval = $this->calculate($value);
         $operation = $value.' '.$this->operator.' '.$this->value;
-        $trace = $this->profiler->createTrace($method, $this, $operation, $retval);
+        $trace = $this->tracer->createTrace($method, $this, $operation, $retval);
 
-        $this->profiler->addTrace($trace);
+        $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
         return $retval;

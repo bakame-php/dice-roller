@@ -15,9 +15,9 @@ namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Iterator;
 use function array_count_values;
@@ -42,9 +42,9 @@ final class Cup implements Pool, CanBeTraced
     private $trace;
 
     /**
-     * @var Profiler
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * Cup constructor.
@@ -54,7 +54,7 @@ final class Cup implements Pool, CanBeTraced
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
-        $this->setProfiler(LogProfiler::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -102,7 +102,7 @@ final class Cup implements Pool, CanBeTraced
 
         $pool = new self();
         $pool->items = array_merge($this->items, $items);
-        $pool->profiler = $this->profiler;
+        $pool->tracer = $this->tracer;
 
         return $pool;
     }
@@ -118,17 +118,17 @@ final class Cup implements Pool, CanBeTraced
     /**
      * {@inheritdoc}
      */
-    public function setProfiler(Profiler $profiler): void
+    public function setTracer(Tracer $tracer): void
     {
-        $this->profiler = $profiler;
+        $this->tracer = $tracer;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProfiler(): Profiler
+    public function getTracer(): Tracer
     {
-        return $this->profiler;
+        return $this->tracer;
     }
 
     /**
@@ -236,9 +236,9 @@ final class Cup implements Pool, CanBeTraced
 
         $retval = (int) array_sum($sum);
         $operation = implode(' + ', array_map($mapper, $sum));
-        $trace = $this->profiler->createTrace($method, $this, $operation, $retval);
+        $trace = $this->tracer->createTrace($method, $this, $operation, $retval);
 
-        $this->profiler->addTrace($trace);
+        $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
         return $retval;

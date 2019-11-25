@@ -13,16 +13,16 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
 use ReflectionClass;
 use function array_search;
 
-final class LogProfiler implements Profiler
+final class LogTracer implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{source}] - {subject} : {operation} = {result}';
 

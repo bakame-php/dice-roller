@@ -17,8 +17,8 @@ use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\LogProfiler;
 use Bakame\DiceRoller\LogTrace;
+use Bakame\DiceRoller\LogTracer;
 use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Explode;
 use PHPUnit\Framework\TestCase;
@@ -27,20 +27,20 @@ use function get_class;
 class LogTraceTest extends TestCase
 {
     /**
-     * @var LogProfiler
+     * @var LogTracer
      */
-    private $profiler;
+    private $tracer;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->profiler = new LogProfiler(new MemoryLogger());
+        $this->tracer = new LogTracer(new MemoryLogger());
     }
 
     public function testItCanBeInstantiated(): void
     {
         $rollable = Cup::fromRollable(new SidedDie(6), 4);
-        $rollable->setProfiler($this->profiler);
+        $rollable->setTracer($this->tracer);
         $roll = $rollable->roll();
         $trace = $rollable->lastTrace();
         self::assertInstanceOf(Trace::class, $trace);
@@ -48,7 +48,7 @@ class LogTraceTest extends TestCase
         self::assertSame($rollable, $trace->subject());
         self::assertSame($roll, $trace->result());
         self::assertSame(get_class($rollable).'::roll', $trace->source());
-        self::assertEmpty($trace->optionals());
+        self::assertEmpty($trace->extensions());
         self::assertStringContainsString('+', $trace->operation());
         $expectedContext = [
             'source' => get_class($rollable).'::roll',
@@ -63,7 +63,7 @@ class LogTraceTest extends TestCase
     public function testTraceCanHaveOptionalsValue(): void
     {
         $rollable = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
-        $rollable->setProfiler($this->profiler);
+        $rollable->setTracer($this->tracer);
         $rollable->roll();
         $trace = $rollable->lastTrace();
         self::assertInstanceOf(LogTrace::class, $trace);

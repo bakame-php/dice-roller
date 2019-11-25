@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Profiler
+interface Tracer
 {
     /**
      * @param array $optionals optional data that can be added to the Trace objects.

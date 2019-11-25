@@ -19,7 +19,7 @@ use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Explode;
 use PHPUnit\Framework\TestCase;
@@ -172,25 +172,25 @@ final class ExplodeTest extends TestCase
      * @covers ::maximum
      * @covers ::roll
      * @covers ::calculate
-     * @covers ::setProfiler
-     * @covers ::getProfiler
+     * @covers ::setTracer
+     * @covers ::getTracer
      * @covers ::lastTrace
      * @covers ::getInnerRollable
-     * @covers \Bakame\DiceRoller\LogProfiler
+     * @covers \Bakame\DiceRoller\LogTracer
      * @covers \Bakame\DiceRoller\MemoryLogger
      */
-    public function testProfiler(): void
+    public function testTracer(): void
     {
         $logger = new MemoryLogger();
-        $profiler = new LogProfiler($logger, LogLevel::DEBUG);
+        $tracer = new LogTracer($logger, LogLevel::DEBUG);
         $rollable = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
-        $rollable->setProfiler($profiler);
+        $rollable->setTracer($tracer);
         self::assertNull($rollable->lastTrace());
         $rollable->roll();
         self::assertInstanceOf(Trace::class, $rollable->lastTrace());
         $rollable->maximum();
         $rollable->minimum();
-        self::assertSame($profiler, $rollable->getProfiler());
+        self::assertSame($tracer, $rollable->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
         self::assertInstanceOf(CustomDie::class, $rollable->getInnerRollable());
     }

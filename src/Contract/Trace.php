@@ -23,7 +23,7 @@ interface Trace
 
     public function operation(): string;
 
-    public function optionals(): array;
+    public function extensions(): array;
 
     public function context(): array;
 }

@@ -15,14 +15,9 @@ namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
-use function array_filter;
-use function in_array;
-use const ARRAY_FILTER_USE_KEY;
 
 final class LogTrace implements Trace
 {
-    private const REQUIRED_CONTEXT_FIELDS = ['source', 'subject', 'operation', 'result'];
-
     /**
      * @var Rollable
      */
@@ -46,20 +41,22 @@ final class LogTrace implements Trace
     /**
      * @var array
      */
-    private $optionals;
+    private $extensions;
 
     public function __construct(
         string $source,
         Rollable $subject,
         string $operation,
         int $result,
-        array $optionals = []
+        array $extensions = []
     ) {
+        unset($extensions['source'], $extensions['subject'], $extensions['operation'], $extensions['result']);
+
         $this->source = $source;
         $this->subject = $subject;
         $this->operation = $operation;
         $this->result = $result;
-        $this->optionals = $optionals;
+        $this->extensions = $extensions;
     }
 
     /**
@@ -97,9 +94,9 @@ final class LogTrace implements Trace
     /**
      * {@inheritDoc}
      */
-    public function optionals(): array
+    public function extensions(): array
     {
-        return $this->optionals;
+        return $this->extensions;
     }
 
     /**
@@ -107,17 +104,11 @@ final class LogTrace implements Trace
      */
     public function context(): array
     {
-        $filterOutRequiredKeys = function ($offset): bool {
-            return !in_array($offset, self::REQUIRED_CONTEXT_FIELDS, true);
-        };
-
-        $optionals = array_filter($this->optionals, $filterOutRequiredKeys, ARRAY_FILTER_USE_KEY);
-
         return [
             'source' => $this->source,
             'subject' => $this->subject->toString(),
             'operation' => $this->operation,
             'result' => $this->result,
-        ] + $optionals;
+        ] + $this->extensions;
     }
 }

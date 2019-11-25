@@ -16,13 +16,13 @@ namespace Bakame\DiceRoller\Modifier;
 use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use function array_map;
 use function array_sum;
 use function implode;
@@ -65,9 +65,9 @@ final class Explode implements Modifier, CanBeTraced
     private $trace;
 
     /**
-     * @var Profiler
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * @var bool
@@ -97,7 +97,7 @@ final class Explode implements Modifier, CanBeTraced
             throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
-        $this->setProfiler(LogProfiler::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -148,17 +148,17 @@ final class Explode implements Modifier, CanBeTraced
     /**
      * {@inheritdoc}
      */
-    public function setProfiler(Profiler $profiler): void
+    public function setTracer(Tracer $tracer): void
     {
-        $this->profiler = $profiler;
+        $this->tracer = $tracer;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProfiler(): Profiler
+    public function getTracer(): Tracer
     {
-        return $this->profiler;
+        return $this->tracer;
     }
 
     /**
@@ -207,8 +207,8 @@ final class Explode implements Modifier, CanBeTraced
     {
         $retval = $this->pool->minimum();
 
-        $trace = $this->profiler->createTrace(__METHOD__, $this, (string) $retval, $retval);
-        $this->profiler->addTrace($trace);
+        $trace = $this->tracer->createTrace(__METHOD__, $this, (string) $retval, $retval);
+        $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
         return $retval;
@@ -219,8 +219,8 @@ final class Explode implements Modifier, CanBeTraced
      */
     public function maximum(): int
     {
-        $trace = $this->profiler->createTrace(__METHOD__, $this, (string)PHP_INT_MAX, PHP_INT_MAX);
-        $this->profiler->addTrace($trace);
+        $trace = $this->tracer->createTrace(__METHOD__, $this, (string)PHP_INT_MAX, PHP_INT_MAX);
+        $this->tracer->addTrace($trace);
 
         $this->trace = $trace;
 
@@ -249,9 +249,9 @@ final class Explode implements Modifier, CanBeTraced
         };
 
         $operation = implode(' + ', array_map($mapper, $values));
-        $trace = $this->profiler->createTrace(__METHOD__, $this, $operation, $retval, ['totalRollsCount' => $nbRolls]);
+        $trace = $this->tracer->createTrace(__METHOD__, $this, $operation, $retval, ['totalRollsCount' => $nbRolls]);
 
-        $this->profiler->addTrace($trace);
+        $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
         return $retval;

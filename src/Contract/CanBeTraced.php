@@ -21,12 +21,12 @@ interface CanBeTraced
     public function lastTrace(): ?Trace;
 
     /**
-     * Returns the object profiler.
+     * Returns the object tracer.
      */
-    public function getProfiler(): Profiler;
+    public function getTracer(): Tracer;
 
     /**
-     * Sets the object profiler.
+     * Sets the object tracer.
      */
-    public function setProfiler(Profiler $profiler): void;
+    public function setTracer(Tracer $tracer): void;
 }

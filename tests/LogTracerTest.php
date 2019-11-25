@@ -13,15 +13,15 @@ namespace Bakame\DiceRoller\Test;
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use Bakame\DiceRoller\MemoryLogger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\LogProfiler
+ * @coversDefaultClass \Bakame\DiceRoller\LogTracer
  */
-final class LogProfilerTest extends TestCase
+final class LogTracerTest extends TestCase
 {
     /**
      * @var MemoryLogger
@@ -29,29 +29,29 @@ final class LogProfilerTest extends TestCase
     private $logger;
 
     /**
-     * @var LogProfiler
+     * @var LogTracer
      */
-    private $profiler;
+    private $tracer;
 
     protected function setUp(): void
     {
         $this->logger = new MemoryLogger();
-        $this->profiler = new LogProfiler($this->logger);
+        $this->tracer = new LogTracer($this->logger);
     }
 
     public function testLogger(): void
     {
-        self::assertSame($this->logger, $this->profiler->logger());
+        self::assertSame($this->logger, $this->tracer->logger());
     }
 
     public function testLogLevel(): void
     {
-        self::assertSame(LogLevel::DEBUG, $this->profiler->logLevel());
+        self::assertSame(LogLevel::DEBUG, $this->tracer->logLevel());
     }
 
     public function testLogFormat(): void
     {
-        self::assertSame(LogProfiler::DEFAULT_LOG_FORMAT, $this->profiler->logFormat());
+        self::assertSame(LogTracer::DEFAULT_LOG_FORMAT, $this->tracer->logFormat());
     }
 
     /**
@@ -64,7 +64,7 @@ final class LogProfilerTest extends TestCase
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
         $rollable = Cup::fromRollable(new SidedDie(6), 3);
-        $rollable->setProfiler(new LogProfiler($this->logger, 'foobar'));
+        $rollable->setTracer(new LogTracer($this->logger, 'foobar'));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear('foobar');
