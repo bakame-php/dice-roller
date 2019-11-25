@@ -20,6 +20,7 @@ use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Trace\Sequence;
 use Iterator;
 use function array_count_values;
 use function array_filter;
@@ -56,7 +57,7 @@ final class Cup implements Pool, Traceable, TracerAware
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
-        $this->setTracer(TraceLog::fromNullLogger());
+        $this->setTracer(Sequence::fromNullLogger());
     }
 
     /**

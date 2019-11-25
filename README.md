@@ -96,13 +96,13 @@ echo $pool->roll();     // returns 12
 
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\TraceLog;
-use Bakame\DiceRoller\MemoryLogger;
+use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Trace\MemoryLogger;
 use Psr\Log\LogLevel;
 
 $parser = new ExpressionParser();
 $psr3Logger = new MemoryLogger();
-$tracer = new TraceLog($psr3Logger);
+$tracer = new Sequence($psr3Logger);
 $factory = new Factory($parser, $tracer);
 $pool = $factory->newInstance('2D6+3');
 
@@ -572,7 +572,7 @@ The interface enables getting the trace from the last operation as well as profi
 
 namespace Bakame\DiceRoller\Contract;
 
-interface TraceLog
+interface Tracer
 {
     public function createTrace(
         string $source,
@@ -588,20 +588,20 @@ interface TraceLog
 
 **In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
 
-The package comes bundle with the `Bakame\DiceRoller\TraceLog` which sends the traces to a PSR-3 compliant logger.
+The package comes bundle with the `Bakame\DiceRoller\Trace\Tracer` which sends the traces to a PSR-3 compliant logger.
 
-### The TraceLog
+### Tracing using a TraceLog
 
 ```php
 <?php
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Trace;
 
 use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-final class TraceLog implements Tracer
+final class Sequence implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{method}] - {rollable} : {trace} = {result}';
     public function __construct(
@@ -615,7 +615,7 @@ final class TraceLog implements Tracer
 }
 ```
 
-The `TraceLog` log messages, by default, will match this format:
+The `Sequence` log messages, by default, will match this format:
 
     [{source}] - {subject} : {operation} = {result}
 
@@ -631,12 +631,12 @@ Configuring the logger is done on instantiation.
 ```php
 <?php
 
-use Bakame\DiceRoller\MemoryLogger;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Trace\Sequence;
 use Psr\Log\LogLevel;
 
 $logger = new MemoryLogger();
-$tracer = new TraceLog($logger, LogLevel::DEBUG, '{operation} = {result}');
+$tracer = new Sequence($logger, LogLevel::DEBUG, '{operation} = {result}');
 ```
 
 Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better flesh out implementation than the one provided out of the box.

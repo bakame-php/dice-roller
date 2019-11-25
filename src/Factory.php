@@ -27,6 +27,7 @@ use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\Trace\Sequence;
 use function array_reduce;
 use function count;
 use function iterator_to_array;
@@ -47,13 +48,13 @@ final class Factory
     /**
      * new Instance.
      *
-     * @param ?Parser   $parser
-     * @param ?TraceLog $tracer
+     * @param ?Parser $parser
+     * @param ?Tracer $tracer
      */
     public function __construct(?Parser $parser = null, ?Tracer $tracer = null)
     {
         $this->parser = $parser ?? new ExpressionParser();
-        $this->tracer = $tracer ?? TraceLog::fromNullLogger();
+        $this->tracer = $tracer ?? Sequence::fromNullLogger();
     }
 
     /**

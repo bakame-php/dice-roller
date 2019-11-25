@@ -9,34 +9,34 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Trace;
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\MemoryLogger;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\TraceLog
+ * @coversDefaultClass \Bakame\DiceRoller\Trace\Sequence
  */
-final class TraceLogTest extends TestCase
+final class SequenceTest extends TestCase
 {
     /**
-     * @var MemoryLogger
+     * @var \Bakame\DiceRoller\Trace\MemoryLogger
      */
     private $logger;
 
     /**
-     * @var TraceLog
+     * @var \Bakame\DiceRoller\Trace\Sequence
      */
     private $tracer;
 
     protected function setUp(): void
     {
         $this->logger = new MemoryLogger();
-        $this->tracer = new TraceLog($this->logger);
+        $this->tracer = new Sequence($this->logger);
     }
 
     public function testLogger(): void
@@ -51,11 +51,11 @@ final class TraceLogTest extends TestCase
 
     public function testLogFormat(): void
     {
-        self::assertSame(TraceLog::DEFAULT_LOG_FORMAT, $this->tracer->logFormat());
+        self::assertSame(Sequence::DEFAULT_LOG_FORMAT, $this->tracer->logFormat());
     }
 
     /**
-     * @covers \Bakame\DiceRoller\MemoryLogger
+     * @covers \Bakame\DiceRoller\Trace\MemoryLogger
      * @covers ::createTrace
      * @covers ::addTrace
      */
@@ -64,7 +64,7 @@ final class TraceLogTest extends TestCase
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
         $rollable = Cup::fromRollable(new SidedDie(6), 3);
-        $rollable->setTracer(new TraceLog($this->logger, 'foobar'));
+        $rollable->setTracer(new Sequence($this->logger, 'foobar'));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear('foobar');

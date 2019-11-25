@@ -11,12 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Trace;
 
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
 
-final class TraceEntry implements Trace
+final class Entry implements Trace
 {
     /**
      * @var Rollable

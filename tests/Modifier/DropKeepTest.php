@@ -17,9 +17,9 @@ use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\DropKeep;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -189,14 +189,14 @@ final class DropKeepTest extends TestCase
      * @covers ::filter
      * @covers ::setTracer
      * @covers ::lastTrace
-     * @covers \Bakame\DiceRoller\TraceLog
-     * @covers \Bakame\DiceRoller\MemoryLogger
+     * @covers \Bakame\DiceRoller\Trace\Sequence
+     * @covers \Bakame\DiceRoller\Trace\MemoryLogger
      * @covers ::getInnerRollable
      */
     public function testTracer(): void
     {
         $logger = new MemoryLogger();
-        $tracer = new TraceLog($logger, LogLevel::DEBUG);
+        $tracer = new Sequence($logger, LogLevel::DEBUG);
         $roll = new DropKeep(Cup::fromRollable(new SidedDie(6), 3), DropKeep::DROP_LOWEST, 2);
         $roll->setTracer($tracer);
         self::assertEmpty($roll->lastTrace());

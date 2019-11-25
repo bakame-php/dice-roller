@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller;
+namespace Bakame\DiceRoller\Trace;
 
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
@@ -22,7 +22,7 @@ use Psr\Log\NullLogger;
 use ReflectionClass;
 use function array_search;
 
-final class TraceLog implements Tracer
+final class Sequence implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{source}] - {subject} : {operation} = {result}';
 
@@ -64,7 +64,7 @@ final class TraceLog implements Tracer
      */
     public function createTrace(string $source, Rollable $subject, string $operation, int $result, array $optionals = []): Trace
     {
-        return new TraceEntry($source, $subject, $operation, $result, $optionals);
+        return new Entry($source, $subject, $operation, $result, $optionals);
     }
 
     /**

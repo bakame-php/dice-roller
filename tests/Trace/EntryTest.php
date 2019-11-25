@@ -11,30 +11,30 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller\Test\Trace;
 
 use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\TraceEntry;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\Entry;
+use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use function get_class;
 
-class TraceEntryTest extends TestCase
+class EntryTest extends TestCase
 {
     /**
-     * @var TraceLog
+     * @var Sequence
      */
     private $tracer;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->tracer = new TraceLog(new MemoryLogger());
+        $this->tracer = new Sequence(new MemoryLogger());
     }
 
     public function testItCanBeInstantiated(): void
@@ -44,7 +44,7 @@ class TraceEntryTest extends TestCase
         $roll = $rollable->roll();
         $trace = $rollable->lastTrace();
         self::assertInstanceOf(Trace::class, $trace);
-        self::assertInstanceOf(TraceEntry::class, $trace);
+        self::assertInstanceOf(Entry::class, $trace);
         self::assertSame($rollable, $trace->subject());
         self::assertSame($roll, $trace->result());
         self::assertSame(get_class($rollable).'::roll', $trace->source());
@@ -66,7 +66,7 @@ class TraceEntryTest extends TestCase
         $rollable->setTracer($this->tracer);
         $rollable->roll();
         $trace = $rollable->lastTrace();
-        self::assertInstanceOf(TraceEntry::class, $trace);
+        self::assertInstanceOf(Entry::class, $trace);
         self::assertArrayHasKey('totalRollsCount', $trace->context());
         self::assertIsInt($trace->context()['totalRollsCount']);
     }

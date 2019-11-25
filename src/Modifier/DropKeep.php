@@ -23,7 +23,7 @@ use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\Sequence;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -112,7 +112,7 @@ final class DropKeep implements Modifier, Traceable, TracerAware
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->setTracer(TraceLog::fromNullLogger());
+        $this->setTracer(Sequence::fromNullLogger());
     }
 
     /**

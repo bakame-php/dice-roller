@@ -21,7 +21,7 @@ use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\Sequence;
 use function abs;
 use function intdiv;
 use function sprintf;
@@ -88,7 +88,7 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setTracer(TraceLog::fromNullLogger());
+        $this->setTracer(Sequence::fromNullLogger());
     }
 
     /**

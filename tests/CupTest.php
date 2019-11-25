@@ -21,8 +21,8 @@ use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\MemoryLogger;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -38,7 +38,7 @@ final class CupTest extends TestCase
 
     public function setUp(): void
     {
-        $this->tracer = TraceLog::fromNullLogger();
+        $this->tracer = Sequence::fromNullLogger();
     }
 
     /**
@@ -172,7 +172,7 @@ final class CupTest extends TestCase
     public function testTracer(): void
     {
         $logger = new MemoryLogger();
-        $tracer = new TraceLog($logger, LogLevel::DEBUG);
+        $tracer = new Sequence($logger, LogLevel::DEBUG);
         $cup = Cup::fromRollable(new CustomDie(2, -3, -5), 12);
         $cup->setTracer($tracer);
         self::assertEmpty($cup->lastTrace());

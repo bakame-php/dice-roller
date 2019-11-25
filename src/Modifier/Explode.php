@@ -23,7 +23,7 @@ use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\Sequence;
 use function array_map;
 use function array_sum;
 use function implode;
@@ -98,7 +98,7 @@ final class Explode implements Modifier, Traceable, TracerAware
             throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
-        $this->setTracer(TraceLog::fromNullLogger());
+        $this->setTracer(Sequence::fromNullLogger());
     }
 
     /**

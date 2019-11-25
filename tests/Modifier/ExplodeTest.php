@@ -19,9 +19,9 @@ use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\TraceLog;
+use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -175,13 +175,13 @@ final class ExplodeTest extends TestCase
      * @covers ::setTracer
      * @covers ::lastTrace
      * @covers ::getInnerRollable
-     * @covers \Bakame\DiceRoller\TraceLog
-     * @covers \Bakame\DiceRoller\MemoryLogger
+     * @covers \Bakame\DiceRoller\Trace\Sequence
+     * @covers \Bakame\DiceRoller\Trace\MemoryLogger
      */
     public function testTracer(): void
     {
         $logger = new MemoryLogger();
-        $tracer = new TraceLog($logger, LogLevel::DEBUG);
+        $tracer = new Sequence($logger, LogLevel::DEBUG);
         $rollable = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
         $rollable->setTracer($tracer);
         self::assertNull($rollable->lastTrace());
