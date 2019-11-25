@@ -21,7 +21,7 @@ interface Trace
 
     public function result(): int;
 
-    public function line(): string;
+    public function operation(): string;
 
     public function optionals(): array;
 

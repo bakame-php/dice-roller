@@ -49,12 +49,12 @@ class LogTraceTest extends TestCase
         self::assertSame($roll, $trace->result());
         self::assertSame(get_class($rollable).'::roll', $trace->source());
         self::assertEmpty($trace->optionals());
-        self::assertStringContainsString('+', $trace->line());
+        self::assertStringContainsString('+', $trace->operation());
         $expectedContext = [
             'source' => get_class($rollable).'::roll',
             'subject' => $trace->subject()->toString(),
+            'operation' => $trace->operation(),
             'result' => $trace->result(),
-            'line' => $trace->line(),
         ];
 
         self::assertSame($expectedContext, $trace->context());

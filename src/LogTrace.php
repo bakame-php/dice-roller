@@ -21,7 +21,7 @@ use const ARRAY_FILTER_USE_KEY;
 
 final class LogTrace implements Trace
 {
-    private const REQUIRED_CONTEXT_FIELDS = ['source', 'subject', 'line', 'result'];
+    private const REQUIRED_CONTEXT_FIELDS = ['source', 'subject', 'operation', 'result'];
 
     /**
      * @var Rollable
@@ -41,7 +41,7 @@ final class LogTrace implements Trace
     /**
      * @var string
      */
-    private $line;
+    private $operation;
 
     /**
      * @var array
@@ -52,41 +52,59 @@ final class LogTrace implements Trace
         Rollable $subject,
         int $result,
         string $source,
-        string $line,
+        string $operation,
         array $optionals = []
     ) {
         $this->subject = $subject;
         $this->result = $result;
         $this->source = $source;
-        $this->line = $line;
+        $this->operation = $operation;
         $this->optionals = $optionals;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function subject(): Rollable
     {
         return $this->subject;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function result(): int
     {
         return $this->result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function source(): string
     {
         return $this->source;
     }
 
-    public function line(): string
+    /**
+     * {@inheritDoc}
+     */
+    public function operation(): string
     {
-        return $this->line;
+        return $this->operation;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function optionals(): array
     {
         return $this->optionals;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function context(): array
     {
         $filterOutRequiredKeys = function ($offset): bool {
@@ -98,8 +116,8 @@ final class LogTrace implements Trace
         return [
             'source' => $this->source,
             'subject' => $this->subject->toString(),
+            'operation' => $this->operation,
             'result' => $this->result,
-            'line' => $this->line,
         ] + $optionals;
     }
 }

@@ -607,13 +607,13 @@ final class LogProfiler implements Profiler
 
 The `LogProfiler` log messages, by default, will match this format:
 
-    [{source}] - {subject} : {line} = {result}
+    [{source}] - {subject} : {operation} = {result}
 
 The context keys are:
 
 - `{source}`: The method that has created the profile entry.
 - `{subject}`: The string representation of the `Rollable` object to be analyzed.
-- `{line}`: The operation trace.
+- `{operation}`: The operation trace.
 - `{result}`: The result from performing the calculation.
 
 Configuring the logger is done on instantiation.
@@ -626,7 +626,7 @@ use Bakame\DiceRoller\LogProfiler;
 use Psr\Log\LogLevel;
 
 $logger = new MemoryLogger();
-$profiler = new LogProfiler($logger, LogLevel::DEBUG, '{trace} = {result}');
+$profiler = new LogProfiler($logger, LogLevel::DEBUG, '{operation} = {result}');
 ```
 
 Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better flesh out implementation than the one provided out of the box.

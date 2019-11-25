@@ -24,7 +24,7 @@ use function array_search;
 
 final class LogProfiler implements Profiler
 {
-    public const DEFAULT_LOG_FORMAT = '[{source}] - {subject} : {line} = {result}';
+    public const DEFAULT_LOG_FORMAT = '[{source}] - {subject} : {operation} = {result}';
 
     /**
      * @var LoggerInterface
