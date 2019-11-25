@@ -13,19 +13,20 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use function abs;
 use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements Modifier, Traceable
+final class Arithmetic implements Modifier, CanBeTraced
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -57,14 +58,14 @@ final class Arithmetic implements Modifier, Traceable
     private $operator;
 
     /**
-     * @var string
+     * @var Trace|null
      */
-    private $trace = '';
+    private $trace;
 
     /**
-     * @var Profiler
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * new instance.
@@ -86,13 +87,13 @@ final class Arithmetic implements Modifier, Traceable
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setProfiler(LogProfiler::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function lastTrace(): string
+    public function lastTrace(): ?Trace
     {
         return $this->trace;
     }
@@ -100,17 +101,17 @@ final class Arithmetic implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function setProfiler(Profiler $profiler): void
+    public function setTracer(Tracer $tracer): void
     {
-        $this->profiler = $profiler;
+        $this->tracer = $tracer;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProfiler(): Profiler
+    public function getTracer(): Tracer
     {
-        return $this->profiler;
+        return $this->tracer;
     }
 
     /**
@@ -170,9 +171,11 @@ final class Arithmetic implements Modifier, Traceable
     private function decorate(int $value, string $method): int
     {
         $retval = $this->calculate($value);
+        $operation = $value.' '.$this->operator.' '.$this->value;
+        $trace = $this->tracer->createTrace($method, $this, $operation, $retval);
 
-        $this->trace = $value.' '.$this->operator.' '.$this->value;
-        $this->profiler->addTrace($this, $method, $retval, $this->trace);
+        $this->tracer->addTrace($trace);
+        $this->trace = $trace;
 
         return $retval;
     }

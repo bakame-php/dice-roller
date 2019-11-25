@@ -96,14 +96,14 @@ echo $pool->roll();     // returns 12
 
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use Bakame\DiceRoller\MemoryLogger;
 use Psr\Log\LogLevel;
 
 $parser = new ExpressionParser();
 $psr3Logger = new MemoryLogger();
-$profiler = new LogProfiler($psr3Logger);
-$factory = new Factory($parser, $profiler);
+$tracer = new LogTracer($psr3Logger);
+$factory = new Factory($parser, $tracer);
 $pool = $factory->newInstance('2D6+3');
 
 echo $pool->toString();  // returns 2D6+3
@@ -167,7 +167,7 @@ When using the `ExpressionParser` parser:
 
 #### The factory
 
-The `Factory` class uses a `Parser` implementation to return a `Rollable` object. Optionnally, the factory can attach a profiler to any traceable object.
+The `Factory` class uses a `Parser` implementation to return a `Rollable` object. Optionnally, the factory can attach a tracer to any object that can be traced.
 
 ```php
 <?php
@@ -175,12 +175,12 @@ The `Factory` class uses a `Parser` implementation to return a `Rollable` object
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Parser;
-use Bakame\DiceRoller\Contract\Profiler;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\Rollable;
 
 final class Factory
 {
-    public function __construct(?Parser $parser = null, ?Profiler $profiler = null);
+    public function __construct(?Parser $parser = null, ?Tracer $tracer = null);
     public function newInstance(string $expression): Rollable;
 }
 ```
@@ -272,7 +272,7 @@ $basicbis = SidedDie::fromString('d3');
 $basicbis->toString() === $basic->toString();
 
 $custom = new CustomDie(3, 2, 1, 1);
-echo $customc->toString();  // 'D[3,2,1,1]';
+echo $custom->toString();  // 'D[3,2,1,1]';
 $custom->roll();            // may return 1, 2 or 3
 $custom->size();            // returns 4
 
@@ -280,12 +280,12 @@ $customBis = CustomDie::fromString('d[3,2,1,1]');
 $custom->toString() === $customBis->toString();
 
 $fugde = new FudgeDie();
-echo $fudgec->toString(); // displays 'DF'
+echo $fudge->toString(); // displays 'DF'
 $fudge->roll();           // may return -1, 0, or 1
 $fudge->size();           // returns 3
 
 $percentile = new PercentileDie();
-echo $percentilec->toString(); // displays 'D%'
+echo $percentile->toString(); // displays 'D%'
 $percentile->roll();           // returns a value between 1 and 100
 $fudge->size();                // returns 100
 ```
@@ -306,16 +306,16 @@ interface Pool implements \Countable, \IteratorAggregate, Rollable
 ```
  
 A `Pool` is a collection of `Rollable` objects which also implements the `Rollable` interface. The package comes bundle
-with the `Bakame\DiceRoller\Cup` Bakame\DiceRoller\Dice\Cups the interface.
+with the `Bakame\DiceRoller\Cup` class which implements the interface.
 
 ```php
 <?php
 
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\CanBeTraced;
 
-final class Cup implements Pool, Traceable
+final class Cup implements Pool, CanBeTraced
 {
     public function __construct(Rollable ...$rollable);
     public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
@@ -337,7 +337,7 @@ use Bakame\DiceRoller\Dice\SidedDie;
 echo Cup::fromRollable(new SidedDie(5), 3)->toString();           // displays 3D5
 echo Cup::fromRollable(new PercentileDie(), 4)->toString();       // displays 4D%
 echo Cup::fromRollable(new CustomDie(1, 2, 2, 4), 2)->toString(); // displays 2D[1,2,2,4]
-echo Cup::fromRollable(new FudgeDie(), 2)->toString();            // displays DF
+echo Cup::fromRollable(new FudgeDie(), 42)->toString();           // displays 42DF
 ```
 
 A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\IllegalValue` is thrown.
@@ -410,9 +410,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\CanBeTraced;
 
-final class Arithmetic implements Modifier, Traceable
+final class Arithmetic implements Modifier, CanBeTraced
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -455,9 +455,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\CanBeTraced;
 
-final class DropKeep implements Modifier, Traceable
+final class DropKeep implements Modifier, CanBeTraced
 {
     public const DROP_HIGHEST = 'dh';
     public const DROP_LOWEST = 'dl';
@@ -506,9 +506,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\CanBeTraced;
 
-final class Explode implements Modifier, Traceable
+final class Explode implements Modifier, CanBeTraced
 {
     public const EQ = '=';
     public const GT = '>';
@@ -547,18 +547,18 @@ echo $modifier->toString(); // displays (3D6+DF)!=3
 
 ## Tracing and Profiling
 
-If you want to know how internally your roll result is calculated your `Rollable` object must implements the `Traceable` interface.
+If you want to know how internally your roll result is calculated your `Rollable` object must implements the `CanBeTraced` interface.
 
 ```php
 <?php
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Traceable
+interface CanBeTraced
 {
-    public function setProfiler(Profiler $profiler): void;
-    public function getProfiler(): Profiler;
-    public function lastTrace(): string;
+    public function setProfiler(Tracer $profiler): void;
+    public function getProfiler(): Tracer;
+    public function lastTrace(): Trace;
 }
 ```
  
@@ -569,28 +569,29 @@ The interface enables getting the trace from the last operation as well as profi
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Profiler
+interface Tracer
 {
-    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void;
+    public function createTrace(Rollable $rollable, string $method, int $roll, string $trace, array $optionals): Trace;
+    public function addTrace(Trace $trace);
 }
 ```
 
 **In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
 
-The package comes bundle with the `Bakame\DiceRoller\LogProfiler` which sends the traces to a PSR-3 compliant logger.
+The package comes bundle with the `Bakame\DiceRoller\LogTracer` which sends the traces to a PSR-3 compliant logger.
 
-### The LogProfiler
+### The LogTracer
 
 ```php
 <?php
 
 namespace Bakame\DiceRoller\Profiler;
 
-use Bakame\DiceRoller\Contract\Profiler;
+use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-final class LogProfiler implements Profiler
+final class LogTracer implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{method}] - {rollable} : {trace} = {result}';
     public function __construct(
@@ -604,15 +605,15 @@ final class LogProfiler implements Profiler
 }
 ```
 
-The `LogProfiler` log messages, by default, will match this format:
+The `LogTracer` log messages, by default, will match this format:
 
-    [{method}] - {rollable} : {trace} = {result}
+    [{source}] - {subject} : {operation} = {result}
 
 The context keys are:
 
-- `{method}`: The method that has created the profile entry.
-- `{rollable}`: The string representation of the `Rollable` object to be analyzed.
-- `{trace}`: The operation trace.
+- `{source}`: The method that has created the profile entry.
+- `{subject}`: The string representation of the `Rollable` object to be analyzed.
+- `{operation}`: The operation trace.
 - `{result}`: The result from performing the calculation.
 
 Configuring the logger is done on instantiation.
@@ -621,11 +622,11 @@ Configuring the logger is done on instantiation.
 <?php
 
 use Bakame\DiceRoller\MemoryLogger;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use Psr\Log\LogLevel;
 
 $logger = new MemoryLogger();
-$profiler = new LogProfiler($logger, LogLevel::DEBUG, '{trace} = {result}');
+$tracer = new LogTracer($logger, LogLevel::DEBUG, '{operation} = {result}');
 ```
 
 Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better flesh out implementation than the one provided out of the box.

@@ -13,15 +13,16 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use function array_map;
 use function array_sum;
 use function implode;
@@ -31,7 +32,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Modifier, Traceable
+final class Explode implements Modifier, CanBeTraced
 {
     const EQ = '=';
     const GT = '>';
@@ -59,14 +60,14 @@ final class Explode implements Modifier, Traceable
     private $compare;
 
     /**
-     * @var string
+     * @var Trace|null
      */
-    private $trace = '';
+    private $trace;
 
     /**
-     * @var Profiler
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * @var bool
@@ -96,7 +97,7 @@ final class Explode implements Modifier, Traceable
             throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
-        $this->setProfiler(LogProfiler::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -139,7 +140,7 @@ final class Explode implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function lastTrace(): string
+    public function lastTrace(): ?Trace
     {
         return $this->trace;
     }
@@ -147,17 +148,17 @@ final class Explode implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function setProfiler(Profiler $profiler): void
+    public function setTracer(Tracer $tracer): void
     {
-        $this->profiler = $profiler;
+        $this->tracer = $tracer;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProfiler(): Profiler
+    public function getTracer(): Tracer
     {
-        return $this->profiler;
+        return $this->tracer;
     }
 
     /**
@@ -206,8 +207,9 @@ final class Explode implements Modifier, Traceable
     {
         $retval = $this->pool->minimum();
 
-        $this->trace = (string) $retval;
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
+        $trace = $this->tracer->createTrace(__METHOD__, $this, (string) $retval, $retval);
+        $this->tracer->addTrace($trace);
+        $this->trace = $trace;
 
         return $retval;
     }
@@ -217,8 +219,10 @@ final class Explode implements Modifier, Traceable
      */
     public function maximum(): int
     {
-        $this->trace = (string) PHP_INT_MAX;
-        $this->profiler->addTrace($this, __METHOD__, PHP_INT_MAX, $this->trace);
+        $trace = $this->tracer->createTrace(__METHOD__, $this, (string)PHP_INT_MAX, PHP_INT_MAX);
+        $this->tracer->addTrace($trace);
+
+        $this->trace = $trace;
 
         return PHP_INT_MAX;
     }
@@ -234,6 +238,7 @@ final class Explode implements Modifier, Traceable
         }
 
         $retval = (int) array_sum($values);
+        $nbRolls = count($values);
 
         $mapper = function (int $value) {
             if (0 > $value) {
@@ -243,8 +248,11 @@ final class Explode implements Modifier, Traceable
             return $value;
         };
 
-        $this->trace = implode(' + ', array_map($mapper, $values));
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
+        $operation = implode(' + ', array_map($mapper, $values));
+        $trace = $this->tracer->createTrace(__METHOD__, $this, $operation, $retval, ['totalRollsCount' => $nbRolls]);
+
+        $this->tracer->addTrace($trace);
+        $this->trace = $trace;
 
         return $retval;
     }

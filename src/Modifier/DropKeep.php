@@ -13,15 +13,16 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -34,7 +35,7 @@ use function strpos;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements Modifier, Traceable
+final class DropKeep implements Modifier, CanBeTraced
 {
     public const DROP_HIGHEST = 'DH';
     public const DROP_LOWEST = 'DL';
@@ -70,14 +71,14 @@ final class DropKeep implements Modifier, Traceable
     private $algo;
 
     /**
-     * @var string
+     * @var Trace|null
      */
-    private $trace = '';
+    private $trace;
 
     /**
-     * @var Profiler
+     * @var Tracer
      */
-    private $profiler;
+    private $tracer;
 
     /**
      * @var bool
@@ -110,13 +111,13 @@ final class DropKeep implements Modifier, Traceable
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->setProfiler(LogProfiler::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function lastTrace(): string
+    public function lastTrace(): ?Trace
     {
         return $this->trace;
     }
@@ -124,17 +125,17 @@ final class DropKeep implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function setProfiler(Profiler $profiler): void
+    public function setTracer(Tracer $tracer): void
     {
-        $this->profiler = $profiler;
+        $this->tracer = $tracer;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProfiler(): Profiler
+    public function getTracer(): Tracer
     {
-        return $this->profiler;
+        return $this->tracer;
     }
 
     /**
@@ -219,8 +220,11 @@ final class DropKeep implements Modifier, Traceable
             return $value;
         };
 
-        $this->trace = implode(' + ', array_map($mapper, $values));
-        $this->profiler->addTrace($this, $method, $retval, $this->trace);
+        $operation = implode(' + ', array_map($mapper, $values));
+        $trace = $this->tracer->createTrace($method, $this, $operation, $retval);
+
+        $this->tracer->addTrace($trace);
+        $this->trace = $trace;
 
         return $retval;
     }

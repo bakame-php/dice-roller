@@ -13,12 +13,13 @@ namespace Bakame\DiceRoller\Test\Modifier;
 
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Explode;
 use PHPUnit\Framework\TestCase;
@@ -171,26 +172,26 @@ final class ExplodeTest extends TestCase
      * @covers ::maximum
      * @covers ::roll
      * @covers ::calculate
-     * @covers ::setProfiler
-     * @covers ::getProfiler
+     * @covers ::setTracer
+     * @covers ::getTracer
      * @covers ::lastTrace
      * @covers ::getInnerRollable
-     * @covers \Bakame\DiceRoller\LogProfiler
+     * @covers \Bakame\DiceRoller\LogTracer
      * @covers \Bakame\DiceRoller\MemoryLogger
      */
-    public function testProfiler(): void
+    public function testTracer(): void
     {
         $logger = new MemoryLogger();
-        $profiler = new LogProfiler($logger, LogLevel::DEBUG);
-        $roll = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
-        $roll->setProfiler($profiler);
-        self::assertSame('', $roll->lastTrace());
-        $roll->roll();
-        self::assertNotEmpty($roll->lastTrace());
-        $roll->maximum();
-        $roll->minimum();
-        self::assertSame($profiler, $roll->getProfiler());
+        $tracer = new LogTracer($logger, LogLevel::DEBUG);
+        $rollable = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
+        $rollable->setTracer($tracer);
+        self::assertNull($rollable->lastTrace());
+        $rollable->roll();
+        self::assertInstanceOf(Trace::class, $rollable->lastTrace());
+        $rollable->maximum();
+        $rollable->minimum();
+        self::assertSame($tracer, $rollable->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
-        self::assertInstanceOf(CustomDie::class, $roll->getInnerRollable());
+        self::assertInstanceOf(CustomDie::class, $rollable->getInnerRollable());
     }
 }

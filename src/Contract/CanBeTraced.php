@@ -13,10 +13,20 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Profiler
+interface CanBeTraced
 {
     /**
-     * Record a Rollable operation.
+     * Returns the last operation trace or null if no operation was performed.
      */
-    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void;
+    public function lastTrace(): ?Trace;
+
+    /**
+     * Returns the object tracer.
+     */
+    public function getTracer(): Tracer;
+
+    /**
+     * Sets the object tracer.
+     */
+    public function setTracer(Tracer $tracer): void;
 }

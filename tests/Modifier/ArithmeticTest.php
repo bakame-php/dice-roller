@@ -16,7 +16,7 @@ use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\LogProfiler;
+use Bakame\DiceRoller\LogTracer;
 use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use PHPUnit\Framework\TestCase;
@@ -204,12 +204,12 @@ final class ArithmeticTest extends TestCase
      * @covers ::decorate
      * @covers ::calculate
      * @covers ::lastTrace
-     * @covers ::getProfiler
-     * @covers ::setProfiler
-     * @covers \Bakame\DiceRoller\LogProfiler
+     * @covers ::getTracer
+     * @covers ::setTracer
+     * @covers \Bakame\DiceRoller\LogTracer
      * @covers \Bakame\DiceRoller\MemoryLogger
      */
-    public function testProfiler(): void
+    public function testTracer(): void
     {
         $logger = new MemoryLogger();
         $roll = new Arithmetic(
@@ -217,14 +217,14 @@ final class ArithmeticTest extends TestCase
             Arithmetic::EXP,
             3
         );
-        $profiler = new LogProfiler($logger, LogLevel::DEBUG);
-        $roll->setProfiler($profiler);
+        $tracer = new LogTracer($logger, LogLevel::DEBUG);
+        $roll->setTracer($tracer);
         self::assertEmpty($roll->lastTrace());
         $roll->roll();
         self::assertNotEmpty($roll->lastTrace());
         $roll->maximum();
         $roll->minimum();
-        self::assertSame($profiler, $roll->getProfiler());
+        self::assertSame($tracer, $roll->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
         self::assertCount(1, $logger->getLogs());
         self::assertCount(1, $logger->getLogs(null));
