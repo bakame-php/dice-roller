@@ -207,7 +207,7 @@ final class Explode implements Modifier, CanBeTraced
     {
         $retval = $this->pool->minimum();
 
-        $trace = $this->profiler->createTrace($this, $retval, __METHOD__, (string) $retval);
+        $trace = $this->profiler->createTrace(__METHOD__, $this, (string) $retval, $retval);
         $this->profiler->addTrace($trace);
         $this->trace = $trace;
 
@@ -219,7 +219,7 @@ final class Explode implements Modifier, CanBeTraced
      */
     public function maximum(): int
     {
-        $trace = $this->profiler->createTrace($this, PHP_INT_MAX, __METHOD__, (string) PHP_INT_MAX);
+        $trace = $this->profiler->createTrace(__METHOD__, $this, (string)PHP_INT_MAX, PHP_INT_MAX);
         $this->profiler->addTrace($trace);
 
         $this->trace = $trace;
@@ -248,8 +248,8 @@ final class Explode implements Modifier, CanBeTraced
             return $value;
         };
 
-        $trace = implode(' + ', array_map($mapper, $values));
-        $trace = $this->profiler->createTrace($this, $retval, __METHOD__, $trace, ['totalRollsCount' => $nbRolls]);
+        $operation = implode(' + ', array_map($mapper, $values));
+        $trace = $this->profiler->createTrace(__METHOD__, $this, $operation, $retval, ['totalRollsCount' => $nbRolls]);
 
         $this->profiler->addTrace($trace);
         $this->trace = $trace;

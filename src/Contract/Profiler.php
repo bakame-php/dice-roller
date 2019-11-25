@@ -18,7 +18,13 @@ interface Profiler
     /**
      * @param array $optionals optional data that can be added to the Trace objects.
      */
-    public function createTrace(Rollable $subject, int $result, string $line, string $source, array $optionals = []): Trace;
+    public function createTrace(
+        string $source,
+        Rollable $subject,
+        string $operation,
+        int $result,
+        array $optionals = []
+    ): Trace;
 
     /**
      * Record a Rollable operation.

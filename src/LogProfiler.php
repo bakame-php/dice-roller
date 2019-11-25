@@ -62,9 +62,9 @@ final class LogProfiler implements Profiler
     /**
      * {@inheritDoc}
      */
-    public function createTrace(Rollable $subject, int $result, string $line, string $source, array $optionals = []): Trace
+    public function createTrace(string $source, Rollable $subject, string $operation, int $result, array $optionals = []): Trace
     {
-        return new LogTrace($subject, $result, $line, $source, $optionals);
+        return new LogTrace($source, $subject, $operation, $result, $optionals);
     }
 
     /**

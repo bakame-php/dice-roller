@@ -235,8 +235,8 @@ final class Cup implements Pool, CanBeTraced
         };
 
         $retval = (int) array_sum($sum);
-        $trace = implode(' + ', array_map($mapper, $sum));
-        $trace = $this->profiler->createTrace($this, $retval, $method, $trace);
+        $operation = implode(' + ', array_map($mapper, $sum));
+        $trace = $this->profiler->createTrace($method, $this, $operation, $retval);
 
         $this->profiler->addTrace($trace);
         $this->trace = $trace;

@@ -49,16 +49,16 @@ final class LogTrace implements Trace
     private $optionals;
 
     public function __construct(
-        Rollable $subject,
-        int $result,
         string $source,
+        Rollable $subject,
         string $operation,
+        int $result,
         array $optionals = []
     ) {
-        $this->subject = $subject;
-        $this->result = $result;
         $this->source = $source;
+        $this->subject = $subject;
         $this->operation = $operation;
+        $this->result = $result;
         $this->optionals = $optionals;
     }
 

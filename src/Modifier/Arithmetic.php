@@ -171,8 +171,8 @@ final class Arithmetic implements Modifier, CanBeTraced
     private function decorate(int $value, string $method): int
     {
         $retval = $this->calculate($value);
-        $trace = $value.' '.$this->operator.' '.$this->value;
-        $trace = $this->profiler->createTrace($this, $retval, $method, $trace);
+        $operation = $value.' '.$this->operator.' '.$this->value;
+        $trace = $this->profiler->createTrace($method, $this, $operation, $retval);
 
         $this->profiler->addTrace($trace);
         $this->trace = $trace;
