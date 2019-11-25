@@ -556,8 +556,8 @@ namespace Bakame\DiceRoller\Contract;
 
 interface CanBeTraced
 {
-    public function setProfiler(Tracer $profiler): void;
-    public function getProfiler(): Tracer;
+    public function setTracer(Tracer $tracer): void;
+    public function getTracer(): Tracer;
     public function lastTrace(): Trace;
 }
 ```
