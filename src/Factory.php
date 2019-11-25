@@ -47,13 +47,13 @@ final class Factory
     /**
      * new Instance.
      *
-     * @param ?Parser $parser
-     * @param ?Tracer $tracer
+     * @param ?Parser   $parser
+     * @param ?TraceLog $tracer
      */
     public function __construct(?Parser $parser = null, ?Tracer $tracer = null)
     {
         $this->parser = $parser ?? new ExpressionParser();
-        $this->tracer = $tracer ?? LogTracer::fromNullLogger();
+        $this->tracer = $tracer ?? TraceLog::fromNullLogger();
     }
 
     /**

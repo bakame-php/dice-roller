@@ -13,16 +13,17 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
+use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\LogTracer;
+use Bakame\DiceRoller\TraceLog;
 use function array_map;
 use function array_sum;
 use function implode;
@@ -32,7 +33,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Modifier, CanBeTraced
+final class Explode implements Modifier, Traceable, TracerAware
 {
     const EQ = '=';
     const GT = '>';
@@ -97,7 +98,7 @@ final class Explode implements Modifier, CanBeTraced
             throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
-        $this->setTracer(LogTracer::fromNullLogger());
+        $this->setTracer(TraceLog::fromNullLogger());
     }
 
     /**
@@ -151,14 +152,6 @@ final class Explode implements Modifier, CanBeTraced
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTracer(): Tracer
-    {
-        return $this->tracer;
     }
 
     /**

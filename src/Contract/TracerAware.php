@@ -13,18 +13,8 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface CanBeTraced
+interface TracerAware
 {
-    /**
-     * Returns the last operation trace or null if no operation was performed.
-     */
-    public function lastTrace(): ?Trace;
-
-    /**
-     * Returns the object tracer.
-     */
-    public function getTracer(): Tracer;
-
     /**
      * Sets the object tracer.
      */

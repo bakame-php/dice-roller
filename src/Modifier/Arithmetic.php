@@ -13,20 +13,21 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
+use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\LogTracer;
+use Bakame\DiceRoller\TraceLog;
 use function abs;
 use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements Modifier, CanBeTraced
+final class Arithmetic implements Modifier, Traceable, TracerAware
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -87,7 +88,7 @@ final class Arithmetic implements Modifier, CanBeTraced
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setTracer(LogTracer::fromNullLogger());
+        $this->setTracer(TraceLog::fromNullLogger());
     }
 
     /**
@@ -104,14 +105,6 @@ final class Arithmetic implements Modifier, CanBeTraced
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTracer(): Tracer
-    {
-        return $this->tracer;
     }
 
     /**

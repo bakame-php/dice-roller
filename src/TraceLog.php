@@ -22,7 +22,7 @@ use Psr\Log\NullLogger;
 use ReflectionClass;
 use function array_search;
 
-final class LogTracer implements Tracer
+final class TraceLog implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{source}] - {subject} : {operation} = {result}';
 
@@ -64,7 +64,7 @@ final class LogTracer implements Tracer
      */
     public function createTrace(string $source, Rollable $subject, string $operation, int $result, array $optionals = []): Trace
     {
-        return new LogTrace($source, $subject, $operation, $result, $optionals);
+        return new TraceEntry($source, $subject, $operation, $result, $optionals);
     }
 
     /**

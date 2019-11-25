@@ -17,24 +17,24 @@ use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\LogTrace;
-use Bakame\DiceRoller\LogTracer;
 use Bakame\DiceRoller\MemoryLogger;
 use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\TraceEntry;
+use Bakame\DiceRoller\TraceLog;
 use PHPUnit\Framework\TestCase;
 use function get_class;
 
-class LogTraceTest extends TestCase
+class TraceEntryTest extends TestCase
 {
     /**
-     * @var LogTracer
+     * @var TraceLog
      */
     private $tracer;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->tracer = new LogTracer(new MemoryLogger());
+        $this->tracer = new TraceLog(new MemoryLogger());
     }
 
     public function testItCanBeInstantiated(): void
@@ -44,7 +44,7 @@ class LogTraceTest extends TestCase
         $roll = $rollable->roll();
         $trace = $rollable->lastTrace();
         self::assertInstanceOf(Trace::class, $trace);
-        self::assertInstanceOf(LogTrace::class, $trace);
+        self::assertInstanceOf(TraceEntry::class, $trace);
         self::assertSame($rollable, $trace->subject());
         self::assertSame($roll, $trace->result());
         self::assertSame(get_class($rollable).'::roll', $trace->source());
@@ -66,7 +66,7 @@ class LogTraceTest extends TestCase
         $rollable->setTracer($this->tracer);
         $rollable->roll();
         $trace = $rollable->lastTrace();
-        self::assertInstanceOf(LogTrace::class, $trace);
+        self::assertInstanceOf(TraceEntry::class, $trace);
         self::assertArrayHasKey('totalRollsCount', $trace->context());
         self::assertIsInt($trace->context()['totalRollsCount']);
     }

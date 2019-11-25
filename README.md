@@ -96,13 +96,13 @@ echo $pool->roll();     // returns 12
 
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\LogTracer;
+use Bakame\DiceRoller\TraceLog;
 use Bakame\DiceRoller\MemoryLogger;
 use Psr\Log\LogLevel;
 
 $parser = new ExpressionParser();
 $psr3Logger = new MemoryLogger();
-$tracer = new LogTracer($psr3Logger);
+$tracer = new TraceLog($psr3Logger);
 $factory = new Factory($parser, $tracer);
 $pool = $factory->newInstance('2D6+3');
 
@@ -313,9 +313,9 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface.
 
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\CanBeTraced;
+use Bakame\DiceRoller\Contract\Traceable;
 
-final class Cup implements Pool, CanBeTraced
+final class Cup implements Pool, Traceable
 {
     public function __construct(Rollable ...$rollable);
     public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
@@ -410,9 +410,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\CanBeTraced;
+use Bakame\DiceRoller\Contract\Traceable;
 
-final class Arithmetic implements Modifier, CanBeTraced
+final class Arithmetic implements Modifier, Traceable
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -455,9 +455,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\CanBeTraced;
+use Bakame\DiceRoller\Contract\Traceable;
 
-final class DropKeep implements Modifier, CanBeTraced
+final class DropKeep implements Modifier, Traceable
 {
     public const DROP_HIGHEST = 'dh';
     public const DROP_LOWEST = 'dl';
@@ -506,9 +506,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\CanBeTraced;
+use Bakame\DiceRoller\Contract\Traceable;
 
-final class Explode implements Modifier, CanBeTraced
+final class Explode implements Modifier, Traceable
 {
     public const EQ = '=';
     public const GT = '>';
@@ -554,11 +554,14 @@ If you want to know how internally your roll result is calculated your `Rollable
 
 namespace Bakame\DiceRoller\Contract;
 
-interface CanBeTraced
+interface Traceable
+{
+    public function lastTrace(): Trace;
+}
+
+interface TraceLogAware
 {
     public function setTracer(Tracer $tracer): void;
-    public function getTracer(): Tracer;
-    public function lastTrace(): Trace;
 }
 ```
  
@@ -569,29 +572,36 @@ The interface enables getting the trace from the last operation as well as profi
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Tracer
+interface TraceLog
 {
-    public function createTrace(Rollable $rollable, string $method, int $roll, string $trace, array $optionals): Trace;
-    public function addTrace(Trace $trace);
+    public function createTrace(
+        string $source,
+        Rollable $subject,
+        string $operation,
+        int $result,
+        array $optionals = []
+    ): Trace;
+
+    public function addTrace(Trace $trace): void;
 }
 ```
 
 **In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
 
-The package comes bundle with the `Bakame\DiceRoller\LogTracer` which sends the traces to a PSR-3 compliant logger.
+The package comes bundle with the `Bakame\DiceRoller\TraceLog` which sends the traces to a PSR-3 compliant logger.
 
-### The LogTracer
+### The TraceLog
 
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Profiler;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-final class LogTracer implements Tracer
+final class TraceLog implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{method}] - {rollable} : {trace} = {result}';
     public function __construct(
@@ -605,7 +615,7 @@ final class LogTracer implements Tracer
 }
 ```
 
-The `LogTracer` log messages, by default, will match this format:
+The `TraceLog` log messages, by default, will match this format:
 
     [{source}] - {subject} : {operation} = {result}
 
@@ -622,11 +632,11 @@ Configuring the logger is done on instantiation.
 <?php
 
 use Bakame\DiceRoller\MemoryLogger;
-use Bakame\DiceRoller\LogTracer;
+use Bakame\DiceRoller\TraceLog;
 use Psr\Log\LogLevel;
 
 $logger = new MemoryLogger();
-$tracer = new LogTracer($logger, LogLevel::DEBUG, '{operation} = {result}');
+$tracer = new TraceLog($logger, LogLevel::DEBUG, '{operation} = {result}');
 ```
 
 Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better flesh out implementation than the one provided out of the box.
