@@ -56,6 +56,7 @@ final class LogProfilerTest extends TestCase
 
     /**
      * @covers \Bakame\DiceRoller\MemoryLogger
+     * @covers ::createTrace
      * @covers ::addTrace
      */
     public function testDiceRollerLogger(): void

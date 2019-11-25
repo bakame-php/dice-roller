@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Iterator;
 use function array_count_values;
@@ -28,7 +29,7 @@ use function count;
 use function implode;
 use function sprintf;
 
-final class Cup implements Pool, Traceable
+final class Cup implements Pool, CanBeTraced
 {
     /**
      * @var Rollable[]
@@ -36,9 +37,9 @@ final class Cup implements Pool, Traceable
     private $items = [];
 
     /**
-     * @var string
+     * @var Trace|null
      */
-    private $trace = '';
+    private $trace;
 
     /**
      * @var Profiler
@@ -109,7 +110,7 @@ final class Cup implements Pool, Traceable
     /**
      * {@inheritdoc}
      */
-    public function lastTrace(): string
+    public function lastTrace(): ?Trace
     {
         return $this->trace;
     }
@@ -234,8 +235,11 @@ final class Cup implements Pool, Traceable
         };
 
         $retval = (int) array_sum($sum);
-        $this->trace = implode(' + ', array_map($mapper, $sum));
-        $this->profiler->addTrace($this, $method, $retval, $this->trace);
+        $trace = implode(' + ', array_map($mapper, $sum));
+        $trace = $this->profiler->createTrace($this, $retval, $method, $trace);
+
+        $this->profiler->addTrace($trace);
+        $this->trace = $trace;
 
         return $retval;
     }

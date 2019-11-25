@@ -13,20 +13,17 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Traceable
+interface Trace
 {
-    /**
-     * Returns the last operation trace.
-     */
-    public function lastTrace(): string;
+    public function subject(): Rollable;
 
-    /**
-     * Returns the object profiler.
-     */
-    public function getProfiler(): Profiler;
+    public function source(): string;
 
-    /**
-     * Sets the object profiler.
-     */
-    public function setProfiler(Profiler $profiler): void;
+    public function result(): int;
+
+    public function line(): string;
+
+    public function optionals(): array;
+
+    public function context(): array;
 }

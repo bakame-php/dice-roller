@@ -13,6 +13,7 @@ namespace Bakame\DiceRoller\Test\Modifier;
 
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
@@ -182,15 +183,15 @@ final class ExplodeTest extends TestCase
     {
         $logger = new MemoryLogger();
         $profiler = new LogProfiler($logger, LogLevel::DEBUG);
-        $roll = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
-        $roll->setProfiler($profiler);
-        self::assertSame('', $roll->lastTrace());
-        $roll->roll();
-        self::assertNotEmpty($roll->lastTrace());
-        $roll->maximum();
-        $roll->minimum();
-        self::assertSame($profiler, $roll->getProfiler());
+        $rollable = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
+        $rollable->setProfiler($profiler);
+        self::assertNull($rollable->lastTrace());
+        $rollable->roll();
+        self::assertInstanceOf(Trace::class, $rollable->lastTrace());
+        $rollable->maximum();
+        $rollable->minimum();
+        self::assertSame($profiler, $rollable->getProfiler());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
-        self::assertInstanceOf(CustomDie::class, $roll->getInnerRollable());
+        self::assertInstanceOf(CustomDie::class, $rollable->getInnerRollable());
     }
 }

@@ -15,6 +15,7 @@ namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Trace;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
@@ -23,7 +24,7 @@ use function array_search;
 
 final class LogProfiler implements Profiler
 {
-    public const DEFAULT_LOG_FORMAT = '[{method}] - {rollable} : {trace} = {result}';
+    public const DEFAULT_LOG_FORMAT = '[{source}] - {subject} : {line} = {result}';
 
     /**
      * @var LoggerInterface
@@ -61,26 +62,27 @@ final class LogProfiler implements Profiler
     /**
      * {@inheritDoc}
      */
-    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void
+    public function createTrace(Rollable $subject, int $result, string $line, string $source, array $optionals = []): Trace
+    {
+        return new LogTrace($subject, $result, $line, $source, $optionals);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addTrace(Trace $trace): void
     {
         static $psr3logLevels = null;
 
         $psr3logLevels = $psr3logLevels ?? (new ReflectionClass(LogLevel::class))->getConstants();
 
-        $context = [
-            'method' => $method,
-            'rollable' => $rollable->toString(),
-            'trace' => $trace,
-            'result' => $roll,
-        ];
-
         if (false !== array_search($this->logLevel, $psr3logLevels, true)) {
-            $this->logger->{$this->logLevel}($this->logFormat, $context);
+            $this->logger->{$this->logLevel}($this->logFormat, $trace->context());
 
             return;
         }
 
-        $this->logger->log($this->logLevel, $this->logFormat, $context);
+        $this->logger->log($this->logLevel, $this->logFormat, $trace->context());
     }
 
     /**

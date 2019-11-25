@@ -13,15 +13,20 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Profiler
+interface CanBeTraced
 {
     /**
-     * @param array $optionals optional data that can be added to the Trace objects.
+     * Returns the last operation trace.
      */
-    public function createTrace(Rollable $subject, int $result, string $line, string $source, array $optionals = []): Trace;
+    public function lastTrace(): ?Trace;
 
     /**
-     * Record a Rollable operation.
+     * Returns the object profiler.
      */
-    public function addTrace(Trace $trace): void;
+    public function getProfiler(): Profiler;
+
+    /**
+     * Sets the object profiler.
+     */
+    public function setProfiler(Profiler $profiler): void;
 }

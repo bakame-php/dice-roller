@@ -306,16 +306,16 @@ interface Pool implements \Countable, \IteratorAggregate, Rollable
 ```
  
 A `Pool` is a collection of `Rollable` objects which also implements the `Rollable` interface. The package comes bundle
-with the `Bakame\DiceRoller\Cup` Bakame\DiceRoller\Dice\Cups the interface.
+with the `Bakame\DiceRoller\Cup` class which implements the interface.
 
 ```php
 <?php
 
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\CanBeTraced;
 
-final class Cup implements Pool, Traceable
+final class Cup implements Pool, CanBeTraced
 {
     public function __construct(Rollable ...$rollable);
     public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
@@ -337,7 +337,7 @@ use Bakame\DiceRoller\Dice\SidedDie;
 echo Cup::fromRollable(new SidedDie(5), 3)->toString();           // displays 3D5
 echo Cup::fromRollable(new PercentileDie(), 4)->toString();       // displays 4D%
 echo Cup::fromRollable(new CustomDie(1, 2, 2, 4), 2)->toString(); // displays 2D[1,2,2,4]
-echo Cup::fromRollable(new FudgeDie(), 2)->toString();            // displays DF
+echo Cup::fromRollable(new FudgeDie(), 42)->toString();           // displays 42DF
 ```
 
 A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\IllegalValue` is thrown.
@@ -410,9 +410,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\CanBeTraced;
 
-final class Arithmetic implements Modifier, Traceable
+final class Arithmetic implements Modifier, CanBeTraced
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -455,9 +455,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\CanBeTraced;
 
-final class DropKeep implements Modifier, Traceable
+final class DropKeep implements Modifier, CanBeTraced
 {
     public const DROP_HIGHEST = 'dh';
     public const DROP_LOWEST = 'dl';
@@ -506,9 +506,9 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\CanBeTraced;
 
-final class Explode implements Modifier, Traceable
+final class Explode implements Modifier, CanBeTraced
 {
     public const EQ = '=';
     public const GT = '>';
@@ -547,18 +547,18 @@ echo $modifier->toString(); // displays (3D6+DF)!=3
 
 ## Tracing and Profiling
 
-If you want to know how internally your roll result is calculated your `Rollable` object must implements the `Traceable` interface.
+If you want to know how internally your roll result is calculated your `Rollable` object must implements the `CanBeTraced` interface.
 
 ```php
 <?php
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Traceable
+interface CanBeTraced
 {
     public function setProfiler(Profiler $profiler): void;
     public function getProfiler(): Profiler;
-    public function lastTrace(): string;
+    public function lastTrace(): Trace;
 }
 ```
  
@@ -571,7 +571,8 @@ namespace Bakame\DiceRoller\Contract;
 
 interface Profiler
 {
-    public function addTrace(Rollable $rollable, string $method, int $roll, string $trace): void;
+    public function createTrace(Rollable $rollable, string $method, int $roll, string $trace, array $optionals): Trace;
+    public function addTrace(Trace $trace);
 }
 ```
 
@@ -606,13 +607,13 @@ final class LogProfiler implements Profiler
 
 The `LogProfiler` log messages, by default, will match this format:
 
-    [{method}] - {rollable} : {trace} = {result}
+    [{source}] - {subject} : {line} = {result}
 
 The context keys are:
 
-- `{method}`: The method that has created the profile entry.
-- `{rollable}`: The string representation of the `Rollable` object to be analyzed.
-- `{trace}`: The operation trace.
+- `{source}`: The method that has created the profile entry.
+- `{subject}`: The string representation of the `Rollable` object to be analyzed.
+- `{line}`: The operation trace.
 - `{result}`: The result from performing the calculation.
 
 Configuring the logger is done on instantiation.

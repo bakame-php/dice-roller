@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\LogProfiler;
@@ -25,7 +26,7 @@ use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements Modifier, Traceable
+final class Arithmetic implements Modifier, CanBeTraced
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -57,9 +58,9 @@ final class Arithmetic implements Modifier, Traceable
     private $operator;
 
     /**
-     * @var string
+     * @var Trace|null
      */
-    private $trace = '';
+    private $trace;
 
     /**
      * @var Profiler
@@ -92,7 +93,7 @@ final class Arithmetic implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function lastTrace(): string
+    public function lastTrace(): ?Trace
     {
         return $this->trace;
     }
@@ -170,9 +171,11 @@ final class Arithmetic implements Modifier, Traceable
     private function decorate(int $value, string $method): int
     {
         $retval = $this->calculate($value);
+        $trace = $value.' '.$this->operator.' '.$this->value;
+        $trace = $this->profiler->createTrace($this, $retval, $method, $trace);
 
-        $this->trace = $value.' '.$this->operator.' '.$this->value;
-        $this->profiler->addTrace($this, $method, $retval, $this->trace);
+        $this->profiler->addTrace($trace);
+        $this->trace = $trace;
 
         return $retval;
     }

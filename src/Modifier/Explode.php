@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\CanBeTraced;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Profiler;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\IllegalValue;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
@@ -31,7 +32,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Modifier, Traceable
+final class Explode implements Modifier, CanBeTraced
 {
     const EQ = '=';
     const GT = '>';
@@ -59,9 +60,9 @@ final class Explode implements Modifier, Traceable
     private $compare;
 
     /**
-     * @var string
+     * @var Trace|null
      */
-    private $trace = '';
+    private $trace;
 
     /**
      * @var Profiler
@@ -139,7 +140,7 @@ final class Explode implements Modifier, Traceable
     /**
      * {@inheritdoc}
      */
-    public function lastTrace(): string
+    public function lastTrace(): ?Trace
     {
         return $this->trace;
     }
@@ -206,8 +207,9 @@ final class Explode implements Modifier, Traceable
     {
         $retval = $this->pool->minimum();
 
-        $this->trace = (string) $retval;
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
+        $trace = $this->profiler->createTrace($this, $retval, __METHOD__, (string) $retval);
+        $this->profiler->addTrace($trace);
+        $this->trace = $trace;
 
         return $retval;
     }
@@ -217,8 +219,10 @@ final class Explode implements Modifier, Traceable
      */
     public function maximum(): int
     {
-        $this->trace = (string) PHP_INT_MAX;
-        $this->profiler->addTrace($this, __METHOD__, PHP_INT_MAX, $this->trace);
+        $trace = $this->profiler->createTrace($this, PHP_INT_MAX, __METHOD__, (string) PHP_INT_MAX);
+        $this->profiler->addTrace($trace);
+
+        $this->trace = $trace;
 
         return PHP_INT_MAX;
     }
@@ -234,6 +238,7 @@ final class Explode implements Modifier, Traceable
         }
 
         $retval = (int) array_sum($values);
+        $nbRolls = count($values);
 
         $mapper = function (int $value) {
             if (0 > $value) {
@@ -243,8 +248,11 @@ final class Explode implements Modifier, Traceable
             return $value;
         };
 
-        $this->trace = implode(' + ', array_map($mapper, $values));
-        $this->profiler->addTrace($this, __METHOD__, $retval, $this->trace);
+        $trace = implode(' + ', array_map($mapper, $values));
+        $trace = $this->profiler->createTrace($this, $retval, __METHOD__, $trace, ['totalRollsCount' => $nbRolls]);
+
+        $this->profiler->addTrace($trace);
+        $this->trace = $trace;
 
         return $retval;
     }
