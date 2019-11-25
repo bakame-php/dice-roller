@@ -16,7 +16,7 @@ namespace Bakame\DiceRoller\Contract;
 interface CanBeTraced
 {
     /**
-     * Returns the last operation trace.
+     * Returns the last operation trace or null if no operation was performed.
      */
     public function lastTrace(): ?Trace;
 

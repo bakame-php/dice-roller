@@ -15,9 +15,14 @@ namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
+use function array_filter;
+use function in_array;
+use const ARRAY_FILTER_USE_KEY;
 
 final class LogTrace implements Trace
 {
+    private const REQUIRED_CONTEXT_FIELDS = ['source', 'subject', 'line', 'result'];
+
     /**
      * @var Rollable
      */
@@ -84,13 +89,11 @@ final class LogTrace implements Trace
 
     public function context(): array
     {
-        $optionals = [];
-        static $requiredFields = ['method', 'rollable', 'trace', 'result'];
-        foreach ($this->optionals as $offset => $value) {
-            if (!in_array($offset, $requiredFields, true)) {
-                $optionals[$offset] = $value;
-            }
-        }
+        $filterOutRequiredKeys = function ($offset): bool {
+            return !in_array($offset, self::REQUIRED_CONTEXT_FIELDS, true);
+        };
+
+        $optionals = array_filter($this->optionals, $filterOutRequiredKeys, ARRAY_FILTER_USE_KEY);
 
         return [
             'source' => $this->source,
