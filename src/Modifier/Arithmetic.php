@@ -19,7 +19,7 @@ use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
-use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Trace\Sequence;
 use function abs;
@@ -73,7 +73,7 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
      *
      *
      * @throws UnknownAlgorithm if the operator is not recognized
-     * @throws IllegalValue     if the value is invalid for a given operator
+     * @throws SyntaxError      if the value is invalid for a given operator
      */
     public function __construct(Rollable $rollable, string $operator, int $value)
     {
@@ -82,7 +82,7 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
         }
 
         if (0 > $value || (0 === $value && $operator == self::DIV)) {
-            throw new IllegalValue(sprintf('The submitted value `%s` is invalid for the given `%s` operator', $value, $operator));
+            throw new SyntaxError(sprintf('The submitted value `%s` is invalid for the given `%s` operator', $value, $operator));
         }
 
         $this->rollable = $rollable;
@@ -163,14 +163,14 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
      */
     private function decorate(int $value, string $method): int
     {
-        $retval = $this->calculate($value);
+        $result = $this->calculate($value);
         $operation = $value.' '.$this->operator.' '.$this->value;
-        $trace = $this->tracer->createTrace($method, $this, $operation, $retval);
+        $trace = $this->tracer->createTrace($method, $this, $operation, $result);
 
         $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
-        return $retval;
+        return $result;
     }
 
     /**

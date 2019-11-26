@@ -18,13 +18,13 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\Trace\Entry;
+use Bakame\DiceRoller\Trace\Event;
 use Bakame\DiceRoller\Trace\MemoryLogger;
 use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use function get_class;
 
-class EntryTest extends TestCase
+class EventTest extends TestCase
 {
     /**
      * @var Sequence
@@ -44,7 +44,7 @@ class EntryTest extends TestCase
         $roll = $rollable->roll();
         $trace = $rollable->lastTrace();
         self::assertInstanceOf(Trace::class, $trace);
-        self::assertInstanceOf(Entry::class, $trace);
+        self::assertInstanceOf(Event::class, $trace);
         self::assertSame($rollable, $trace->subject());
         self::assertSame($roll, $trace->result());
         self::assertSame(get_class($rollable).'::roll', $trace->source());
@@ -66,7 +66,7 @@ class EntryTest extends TestCase
         $rollable->setTracer($this->tracer);
         $rollable->roll();
         $trace = $rollable->lastTrace();
-        self::assertInstanceOf(Entry::class, $trace);
+        self::assertInstanceOf(Event::class, $trace);
         self::assertArrayHasKey('totalRollsCount', $trace->context());
         self::assertIsInt($trace->context()['totalRollsCount']);
     }

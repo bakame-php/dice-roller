@@ -202,10 +202,7 @@ final class DropKeep implements Modifier, Traceable, TracerAware
      */
     private function decorate(array $values, string $method): int
     {
-        $values = $this->filter($values);
-        $retval = (int) array_sum($values);
-
-        $mapper = function (int $value) {
+        $mapper = static function (int $value) {
             if (0 > $value) {
                 return '('.$value.')';
             }
@@ -213,13 +210,15 @@ final class DropKeep implements Modifier, Traceable, TracerAware
             return $value;
         };
 
+        $values = $this->filter($values);
+        $result = (int) array_sum($values);
         $operation = implode(' + ', array_map($mapper, $values));
-        $trace = $this->tracer->createTrace($method, $this, $operation, $retval);
+        $trace = $this->tracer->createTrace($method, $this, $operation, $result);
 
         $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
-        return $retval;
+        return $result;
     }
 
     /**

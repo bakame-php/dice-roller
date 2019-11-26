@@ -19,7 +19,7 @@ use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
-use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Trace\Sequence;
 use Iterator;
 use function array_count_values;
@@ -71,12 +71,12 @@ final class Cup implements Pool, Traceable, TracerAware
     /**
      * Create a new Cup containing only on type of Rollable object.
      *
-     * @throws IllegalValue
+     * @throws SyntaxError
      */
     public static function fromRollable(Rollable $rollable, int $quantity = 1): self
     {
         if ($quantity < 1) {
-            throw new IllegalValue(sprintf('The quantity of dice `%s` is not valid. Should be > 0', $quantity));
+            throw new SyntaxError(sprintf('The quantity of dice `%s` is not valid. Should be > 0', $quantity));
         }
         --$quantity;
 
@@ -191,7 +191,7 @@ final class Cup implements Pool, Traceable, TracerAware
      */
     private function decorate(array $sum, string $method): int
     {
-        $mapper = function (int $value) {
+        $mapper = static function (int $value) {
             if (0 > $value) {
                 return '('.$value.')';
             }
@@ -199,14 +199,14 @@ final class Cup implements Pool, Traceable, TracerAware
             return $value;
         };
 
-        $retval = (int) array_sum($sum);
+        $result = (int) array_sum($sum);
         $operation = implode(' + ', array_map($mapper, $sum));
-        $trace = $this->tracer->createTrace($method, $this, $operation, $retval);
+        $trace = $this->tracer->createTrace($method, $this, $operation, $result);
 
         $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
-        return $retval;
+        return $result;
     }
 
     /**

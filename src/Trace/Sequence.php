@@ -64,7 +64,7 @@ final class Sequence implements Tracer
      */
     public function createTrace(string $source, Rollable $subject, string $operation, int $result, array $optionals = []): Trace
     {
-        return new Entry($source, $subject, $operation, $result, $optionals);
+        return new Event($source, $subject, $operation, $result, $optionals);
     }
 
     /**

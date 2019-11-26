@@ -18,7 +18,7 @@ use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Trace\MemoryLogger;
@@ -129,7 +129,7 @@ final class CupTest extends TestCase
 
     public function testCreateFromRollableThrowsException(): void
     {
-        self::expectException(IllegalValue::class);
+        self::expectException(SyntaxError::class);
         Cup::fromRollable(new FudgeDie(), 0);
     }
 

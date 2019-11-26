@@ -22,7 +22,7 @@ use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
@@ -81,7 +81,7 @@ final class Factory
     /**
      * Adds a Rollable item to a pool.
      *
-     * @throws IllegalValue
+     * @throws SyntaxError
      * @throws UnknownExpression
      */
     private function addRollable(Cup $pool, array $parts): Cup
@@ -96,7 +96,7 @@ final class Factory
     /**
      * Generates the Pool from the expression matched pattern.
      *
-     * @throws IllegalValue
+     * @throws SyntaxError
      * @throws UnknownExpression
      */
     private function createRollable(array $parts): Rollable
@@ -115,7 +115,7 @@ final class Factory
     /**
      * Parse Rollable definition.
      *
-     * @throws IllegalValue
+     * @throws SyntaxError
      * @throws UnknownExpression
      */
     private function createDice(string $expression): Dice
@@ -138,7 +138,7 @@ final class Factory
     /**
      * Decorates the Rollable object with modifiers objects.
      *
-     * @throws IllegalValue
+     * @throws SyntaxError
      * @throws UnknownExpression
      */
     private function decorate(Rollable $rollable, array $matches): Rollable

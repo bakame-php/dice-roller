@@ -21,7 +21,7 @@ use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Exception\IllegalValue;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Trace\Sequence;
 use function array_map;
@@ -80,7 +80,7 @@ final class Explode implements Modifier, Traceable, TracerAware
      *
      *
      * @throws UnknownAlgorithm if the comparator is not recognized
-     * @throws IllegalValue     if the Cup triggers infinite loop
+     * @throws SyntaxError      if the Cup triggers infinite loop
      */
     public function __construct(Rollable $pool, string $compare, int $threshold = null)
     {
@@ -95,7 +95,7 @@ final class Explode implements Modifier, Traceable, TracerAware
         $this->compare = $compare;
         $this->threshold = $threshold;
         if (!$this->isValidPool($pool)) {
-            throw new IllegalValue(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
+            throw new SyntaxError(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
         }
         $this->pool = $pool;
         $this->setTracer(Sequence::fromNullLogger());
@@ -198,13 +198,13 @@ final class Explode implements Modifier, Traceable, TracerAware
      */
     public function minimum(): int
     {
-        $retval = $this->pool->minimum();
+        $minimum = $this->pool->minimum();
 
-        $trace = $this->tracer->createTrace(__METHOD__, $this, (string) $retval, $retval);
+        $trace = $this->tracer->createTrace(__METHOD__, $this, (string) $minimum, $minimum);
         $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
-        return $retval;
+        return $minimum;
     }
 
     /**
@@ -225,15 +225,7 @@ final class Explode implements Modifier, Traceable, TracerAware
      */
     public function roll(): int
     {
-        $values = [];
-        foreach ($this->pool as $rollable) {
-            $values = $this->calculate($values, $rollable);
-        }
-
-        $retval = (int) array_sum($values);
-        $nbRolls = count($values);
-
-        $mapper = function (int $value) {
+        $mapper = static function (int $value) {
             if (0 > $value) {
                 return '('.$value.')';
             }
@@ -241,13 +233,20 @@ final class Explode implements Modifier, Traceable, TracerAware
             return $value;
         };
 
+        $values = [];
+        foreach ($this->pool as $rollable) {
+            $values = $this->calculate($values, $rollable);
+        }
+
+        $result = (int) array_sum($values);
+        $nbRolls = count($values);
         $operation = implode(' + ', array_map($mapper, $values));
-        $trace = $this->tracer->createTrace(__METHOD__, $this, $operation, $retval, ['totalRollsCount' => $nbRolls]);
+        $trace = $this->tracer->createTrace(__METHOD__, $this, $operation, $result, ['totalRollsCount' => $nbRolls]);
 
         $this->tracer->addTrace($trace);
         $this->trace = $trace;
 
-        return $retval;
+        return $result;
     }
 
     /**

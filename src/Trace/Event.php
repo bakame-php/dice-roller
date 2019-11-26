@@ -16,7 +16,7 @@ namespace Bakame\DiceRoller\Trace;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Trace;
 
-final class Entry implements Trace
+final class Event implements Trace
 {
     /**
      * @var Rollable
