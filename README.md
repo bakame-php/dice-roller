@@ -568,19 +568,50 @@ The interface enables getting the trace from the last operation as well as profi
 
 namespace Bakame\DiceRoller\Contract;
 
-use Bakame\DiceRoller\Toss;
+use Bakame\DiceRoller\Contract\Roll;
 
 interface Tracer
 {
-    public function addTrace(Rollable $rollable, Toss $roll, TraceContext $context): void;
+    public function addTrace(Rollable $rollable, Roll $roll, TraceContext $context): void;
 }
 ```
 
 **In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
 
-The package comes bundle with the `Bakame\DiceRoller\Trace\LogTracer` which sends the traces to a PSR-3 compliant logger.
+The package comes bundle with:
+ 
+- the `Bakame\DiceRoller\Trace\LogTracer` which sends the traces to a PSR-3 compliant logger.
+- the `Bakame\DiceRoller\Trace\MemoryTracer` which keeps the trace in a in-memory collection.
 
-### Tracing using a LogTracer
+### Tracing using the MemoryTracer
+
+No configuration is needed you just need to give your object an instantiated `MemoryTracer`.
+
+```php
+<?php
+
+use Bakame\DiceRoller\Trace\MemoryTracer;
+use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Dice\SidedDie;
+
+$tracer = new MemoryTracer();
+$tracer->isEmpty(); //returns true
+$cup = Cup::fromRollable(new SidedDie(6), 3);
+$cup->setTracer($tracer);
+$cup->roll();
+$tracer->isEmpty(); //returns false
+foreach ($tracer as $trace) {
+    //do something meaningful with the $trace
+    //$trace is an array with information about all the operation done
+    //with the $cup object.
+}
+$tracer->clear();  //clear all the traces from the object
+$tracer->isEmpty(); //returns true
+```
+
+**The `MemoryTracer` can also be encoded using `json_encode`.**
+
+### Tracing using the LogTracer
 
 ```php
 <?php

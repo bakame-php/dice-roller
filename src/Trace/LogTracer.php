@@ -67,11 +67,7 @@ final class LogTracer implements Tracer
         static $psr3logLevels = null;
         $psr3logLevels = $psr3logLevels ?? (new ReflectionClass(LogLevel::class))->getConstants();
 
-        $logContext = $context->toArray() + [
-            'expression' => $roll->expression(),
-            'operation' => $roll->operation(),
-            'result' => $roll->toString(),
-        ];
+        $logContext = $context->toArray() + $roll->toArray();
 
         if (false !== array_search($this->logLevel, $psr3logLevels, true)) {
             $this->logger->{$this->logLevel}($this->logFormat, $logContext);

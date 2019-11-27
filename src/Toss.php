@@ -16,12 +16,12 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 
-final class Toss implements Roll
+final class Toss implements Roll, \JsonSerializable
 {
     /**
-     * @var int
+     * @var string
      */
-    private $value;
+    private $expression;
 
     /**
      * @var string
@@ -29,50 +29,82 @@ final class Toss implements Roll
     private $operation;
 
     /**
-     * @var string
+     * @var int
      */
-    private $expression;
+    private $value;
 
-    public function __construct(int $value, string $operation, string $expression)
+    public function __construct(string $expression, string $operation, int $value)
     {
-        $this->value = $value;
-        $this->operation = $operation;
         $this->expression = $expression;
+        $this->operation = $operation;
+        $this->value = $value;
     }
 
     /**
-     * Create a new instance from a Rollable type.
+     * Create a new instance from a generic Rollable instance.
      */
     public static function fromRollable(Rollable $rollable, int $value, string $operation): self
     {
-        return new self($value, $operation, $rollable->expression());
+        return new self($rollable->expression(), $operation, $value);
     }
 
     /**
-     * Create a new instance from a Dice type.
+     * Create a new instance from a Dice instance.
      */
     public static function fromDice(Rollable $rollable, int $value): self
     {
-        return new self($value, (string) $value, $rollable->expression());
+        return self::fromRollable($rollable, $value, (string) $value);
     }
 
-    public function value(): int
-    {
-        return $this->value;
-    }
-
-    public function operation(): string
-    {
-        return $this->operation;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function expression(): string
     {
         return $this->expression;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function operation(): string
+    {
+        return $this->operation;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function value(): int
+    {
+        return $this->value;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function toString(): string
     {
         return (string) $this->value;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArray(): array
+    {
+        return [
+            'expression' => $this->expression,
+            'operation' => $this->operation,
+            'value' => $this->value,
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function jsonSerialize(): int
+    {
+        return $this->value;
     }
 }

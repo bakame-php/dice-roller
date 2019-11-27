@@ -44,8 +44,10 @@ class ContextTest extends TestCase
     public function testTraceCanHaveOptionalsValue(): void
     {
         $context = new Context('foo', ['bar' => 'baz', 'result' => 23]);
+        $arrExpected = ['source' => 'foo', 'bar' => 'baz'];
         self::assertArrayHasKey('bar', $context->toArray());
         self::assertArrayNotHasKey('result', $context->toArray());
-        self::assertSame('baz', $context->toArray()['bar']);
+        self::assertSame($arrExpected, $context->toArray());
+        self::assertSame($arrExpected, $context->jsonSerialize());
     }
 }

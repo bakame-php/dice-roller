@@ -92,7 +92,7 @@ final class DropKeepTest extends TestCase
 
             public function roll(): Roll
             {
-                return new Toss(1, '1', 'expression');
+                return new Toss('expression', '1', 1);
             }
 
             public function expression(): string
@@ -114,7 +114,7 @@ final class DropKeepTest extends TestCase
 
             public function roll(): Roll
             {
-                return new Toss(2, '2', 'expression');
+                return new Toss('expression', '2', 2);
             }
 
             public function expression(): string

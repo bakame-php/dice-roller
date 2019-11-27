@@ -92,8 +92,8 @@ final class DropKeep implements Modifier, TracerAware
      * new instance.
      *
      *
-     * @throws UnknownAlgorithm if the algorithm is not recognized
-     * @throws TooManyRollableInstances   if the RollableCollection is not valid
+     * @throws UnknownAlgorithm         if the algorithm is not recognized
+     * @throws TooManyRollableInstances if the RollableCollection is not valid
      */
     public function __construct(Rollable $pool, string $algo, int $threshold)
     {

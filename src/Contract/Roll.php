@@ -16,26 +16,29 @@ namespace Bakame\DiceRoller\Contract;
 interface Roll
 {
     /**
-     * The roll result int value.
-     *
+     * The roll value as in integer.
      */
     public function value(): int;
 
     /**
-     * The operations needed to obtain the resulted value.
-     *
+     * The operations needed to obtain the resulted roll value.
      */
     public function operation(): string;
 
     /**
-     * The rollable expression.
-     *
+     * The rollable source expression.
      */
     public function expression(): string;
 
     /**
      * The rollable value as a string.
-     *
      */
     public function toString(): string;
+
+    /**
+     * The rollable value as an array.
+     *
+     * @return array<string, string|int>
+     */
+    public function toArray(): array;
 }

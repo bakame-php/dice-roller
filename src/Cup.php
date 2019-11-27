@@ -64,6 +64,14 @@ final class Cup implements Pool, TracerAware
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function setTracer(Tracer $tracer): void
+    {
+        $this->tracer = $tracer;
+    }
+
+    /**
      * Create a new Cup containing only on type of Rollable object.
      *
      * @throws SyntaxError
@@ -100,8 +108,7 @@ final class Cup implements Pool, TracerAware
     }
 
     /**
-     * Returns an external Iterator which enables iteration
-     * on each contained Rollable object.
+     * Returns an external Iterator to iterate on each contained Rollable object.
      */
     public function getIterator(): Iterator
     {
@@ -196,15 +203,7 @@ final class Cup implements Pool, TracerAware
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function setTracer(Tracer $tracer): void
-    {
-        $this->tracer = $tracer;
-    }
-
-    /**
-     * Return an instance with the added Rollable object.
+     * Returns an instance with the added Rollable objects.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified Rollable object.

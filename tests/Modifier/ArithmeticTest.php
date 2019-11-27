@@ -91,7 +91,7 @@ final class ArithmeticTest extends TestCase
 
             public function roll(): Roll
             {
-                return new Toss(1, '1', 'expression');
+                return new Toss('expression', '1', 1);
             }
 
             public function expression(): string
