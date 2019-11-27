@@ -13,15 +13,15 @@ namespace Bakame\DiceRoller\Test\Trace;
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\Trace\LogTracer;
 use Bakame\DiceRoller\Trace\MemoryLogger;
-use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Trace\Sequence
+ * @coversDefaultClass \Bakame\DiceRoller\Trace\LogTracer
  */
-final class SequenceTest extends TestCase
+final class LogTracerTest extends TestCase
 {
     /**
      * @var \Bakame\DiceRoller\Trace\MemoryLogger
@@ -29,14 +29,14 @@ final class SequenceTest extends TestCase
     private $logger;
 
     /**
-     * @var \Bakame\DiceRoller\Trace\Sequence
+     * @var \Bakame\DiceRoller\Trace\LogTracer
      */
     private $tracer;
 
     protected function setUp(): void
     {
         $this->logger = new MemoryLogger();
-        $this->tracer = new Sequence($this->logger);
+        $this->tracer = new LogTracer($this->logger);
     }
 
     public function testLogger(): void
@@ -51,12 +51,11 @@ final class SequenceTest extends TestCase
 
     public function testLogFormat(): void
     {
-        self::assertSame(Sequence::DEFAULT_LOG_FORMAT, $this->tracer->logFormat());
+        self::assertSame(LogTracer::DEFAULT_LOG_FORMAT, $this->tracer->logFormat());
     }
 
     /**
      * @covers \Bakame\DiceRoller\Trace\MemoryLogger
-     * @covers ::createTrace
      * @covers ::addTrace
      */
     public function testDiceRollerLogger(): void
@@ -64,7 +63,7 @@ final class SequenceTest extends TestCase
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
         $rollable = Cup::fromRollable(new SidedDie(6), 3);
-        $rollable->setTracer(new Sequence($this->logger, 'foobar'));
+        $rollable->setTracer(new LogTracer($this->logger, 'foobar'));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear('foobar');

@@ -12,13 +12,15 @@
 namespace Bakame\DiceRoller\Test\Modifier;
 
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
+use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\Toss;
+use Bakame\DiceRoller\Trace\LogTracer;
 use Bakame\DiceRoller\Trace\MemoryLogger;
-use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -55,7 +57,7 @@ final class ArithmeticTest extends TestCase
     }
 
     /**
-     * @covers ::toString
+     * @covers ::expression
      * @covers ::getInnerRollable
      */
     public function testToString(): void
@@ -67,7 +69,7 @@ final class ArithmeticTest extends TestCase
         );
 
         $cup = new Arithmetic($pool, '^', 3);
-        self::assertSame('(2D3+D4)^3', $cup->toString());
+        self::assertSame('(2D3+D4)^3', $cup->expression());
         self::assertSame($pool, $cup->getInnerRollable());
     }
 
@@ -87,20 +89,20 @@ final class ArithmeticTest extends TestCase
                 return 1;
             }
 
-            public function roll(): int
+            public function roll(): Roll
             {
-                return 1;
+                return new Toss(1, '1', 'expression');
             }
 
-            public function toString(): string
+            public function expression(): string
             {
                 return '1';
             }
         };
 
-        $rollables = (new Cup())->withAddedRollable($dice, clone $dice);
-        $cup = new Arithmetic($rollables, '*', 3);
-        self::assertSame(6, $cup->roll());
+        $cup = (new Cup())->withAddedRollable($dice, clone $dice);
+        $arithmetic = new Arithmetic($cup, '*', 3);
+        self::assertSame(6, $arithmetic->roll()->value());
     }
 
     /**
@@ -113,7 +115,7 @@ final class ArithmeticTest extends TestCase
         $dice = new CustomDie(-1, -1, -1);
 
         $cup = new Arithmetic($dice, Arithmetic::EXP, 3);
-        self::assertSame(-1, $cup->roll());
+        self::assertSame(-1, $cup->roll()->value());
     }
 
     /**
@@ -129,7 +131,7 @@ final class ArithmeticTest extends TestCase
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max): void
     {
         $roll = new Arithmetic(new SidedDie($size), $operator, $value);
-        $test = $roll->roll();
+        $test = $roll->roll()->value();
         self::assertSame($min, $roll->minimum());
         self::assertSame($max, $roll->maximum());
         self::assertGreaterThanOrEqual($min, $test);
@@ -188,12 +190,12 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticExponentWithNegativeValue(): void
     {
-        $roll = new Arithmetic(new CustomDie(-1, -1, -1), Arithmetic::EXP, 3);
-        $test = $roll->roll();
-        self::assertSame(-1, $roll->minimum());
-        self::assertSame(-1, $roll->maximum());
-        self::assertGreaterThanOrEqual(-1, $test);
-        self::assertLessThanOrEqual(-1, $test);
+        $arithmetic = new Arithmetic(new CustomDie(-1, -1, -1), Arithmetic::EXP, 3);
+        $rollValue = $arithmetic->roll()->value();
+        self::assertSame(-1, $arithmetic->minimum());
+        self::assertSame(-1, $arithmetic->maximum());
+        self::assertGreaterThanOrEqual(-1, $rollValue);
+        self::assertLessThanOrEqual(-1, $rollValue);
     }
 
     /**
@@ -203,26 +205,23 @@ final class ArithmeticTest extends TestCase
      * @covers ::roll
      * @covers ::decorate
      * @covers ::calculate
-     * @covers ::lastTrace
      * @covers ::setTracer
-     * @covers \Bakame\DiceRoller\Trace\Sequence
+     * @covers \Bakame\DiceRoller\Trace\LogTracer
      * @covers \Bakame\DiceRoller\Trace\MemoryLogger
      */
     public function testTracer(): void
     {
         $logger = new MemoryLogger();
-        $roll = new Arithmetic(
+        $arithmetic = new Arithmetic(
             new CustomDie(-1, -1, -1),
             Arithmetic::EXP,
             3
         );
-        $tracer = new Sequence($logger, LogLevel::DEBUG);
-        $roll->setTracer($tracer);
-        self::assertEmpty($roll->lastTrace());
-        $roll->roll();
-        self::assertNotEmpty($roll->lastTrace());
-        $roll->maximum();
-        $roll->minimum();
+        $tracer = new LogTracer($logger, LogLevel::DEBUG);
+        $arithmetic->setTracer($tracer);
+        $arithmetic->roll();
+        $arithmetic->maximum();
+        $arithmetic->minimum();
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
         self::assertCount(1, $logger->getLogs());
         self::assertCount(1, $logger->getLogs(null));

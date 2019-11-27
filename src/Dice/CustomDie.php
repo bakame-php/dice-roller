@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\Dice;
+use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Bakame\DiceRoller\Exception\UnknownExpression;
+use Bakame\DiceRoller\Toss;
 use function array_map;
 use function count;
 use function explode;
@@ -55,7 +57,7 @@ final class CustomDie implements Dice
      * @throws TooFewSides
      * @throws UnknownExpression
      */
-    public static function fromString(string $expression): self
+    public static function fromExpression(string $expression): self
     {
         if (1 !== preg_match('/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i', $expression, $matches)) {
             throw new UnknownExpression(sprintf('the submitted die format `%s` is invalid.', $expression));
@@ -73,7 +75,7 @@ final class CustomDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function toString(): string
+    public function expression(): string
     {
         return 'D['.implode(',', $this->values).']';
     }
@@ -105,10 +107,11 @@ final class CustomDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
         $index = random_int(0, count($this->values) - 1);
+        $result = $this->values[$index];
 
-        return $this->values[$index];
+        return Toss::fromDice($this, $result);
     }
 }

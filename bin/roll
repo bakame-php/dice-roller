@@ -5,7 +5,7 @@ ini_set('display_errors', 'stderr');
 
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Trace\LogTracer;
 use Bakame\DiceRoller\Trace\MemoryLogger;
 use Psr\Log\LogLevel;
 
@@ -150,7 +150,7 @@ if (0 === strpos($expression, '-')) {
 }
 
 $logger = new MemoryLogger();
-$factory = new Factory(new ExpressionParser(), new Sequence($logger));
+$factory = new Factory(new ExpressionParser(), new LogTracer($logger));
 
 try {
     $rollable = $factory->newInstance($expression);
@@ -161,14 +161,14 @@ try {
 }
 
 if (isset($opts['info'])) {
-   success(sprintf($rollableInfo, $rollable->toString(), $rollable->minimum(), $rollable->maximum()));
+   success(sprintf($rollableInfo, $rollable->expression(), $rollable->minimum(), $rollable->maximum()));
 }
 
 $logger->clear();
 
 success("$yellow ====== ROLL RESULTS ======= $reset");
 for ($i = 0; $i < $opts['iteration']; ++$i) {
-    success(sprintf($rollOutputFormat, $i+1, $rollable->roll()));
+    success(sprintf($rollOutputFormat, $i+1, $rollable->roll()->value()));
     if (isset($opts['logs'])) {
         flushTracer($logger, $logOutputFormat);
     }

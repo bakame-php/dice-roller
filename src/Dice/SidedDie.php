@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\Dice;
+use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Bakame\DiceRoller\Exception\UnknownExpression;
+use Bakame\DiceRoller\Toss;
 use function random_int;
 use function sprintf;
 
@@ -47,7 +49,7 @@ final class SidedDie implements Dice
      *
      * @throws UnknownExpression if the expression is not valid.
      */
-    public static function fromString(string $expression): self
+    public static function fromExpression(string $expression): self
     {
         if (1 === preg_match('/^d(?<sides>\d+)$/i', $expression, $matches)) {
             return new self((int) $matches['sides']);
@@ -59,7 +61,7 @@ final class SidedDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function toString(): string
+    public function expression(): string
     {
         return 'D'.$this->sides;
     }
@@ -91,8 +93,10 @@ final class SidedDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
-        return random_int(1, $this->sides);
+        $result = random_int(1, $this->sides);
+
+        return Toss::fromDice($this, $result);
     }
 }

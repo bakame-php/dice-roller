@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Trace;
 
-use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Trace;
+use Bakame\DiceRoller\Contract\Roll;
+use Bakame\DiceRoller\Contract\TraceContext;
 use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -22,9 +22,9 @@ use Psr\Log\NullLogger;
 use ReflectionClass;
 use function array_search;
 
-final class Sequence implements Tracer
+final class LogTracer implements Tracer
 {
-    public const DEFAULT_LOG_FORMAT = '[{source}] - {subject} : {operation} = {result}';
+    public const DEFAULT_LOG_FORMAT = '[{source}] - {expression} : {operation} = {result}';
 
     /**
      * @var LoggerInterface
@@ -62,27 +62,24 @@ final class Sequence implements Tracer
     /**
      * {@inheritDoc}
      */
-    public function createTrace(string $source, Rollable $subject, string $operation, int $result, array $optionals = []): Trace
-    {
-        return new Event($source, $subject, $operation, $result, $optionals);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function addTrace(Trace $trace): void
+    public function addTrace(Roll $roll, TraceContext $context): void
     {
         static $psr3logLevels = null;
-
         $psr3logLevels = $psr3logLevels ?? (new ReflectionClass(LogLevel::class))->getConstants();
 
+        $logContext = $context->toArray() + [
+            'expression' => $roll->expression(),
+            'operation' => $roll->operation(),
+            'result' => $roll->toString(),
+        ];
+
         if (false !== array_search($this->logLevel, $psr3logLevels, true)) {
-            $this->logger->{$this->logLevel}($this->logFormat, $trace->context());
+            $this->logger->{$this->logLevel}($this->logFormat, $logContext);
 
             return;
         }
 
-        $this->logger->log($this->logLevel, $this->logFormat, $trace->context());
+        $this->logger->log($this->logLevel, $this->logFormat, $logContext);
     }
 
     /**

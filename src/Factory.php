@@ -27,7 +27,7 @@ use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Trace\LogTracer;
 use function array_reduce;
 use function count;
 use function iterator_to_array;
@@ -54,7 +54,7 @@ final class Factory
     public function __construct(?Parser $parser = null, ?Tracer $tracer = null)
     {
         $this->parser = $parser ?? new ExpressionParser();
-        $this->tracer = $tracer ?? Sequence::fromNullLogger();
+        $this->tracer = $tracer ?? LogTracer::fromNullLogger();
     }
 
     /**
@@ -129,10 +129,10 @@ final class Factory
         }
 
         if (false !== strpos($expression, '[')) {
-            return CustomDie::fromString($expression);
+            return CustomDie::fromExpression($expression);
         }
 
-        return SidedDie::fromString($expression);
+        return SidedDie::fromExpression($expression);
     }
 
     /**

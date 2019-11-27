@@ -15,15 +15,17 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Trace;
-use Bakame\DiceRoller\Contract\Traceable;
+use Bakame\DiceRoller\Contract\TraceContext;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyObjects;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Toss;
+use Bakame\DiceRoller\Trace\Context;
+use Bakame\DiceRoller\Trace\LogTracer;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -36,7 +38,7 @@ use function strpos;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements Modifier, Traceable, TracerAware
+final class DropKeep implements Modifier, TracerAware
 {
     public const DROP_HIGHEST = 'DH';
     public const DROP_LOWEST = 'DL';
@@ -72,7 +74,7 @@ final class DropKeep implements Modifier, Traceable, TracerAware
     private $algo;
 
     /**
-     * @var Trace|null
+     * @var TraceContext|null
      */
     private $trace;
 
@@ -112,15 +114,7 @@ final class DropKeep implements Modifier, Traceable, TracerAware
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->setTracer(Sequence::fromNullLogger());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function lastTrace(): ?Trace
-    {
-        return $this->trace;
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -148,9 +142,9 @@ final class DropKeep implements Modifier, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function toString(): string
+    public function expression(): string
     {
-        $str = $this->pool->toString();
+        $str = $this->pool->expression();
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }
@@ -161,11 +155,11 @@ final class DropKeep implements Modifier, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
         $innerRetval = [];
         foreach ($this->pool as $rollable) {
-            $innerRetval[] = $rollable->roll();
+            $innerRetval[] = $rollable->roll()->value();
         }
 
         return $this->decorate($innerRetval, __METHOD__);
@@ -181,7 +175,7 @@ final class DropKeep implements Modifier, Traceable, TracerAware
             $innerRetval[] = $rollable->minimum();
         }
 
-        return $this->decorate($innerRetval, __METHOD__);
+        return $this->decorate($innerRetval, __METHOD__)->value();
     }
 
     /**
@@ -194,15 +188,15 @@ final class DropKeep implements Modifier, Traceable, TracerAware
             $innerRetval[] = $rollable->maximum();
         }
 
-        return $this->decorate($innerRetval, __METHOD__);
+        return $this->decorate($innerRetval, __METHOD__)->value();
     }
 
     /**
      * Decorates the operation returned value.
      */
-    private function decorate(array $values, string $method): int
+    private function decorate(array $values, string $method): Roll
     {
-        $mapper = static function (int $value) {
+        $mapper = static function ($value) {
             if (0 > $value) {
                 return '('.$value.')';
             }
@@ -213,12 +207,11 @@ final class DropKeep implements Modifier, Traceable, TracerAware
         $values = $this->filter($values);
         $result = (int) array_sum($values);
         $operation = implode(' + ', array_map($mapper, $values));
-        $trace = $this->tracer->createTrace($method, $this, $operation, $result);
+        $roll = Toss::fromRollable($this, $result, $operation);
 
-        $this->tracer->addTrace($trace);
-        $this->trace = $trace;
+        $this->tracer->addTrace($roll, new Context($method));
 
-        return $result;
+        return $roll;
     }
 
     /**

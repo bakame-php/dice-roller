@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Trace;
-use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Trace\Context;
+use Bakame\DiceRoller\Trace\LogTracer;
 use Iterator;
 use function array_count_values;
 use function array_filter;
@@ -32,17 +32,12 @@ use function count;
 use function implode;
 use function sprintf;
 
-final class Cup implements Pool, Traceable, TracerAware
+final class Cup implements Pool, TracerAware
 {
     /**
      * @var Rollable[]
      */
     private $items = [];
-
-    /**
-     * @var Trace|null
-     */
-    private $trace;
 
     /**
      * @var Tracer
@@ -57,7 +52,7 @@ final class Cup implements Pool, Traceable, TracerAware
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
-        $this->setTracer(Sequence::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -118,22 +113,14 @@ final class Cup implements Pool, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function lastTrace(): ?Trace
-    {
-        return $this->trace;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toString(): string
+    public function expression(): string
     {
         if ([] === $this->items) {
             return '0';
         }
 
         $mapper = function (Rollable $rollable): string {
-            return $rollable->toString();
+            return $rollable->expression();
         };
 
         $walker = function (&$value, $offset): void {
@@ -150,11 +137,11 @@ final class Cup implements Pool, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
         $sum = [];
         foreach ($this->items as $rollable) {
-            $sum[] = $rollable->roll();
+            $sum[] = $rollable->roll()->value();
         }
 
         return $this->decorate($sum, __METHOD__);
@@ -170,7 +157,7 @@ final class Cup implements Pool, Traceable, TracerAware
             $sum[] = $rollable->minimum();
         }
 
-        return $this->decorate($sum, __METHOD__);
+        return $this->decorate($sum, __METHOD__)->value();
     }
 
     /**
@@ -183,15 +170,15 @@ final class Cup implements Pool, Traceable, TracerAware
             $sum[] = $rollable->maximum();
         }
 
-        return $this->decorate($sum, __METHOD__);
+        return $this->decorate($sum, __METHOD__)->value();
     }
 
     /**
      * Decorates the operation returned value.
      */
-    private function decorate(array $sum, string $method): int
+    private function decorate(array $sum, string $method): Roll
     {
-        $mapper = static function (int $value) {
+        $mapper = static function ($value) {
             if (0 > $value) {
                 return '('.$value.')';
             }
@@ -201,12 +188,11 @@ final class Cup implements Pool, Traceable, TracerAware
 
         $result = (int) array_sum($sum);
         $operation = implode(' + ', array_map($mapper, $sum));
-        $trace = $this->tracer->createTrace($method, $this, $operation, $result);
+        $roll = Toss::fromRollable($this, $result, $operation);
+        $context = new Context($method);
+        $this->tracer->addTrace($roll, $context);
 
-        $this->tracer->addTrace($trace);
-        $this->trace = $trace;
-
-        return $result;
+        return $roll;
     }
 
     /**

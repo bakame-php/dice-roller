@@ -13,17 +13,11 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Trace
+interface TraceContext
 {
-    public function subject(): Rollable;
-
     public function source(): string;
-
-    public function result(): int;
-
-    public function operation(): string;
 
     public function extensions(): array;
 
-    public function context(): array;
+    public function toArray(): array;
 }

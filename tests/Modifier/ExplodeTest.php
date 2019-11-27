@@ -13,15 +13,14 @@ namespace Bakame\DiceRoller\Test\Modifier;
 
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Trace;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\Trace\LogTracer;
 use Bakame\DiceRoller\Trace\MemoryLogger;
-use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -90,13 +89,13 @@ final class ExplodeTest extends TestCase
      * @dataProvider provideExplodingModifier
      *
      * @covers ::__construct
-     * @covers ::toString
+     * @covers ::expression
      * @covers ::getAnnotationSuffix
      *
      */
     public function testToString(Explode $roll, string $annotation): void
     {
-        self::assertSame($annotation, $roll->toString());
+        self::assertSame($annotation, $roll->expression());
     }
 
     public function provideExplodingModifier(): iterable
@@ -133,13 +132,13 @@ final class ExplodeTest extends TestCase
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max): void
     {
-        $rollable = new Explode($this->cup, $algo, $threshold);
-        $res = $rollable->roll();
-        self::assertSame($this->cup, $rollable->getInnerRollable());
-        self::assertSame($min, $rollable->minimum());
-        self::assertSame($max, $rollable->maximum());
-        self::assertGreaterThanOrEqual($min, $res);
-        self::assertLessThanOrEqual($max, $res);
+        $explode = new Explode($this->cup, $algo, $threshold);
+        $rollValue = $explode->roll()->value();
+        self::assertSame($this->cup, $explode->getInnerRollable());
+        self::assertSame($min, $explode->minimum());
+        self::assertSame($max, $explode->maximum());
+        self::assertGreaterThanOrEqual($min, $rollValue);
+        self::assertLessThanOrEqual($max, $rollValue);
     }
 
     public function validParametersProvider(): iterable
@@ -173,23 +172,20 @@ final class ExplodeTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTracer
-     * @covers ::lastTrace
      * @covers ::getInnerRollable
-     * @covers \Bakame\DiceRoller\Trace\Sequence
+     * @covers \Bakame\DiceRoller\Trace\LogTracer
      * @covers \Bakame\DiceRoller\Trace\MemoryLogger
      */
     public function testTracer(): void
     {
         $logger = new MemoryLogger();
-        $tracer = new Sequence($logger, LogLevel::DEBUG);
-        $rollable = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
-        $rollable->setTracer($tracer);
-        self::assertNull($rollable->lastTrace());
-        $rollable->roll();
-        self::assertInstanceOf(Trace::class, $rollable->lastTrace());
-        $rollable->maximum();
-        $rollable->minimum();
+        $tracer = new LogTracer($logger, LogLevel::DEBUG);
+        $explode = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
+        $explode->setTracer($tracer);
+        $explode->roll();
+        $explode->maximum();
+        $explode->minimum();
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
-        self::assertInstanceOf(CustomDie::class, $rollable->getInnerRollable());
+        self::assertInstanceOf(CustomDie::class, $explode->getInnerRollable());
     }
 }

@@ -73,18 +73,18 @@ final class FactoryTest extends TestCase
      * @covers ::decorate
      * @covers ::createDice
      * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::toString
-     * @covers \Bakame\DiceRoller\Dice\SidedDie::toString
-     * @covers \Bakame\DiceRoller\Dice\FudgeDie::toString
-     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::toString
-     * @covers \Bakame\DiceRoller\Modifier\DropKeep::toString
-     * @covers \Bakame\DiceRoller\Modifier\Explode::toString
+     * @covers \Bakame\DiceRoller\Cup::expression
+     * @covers \Bakame\DiceRoller\Dice\SidedDie::expression
+     * @covers \Bakame\DiceRoller\Dice\FudgeDie::expression
+     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::expression
+     * @covers \Bakame\DiceRoller\Modifier\DropKeep::expression
+     * @covers \Bakame\DiceRoller\Modifier\Explode::expression
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString): void
     {
         $cup = $this->factory->newInstance($expected);
-        self::assertSame($toString, $cup->toString());
+        self::assertSame($toString, $cup->expression());
     }
 
     public function validStringProvider(): iterable
@@ -185,7 +185,7 @@ final class FactoryTest extends TestCase
         self::assertSame(0, $cup->minimum());
         self::assertSame(0, $cup->maximum());
         for ($i = 0; $i < 5; $i++) {
-            self::assertEquals(0, $cup->roll());
+            self::assertEquals(0, $cup->roll()->value());
         }
     }
 
@@ -203,7 +203,7 @@ final class FactoryTest extends TestCase
         self::assertSame(8, $dice->size());
 
         for ($i = 0; $i < 5; $i++) {
-            $test = $dice->roll();
+            $test = $dice->roll()->value();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
             self::assertLessThanOrEqual($dice->maximum(), $test);
         }
@@ -225,7 +225,7 @@ final class FactoryTest extends TestCase
         self::assertSame(6, $dice->maximum());
 
         for ($i = 0; $i < 5; $i++) {
-            $test = $dice->roll();
+            $test = $dice->roll()->value();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
             self::assertLessThanOrEqual($dice->maximum(), $test);
         }
@@ -259,9 +259,9 @@ final class FactoryTest extends TestCase
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $test = $cup->roll();
-            self::assertGreaterThanOrEqual($cup->minimum(), $test);
-            self::assertLessThanOrEqual($cup->maximum(), $test);
+            $result = $cup->roll()->value();
+            self::assertGreaterThanOrEqual($cup->minimum(), $result);
+            self::assertLessThanOrEqual($cup->maximum(), $result);
         }
     }
 }

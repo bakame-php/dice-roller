@@ -22,8 +22,8 @@ final class CustomDieTest extends TestCase
 {
     /**
      * @covers ::__construct
-     * @covers ::fromString
-     * @covers ::toString
+     * @covers ::fromExpression
+     * @covers ::expression
      * @covers ::size
      * @covers ::minimum
      * @covers ::maximum
@@ -35,10 +35,10 @@ final class CustomDieTest extends TestCase
         self::assertSame(5, $dice->size());
         self::assertSame(4, $dice->maximum());
         self::assertSame(1, $dice->minimum());
-        self::assertSame('D[1,2,2,4,4]', $dice->toString());
-        self::assertEquals($dice, CustomDie::fromString($dice->toString()));
+        self::assertSame('D[1,2,2,4,4]', $dice->expression());
+        self::assertEquals($dice, CustomDie::fromExpression($dice->expression()));
         for ($i = 0; $i < 10; $i++) {
-            $test = $dice->roll();
+            $test = $dice->roll()->value();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
             self::assertLessThanOrEqual($dice->maximum(), $test);
         }
@@ -55,12 +55,12 @@ final class CustomDieTest extends TestCase
 
     /**
      * @dataProvider invalidExpression
-     * @covers ::fromString
+     * @covers ::fromExpression
      */
     public function testfromStringWithWrongValue(string $expression): void
     {
         self::expectException(CanNotBeRolled::class);
-        CustomDie::fromString($expression);
+        CustomDie::fromExpression($expression);
     }
 
     public function invalidExpression(): iterable

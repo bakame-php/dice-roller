@@ -21,7 +21,7 @@ final class PercentileDieTest extends TestCase
 {
     /**
      * @covers ::size
-     * @covers ::toString
+     * @covers ::expression
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::roll
@@ -32,9 +32,9 @@ final class PercentileDieTest extends TestCase
         self::assertSame(100, $dice->size());
         self::assertSame(100, $dice->maximum());
         self::assertSame(1, $dice->minimum());
-        self::assertSame('D%', $dice->toString());
+        self::assertSame('D%', $dice->expression());
         for ($i = 0; $i < 10; $i++) {
-            $test = $dice->roll();
+            $test = $dice->roll()->value();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
             self::assertLessThanOrEqual($dice->maximum(), $test);
         }

@@ -15,17 +15,19 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
+use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Trace;
-use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Toss;
+use Bakame\DiceRoller\Trace\Context;
+use Bakame\DiceRoller\Trace\LogTracer;
 use function array_map;
 use function array_sum;
+use function count;
 use function implode;
 use function in_array;
 use function iterator_to_array;
@@ -33,7 +35,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Modifier, Traceable, TracerAware
+final class Explode implements Modifier, TracerAware
 {
     const EQ = '=';
     const GT = '>';
@@ -59,11 +61,6 @@ final class Explode implements Modifier, Traceable, TracerAware
      * @var string
      */
     private $compare;
-
-    /**
-     * @var Trace|null
-     */
-    private $trace;
 
     /**
      * @var Tracer
@@ -95,10 +92,10 @@ final class Explode implements Modifier, Traceable, TracerAware
         $this->compare = $compare;
         $this->threshold = $threshold;
         if (!$this->isValidPool($pool)) {
-            throw new SyntaxError(sprintf('This collection %s will generate a infinite loop', $pool->toString()));
+            throw new SyntaxError(sprintf('This collection %s will generate a infinite loop', $pool->expression()));
         }
         $this->pool = $pool;
-        $this->setTracer(Sequence::fromNullLogger());
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -141,14 +138,6 @@ final class Explode implements Modifier, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function lastTrace(): ?Trace
-    {
-        return $this->trace;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
@@ -171,9 +160,9 @@ final class Explode implements Modifier, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function toString(): string
+    public function expression(): string
     {
-        $str = $this->pool->toString();
+        $str = $this->pool->expression();
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }
@@ -200,9 +189,7 @@ final class Explode implements Modifier, Traceable, TracerAware
     {
         $minimum = $this->pool->minimum();
 
-        $trace = $this->tracer->createTrace(__METHOD__, $this, (string) $minimum, $minimum);
-        $this->tracer->addTrace($trace);
-        $this->trace = $trace;
+        $this->tracer->addTrace(Toss::fromDice($this, $minimum), new Context(__METHOD__));
 
         return $minimum;
     }
@@ -212,10 +199,7 @@ final class Explode implements Modifier, Traceable, TracerAware
      */
     public function maximum(): int
     {
-        $trace = $this->tracer->createTrace(__METHOD__, $this, (string)PHP_INT_MAX, PHP_INT_MAX);
-        $this->tracer->addTrace($trace);
-
-        $this->trace = $trace;
+        $this->tracer->addTrace(Toss::fromDice($this, PHP_INT_MAX), new Context(__METHOD__));
 
         return PHP_INT_MAX;
     }
@@ -223,9 +207,9 @@ final class Explode implements Modifier, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
-        $mapper = static function (int $value) {
+        $mapper = static function ($value) {
             if (0 > $value) {
                 return '('.$value.')';
             }
@@ -239,14 +223,13 @@ final class Explode implements Modifier, Traceable, TracerAware
         }
 
         $result = (int) array_sum($values);
-        $nbRolls = count($values);
         $operation = implode(' + ', array_map($mapper, $values));
-        $trace = $this->tracer->createTrace(__METHOD__, $this, $operation, $result, ['totalRollsCount' => $nbRolls]);
+        $roll = Toss::fromRollable($this, $result, $operation);
+        $nbRolls = count($values);
 
-        $this->tracer->addTrace($trace);
-        $this->trace = $trace;
+        $this->tracer->addTrace($roll, new Context(__METHOD__, ['totalRollsCount' => $nbRolls]));
 
-        return $result;
+        return $roll;
     }
 
     /**
@@ -256,7 +239,7 @@ final class Explode implements Modifier, Traceable, TracerAware
     {
         $threshold = $this->threshold ?? $rollable->maximum();
         do {
-            $value = $rollable->roll();
+            $value = $rollable->roll()->value();
             $sum[] = $value;
         } while ($this->isValid($value, $threshold));
 

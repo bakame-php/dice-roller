@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\Dice;
+use Bakame\DiceRoller\Contract\Roll;
+use Bakame\DiceRoller\Toss;
 use function random_int;
 
 final class PercentileDie implements Dice
@@ -21,7 +23,7 @@ final class PercentileDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function toString(): string
+    public function expression(): string
     {
         return 'D%';
     }
@@ -54,8 +56,10 @@ final class PercentileDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
-        return random_int(1, 100);
+        $result = random_int(1, 100);
+
+        return Toss::fromDice($this, $result);
     }
 }

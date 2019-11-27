@@ -19,7 +19,7 @@ $factory = new Factory();
 $cup = $factory->newInstance('2D6');
 
 // Roll and display the result:
-echo $cup->roll(); // returns 6
+echo $cup->roll()->value(); // returns 6
 ```
 
 This is a fork of [Ethtezahl/Dice-Roller](https://github.com/Ethtezahl/dice-roller). The goal of this package is to build a modern PHP package which follow best practices while creating a fun OSS project.
@@ -59,13 +59,15 @@ $ bin/roll --iteration=3 --logs 2D3+5
 Use the library factory to simulate the roll of two six-sided die
 
 ```php
+<?php
+
 use Bakame\DiceRoller\Factory;
 
 $factory = new Factory();
 $pool = $factory->newInstance('2D6+3');
 
-echo $pool->toString(); // returns 2D6+3
-echo $pool->roll();     // returns 6
+echo $pool->expression();    // returns 2D6+3
+echo $pool->roll()->value(); // returns 6
 ```
 
 ## Advance usage
@@ -85,8 +87,8 @@ $pool = new Arithmetic(
     3
 );
 
-echo $pool->toString(); // returns 2D6+3
-echo $pool->roll();     // returns 12
+echo $pool->expression(); // returns 2D6+3
+echo $pool->roll()->value();     // returns 12
 ```
 
 ## Tracing and profiling an operation
@@ -96,19 +98,20 @@ echo $pool->roll();     // returns 12
 
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Trace\LogTracer;
 use Bakame\DiceRoller\Trace\MemoryLogger;
 use Psr\Log\LogLevel;
 
 $parser = new ExpressionParser();
 $psr3Logger = new MemoryLogger();
-$tracer = new Sequence($psr3Logger);
+$tracer = new LogTracer($psr3Logger);
 $factory = new Factory($parser, $tracer);
 $pool = $factory->newInstance('2D6+3');
 
-echo $pool->toString();  // returns 2D6+3
-echo $pool->roll();      // displays 12
-echo $pool->lastTrace(); // displays 9 + 3
+echo $pool->expression();  // returns 2D6+3
+$roll = $pool->roll();
+echo $roll->value();      // displays 12
+echo $roll->expression(); // displays 9 + 3
 
 foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
     echo $log, PHP_EOL;
@@ -196,7 +199,7 @@ use Bakame\DiceRoller\Factory;
 $factory = new Factory(new ExpressionParser());
 $cup = $factory->newInstance('3D20+4+D4!>3/4^3');
 
-echo $cup->roll();
+echo $cup->roll()->value();
 ```
 
 If the `Parser` or the `Factory` are not able to parse or create a `Rollable` object from the string expression a `Bakame\DiceRoller\Contract\CanNotBeRolled` exception will be thrown.
@@ -210,19 +213,21 @@ The `Factory::newInstance` method always returns objects implementing the `Bakam
 
 namespace Bakame\DiceRoller\Contract;
 
+use Bakame\DiceRoller\Contract\Roll;
+
 interface Rollable
 {
     public function minimum(): int;
     public function maximum(): int;
-    public function roll(): int;
-    public function toString(): string;
+    public function roll(): Roll;
+    public function expression(): string;
 }
 ```
 
 - `Rollable::minimum` returns the minimum value that can be returned during a roll;
 - `Rollable::maximum` returns the maximum value that can be returned during a roll;
-- `Rollable::roll` returns a value from a roll.
-- `Rollable::toString` returns the object string notation.
+- `Rollable::roll` returns a a `Roll` object.
+- `Rollable::expression` returns the object string notation.
 
 **All exceptions thrown by the package extends the basic `Bakame\DiceRoller\Contract\CanNotBeRolled` exception.**
 
@@ -264,30 +269,30 @@ use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 
 $basic = new SidedDie(3);
-echo $basic->toString(); // 'D3';
-$basic->roll();          // may return 1, 2 or 3
+echo $basic->expression(); // 'D3';
+$basic->roll()->value(); // may return 1, 2 or 3
 $basic->size();          // returns 3
 
-$basicbis = SidedDie::fromString('d3');
-$basicbis->toString() === $basic->toString();
+$basicBis = SidedDie::fromExpression('d3');
+$basicBis->expression() === $basic->expression();
 
 $custom = new CustomDie(3, 2, 1, 1);
-echo $custom->toString();  // 'D[3,2,1,1]';
-$custom->roll();            // may return 1, 2 or 3
-$custom->size();            // returns 4
+echo $custom->expression(); // 'D[3,2,1,1]';
+$custom->roll()->value(); // may return 1, 2 or 3
+$custom->size();          // returns 4
 
-$customBis = CustomDie::fromString('d[3,2,1,1]');
-$custom->toString() === $customBis->toString();
+$customBis = CustomDie::fromExpression('d[3,2,1,1]');
+$custom->expression() === $customBis->expression();
 
-$fugde = new FudgeDie();
-echo $fudge->toString(); // displays 'DF'
-$fudge->roll();           // may return -1, 0, or 1
-$fudge->size();           // returns 3
+$fudge = new FudgeDie();
+echo $fudge->expression(); // displays 'DF'
+$fudge->roll()->value();   // may return -1, 0, or 1
+$fudge->size();            // returns 3
 
 $percentile = new PercentileDie();
-echo $percentile->toString(); // displays 'D%'
-$percentile->roll();           // returns a value between 1 and 100
-$fudge->size();                // returns 100
+echo $percentile->expression(); // displays 'D%'
+$percentile->roll()->value();   // returns a value between 1 and 100
+$fudge->size();                 // returns 100
 ```
 
 ### Pool
@@ -313,9 +318,8 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface.
 
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
 
-final class Cup implements Pool, Traceable
+final class Cup implements Pool
 {
     public function __construct(Rollable ...$rollable);
     public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
@@ -334,10 +338,10 @@ use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 
-echo Cup::fromRollable(new SidedDie(5), 3)->toString();           // displays 3D5
-echo Cup::fromRollable(new PercentileDie(), 4)->toString();       // displays 4D%
-echo Cup::fromRollable(new CustomDie(1, 2, 2, 4), 2)->toString(); // displays 2D[1,2,2,4]
-echo Cup::fromRollable(new FudgeDie(), 42)->toString();           // displays 42DF
+echo Cup::fromRollable(new SidedDie(5), 3)->expression();           // displays 3D5
+echo Cup::fromRollable(new PercentileDie(), 4)->expression();       // displays 4D%
+echo Cup::fromRollable(new CustomDie(1, 2, 2, 4), 2)->expression(); // displays 2D[1,2,2,4]
+echo Cup::fromRollable(new FudgeDie(), 42)->expression();           // displays 42DF
 ```
 
 A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\IllegalValue` is thrown.
@@ -351,7 +355,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 
 foreach (Cup::fromRollable(new SidedDie(5), 3) as $rollable) {
-    echo $rollable->toString(); // will always return D5
+    echo $rollable->expression(); // will always return D5
 }
 ```
 
@@ -365,12 +369,12 @@ use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 
 $cup = Cup::fromRollable(new SidedDie(5), 3);
-count($cup);           //returns 3 the number of dices
-echo $cup->toString(); //returns 3D5
+count($cup);             //returns 3 the number of dices
+echo $cup->expression(); //returns 3D5
 
-$alt_cup = $cup->withAddedRollable(new FudgeDie());
-count($alt_cup);           //returns 4 the number of dices
-echo $alt_cup->toString(); //returns 3D5+DF
+$altCup = $cup->withAddedRollable(new FudgeDie());
+count($altCup);             //returns 4 the number of dices
+echo $altCup->expression(); //returns 3D5+DF
 ```
 
 **WARNING: a `Cup` object can be empty but adding an empty `Cup` object is not possible. The empty `Cup` object will be filtered out on instantiation or on modification.**
@@ -410,9 +414,8 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
 
-final class Arithmetic implements Modifier, Traceable
+final class Arithmetic implements Modifier
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -443,7 +446,7 @@ use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 
 $modifier = new Arithmetic(new SidedDie(6), Arithmetic::MUL, 3);
-echo $modifier->toString();  // displays D6*3;
+echo $modifier->expression();  // displays D6*3;
 ```
 
 #### The DropKeep modifier
@@ -455,9 +458,8 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
 
-final class DropKeep implements Modifier, Traceable
+final class DropKeep implements Modifier
 {
     public const DROP_HIGHEST = 'dh';
     public const DROP_LOWEST = 'dl';
@@ -494,7 +496,7 @@ use Bakame\DiceRoller\Modifier\DropKeep;
 
 $cup = Cup::fromRollable(new SidedDie(6), 4);
 $modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
-echo $modifier->toString(); // displays '4D6DH3'
+echo $modifier->expression(); // displays '4D6DH3'
 ```
 
 #### The Explode modifier
@@ -506,9 +508,8 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Traceable;
 
-final class Explode implements Modifier, Traceable
+final class Explode implements Modifier
 {
     public const EQ = '=';
     public const GT = '>';
@@ -542,55 +543,44 @@ use Bakame\DiceRoller\Modifier\Explode;
 
 $cup = new Cup(new SidedDie(6), new FudgeDie(), new SidedDie(6), new SidedDie(6));
 $modifier = new Explode($cup, Explode::EQ, 3);
-echo $modifier->toString(); // displays (3D6+DF)!=3
+echo $modifier->expression(); // displays (3D6+DF)!=3
 ```
 
 ## Tracing and Profiling
 
-If you want to know how internally your roll result is calculated your `Rollable` object must implements the `CanBeTraced` interface.
+If you want to know how internally your roll result is calculated your `Rollable` object must implements the `TracerAware` interface.
 
 ```php
 <?php
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Traceable
-{
-    public function lastTrace(): Trace;
-}
-
-interface TraceLogAware
+interface TracerAware
 {
     public function setTracer(Tracer $tracer): void;
 }
 ```
  
-The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Contract\Profiler` implementing object.  
+The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Contract\Tracer` implementing object.  
 
 ```php
 <?php
 
 namespace Bakame\DiceRoller\Contract;
 
+use Bakame\DiceRoller\Toss;
+
 interface Tracer
 {
-    public function createTrace(
-        string $source,
-        Rollable $subject,
-        string $operation,
-        int $result,
-        array $optionals = []
-    ): Trace;
-
-    public function addTrace(Trace $trace): void;
+    public function addTrace(Rollable $rollable, Toss $roll, TraceContext $context): void;
 }
 ```
 
 **In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
 
-The package comes bundle with the `Bakame\DiceRoller\Trace\Tracer` which sends the traces to a PSR-3 compliant logger.
+The package comes bundle with the `Bakame\DiceRoller\Trace\LogTracer` which sends the traces to a PSR-3 compliant logger.
 
-### Tracing using a TraceLog
+### Tracing using a LogTracer
 
 ```php
 <?php
@@ -601,7 +591,7 @@ use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-final class Sequence implements Tracer
+final class LogTracer implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{method}] - {rollable} : {trace} = {result}';
     public function __construct(
@@ -615,15 +605,15 @@ final class Sequence implements Tracer
 }
 ```
 
-The `Sequence` log messages, by default, will match this format:
+The `LogTrace` log messages, by default, will match this format:
 
-    [{source}] - {subject} : {operation} = {result}
+    [{source}] - {subject} : {expression} = {result}
 
 The context keys are:
 
 - `{source}`: The method that has created the profile entry.
 - `{subject}`: The string representation of the `Rollable` object to be analyzed.
-- `{operation}`: The operation trace.
+- `{expression}`: The mathematical expression that produced the result.
 - `{result}`: The result from performing the calculation.
 
 Configuring the logger is done on instantiation.
@@ -632,11 +622,11 @@ Configuring the logger is done on instantiation.
 <?php
 
 use Bakame\DiceRoller\Trace\MemoryLogger;
-use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Trace\LogTracer;
 use Psr\Log\LogLevel;
 
 $logger = new MemoryLogger();
-$tracer = new Sequence($logger, LogLevel::DEBUG, '{operation} = {result}');
+$tracer = new LogTracer($logger, LogLevel::DEBUG, '{expression} = {result}');
 ```
 
 Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better flesh out implementation than the one provided out of the box.

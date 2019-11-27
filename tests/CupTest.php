@@ -21,8 +21,8 @@ use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\Trace\LogTracer;
 use Bakame\DiceRoller\Trace\MemoryLogger;
-use Bakame\DiceRoller\Trace\Sequence;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -38,7 +38,7 @@ final class CupTest extends TestCase
 
     public function setUp(): void
     {
-        $this->tracer = Sequence::fromNullLogger();
+        $this->tracer = LogTracer::fromNullLogger();
     }
 
     /**
@@ -66,7 +66,7 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::toString
+     * @covers ::expression
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::roll
@@ -82,13 +82,13 @@ final class CupTest extends TestCase
         self::assertFalse($cup->isEmpty());
         self::assertSame(6, $cup->minimum());
         self::assertSame(48, $cup->maximum());
-        self::assertSame('4D10+2D4', $cup->toString());
+        self::assertSame('4D10+2D4', $cup->expression());
         self::assertCount(2, $cup);
         self::assertContainsOnlyInstancesOf(Rollable::class, $cup);
         for ($i = 0; $i < 5; $i++) {
-            $test = $cup->roll();
-            self::assertGreaterThanOrEqual($cup->minimum(), $test);
-            self::assertLessThanOrEqual($cup->maximum(), $test);
+            $result = $cup->roll()->value();
+            self::assertGreaterThanOrEqual($cup->minimum(), $result);
+            self::assertLessThanOrEqual($cup->maximum(), $result);
         }
     }
 
@@ -149,15 +149,15 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::toString
+     * @covers ::expression
      * @covers ::isEmpty
      */
     public function testEmptyCup(): void
     {
         $cup = new Cup();
-        self::assertSame('0', $cup->toString());
+        self::assertSame('0', $cup->expression());
         self::assertTrue($cup->isEmpty());
-        self::assertSame(0, $cup->roll());
+        self::assertSame(0, $cup->roll()->value());
     }
 
     /**
@@ -166,18 +166,15 @@ final class CupTest extends TestCase
      * @covers ::maximum
      * @covers ::roll
      * @covers ::decorate
-     * @covers ::lastTrace
      * @covers ::setTracer
      */
     public function testTracer(): void
     {
         $logger = new MemoryLogger();
-        $tracer = new Sequence($logger, LogLevel::DEBUG);
+        $tracer = new LogTracer($logger, LogLevel::DEBUG);
         $cup = Cup::fromRollable(new CustomDie(2, -3, -5), 12);
         $cup->setTracer($tracer);
-        self::assertEmpty($cup->lastTrace());
         $cup->roll();
-        self::assertNotEmpty($cup->lastTrace());
         $cup->maximum();
         $cup->minimum();
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
@@ -186,6 +183,7 @@ final class CupTest extends TestCase
     /**
      * @covers ::count
      * @covers ::getIterator
+     * @covers \Bakame\DiceRoller\Toss
      */
     public function testFiveFourSidedDice(): void
     {
@@ -197,9 +195,9 @@ final class CupTest extends TestCase
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $test = $group->roll();
-            self::assertGreaterThanOrEqual($group->minimum(), $test);
-            self::assertLessThanOrEqual($group->maximum(), $test);
+            $result = $group->roll()->value();
+            self::assertGreaterThanOrEqual($group->minimum(), $result);
+            self::assertLessThanOrEqual($group->maximum(), $result);
         }
     }
 }

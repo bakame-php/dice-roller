@@ -14,20 +14,21 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Modifier;
+use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\Trace;
-use Bakame\DiceRoller\Contract\Traceable;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Trace\Sequence;
+use Bakame\DiceRoller\Toss;
+use Bakame\DiceRoller\Trace\Context;
+use Bakame\DiceRoller\Trace\LogTracer;
 use function abs;
 use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements Modifier, Traceable, TracerAware
+final class Arithmetic implements Modifier, TracerAware
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -59,19 +60,11 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
     private $operator;
 
     /**
-     * @var Trace|null
-     */
-    private $trace;
-
-    /**
      * @var Tracer
      */
     private $tracer;
 
     /**
-     * new instance.
-     *
-     *
      * @throws UnknownAlgorithm if the operator is not recognized
      * @throws SyntaxError      if the value is invalid for a given operator
      */
@@ -88,15 +81,7 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setTracer(Sequence::fromNullLogger());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function lastTrace(): ?Trace
-    {
-        return $this->trace;
+        $this->setTracer(LogTracer::fromNullLogger());
     }
 
     /**
@@ -118,9 +103,9 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function toString(): string
+    public function expression(): string
     {
-        $str = $this->rollable->toString();
+        $str = $this->rollable->expression();
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }
@@ -131,9 +116,9 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
     /**
      * {@inheritdoc}
      */
-    public function roll(): int
+    public function roll(): Roll
     {
-        $value = $this->rollable->roll();
+        $value = $this->rollable->roll()->value();
 
         return $this->decorate($value, __METHOD__);
     }
@@ -145,7 +130,7 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
     {
         $value = $this->rollable->minimum();
 
-        return $this->decorate($value, __METHOD__);
+        return $this->decorate($value, __METHOD__)->value();
     }
 
     /**
@@ -155,22 +140,21 @@ final class Arithmetic implements Modifier, Traceable, TracerAware
     {
         $value = $this->rollable->maximum();
 
-        return $this->decorate($value, __METHOD__);
+        return $this->decorate($value, __METHOD__)->value();
     }
 
     /**
      * Decorates the operation returned value.
      */
-    private function decorate(int $value, string $method): int
+    private function decorate(int $value, string $method): Roll
     {
         $result = $this->calculate($value);
         $operation = $value.' '.$this->operator.' '.$this->value;
-        $trace = $this->tracer->createTrace($method, $this, $operation, $result);
+        $roll = Toss::fromRollable($this, $result, $operation);
 
-        $this->tracer->addTrace($trace);
-        $this->trace = $trace;
+        $this->tracer->addTrace($roll, new Context($method));
 
-        return $result;
+        return $roll;
     }
 
     /**

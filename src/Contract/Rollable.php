@@ -30,11 +30,11 @@ interface Rollable
     /**
      * Returns the result of a roll.
      */
-    public function roll(): int;
+    public function roll(): Roll;
 
     /**
      * Returns the string representation of the
      * Rollable object using SimpleDice annotation.
      */
-    public function toString(): string;
+    public function expression(): string;
 }
