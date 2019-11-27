@@ -605,6 +605,8 @@ foreach ($tracer as $trace) {
     //$trace is an array with information about all the operation done
     //with the $cup object.
 }
+//or
+$trace = $tracer->get(0);
 $tracer->clear();  //clear all the traces from the object
 $tracer->isEmpty(); //returns true
 ```
