@@ -13,18 +13,18 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\InjectTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\Trace\Context;
-use Bakame\DiceRoller\Trace\LogTracer;
+use Bakame\DiceRoller\Tracer\Context;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use function array_map;
 use function array_sum;
 use function count;
@@ -35,7 +35,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Modifier, TracerAware
+final class Explode implements Modifier, InjectTracer
 {
     const EQ = '=';
     const GT = '>';
@@ -95,7 +95,7 @@ final class Explode implements Modifier, TracerAware
             throw new SyntaxError(sprintf('This collection %s will generate a infinite loop', $pool->expression()));
         }
         $this->pool = $pool;
-        $this->setTracer(LogTracer::fromNullLogger());
+        $this->setTracer(new NullTracer());
     }
 
     /**
@@ -189,7 +189,7 @@ final class Explode implements Modifier, TracerAware
     {
         $minimum = $this->pool->minimum();
 
-        $this->tracer->addTrace(Toss::fromDice($this, $minimum), new Context(__METHOD__));
+        $this->tracer->addTrace(new Toss($minimum, (string) $minimum), new Context($this, __METHOD__));
 
         return $minimum;
     }
@@ -199,7 +199,7 @@ final class Explode implements Modifier, TracerAware
      */
     public function maximum(): int
     {
-        $this->tracer->addTrace(Toss::fromDice($this, PHP_INT_MAX), new Context(__METHOD__));
+        $this->tracer->addTrace(new Toss(PHP_INT_MAX, (string) PHP_INT_MAX), new Context($this, __METHOD__));
 
         return PHP_INT_MAX;
     }
@@ -224,10 +224,10 @@ final class Explode implements Modifier, TracerAware
 
         $result = (int) array_sum($values);
         $operation = implode(' + ', array_map($mapper, $values));
-        $roll = Toss::fromRollable($this, $result, $operation);
+        $roll = new Toss($result, $operation);
         $nbRolls = count($values);
 
-        $this->tracer->addTrace($roll, new Context(__METHOD__, ['totalRollsCount' => $nbRolls]));
+        $this->tracer->addTrace($roll, new Context($this, __METHOD__, ['totalRollsCount' => $nbRolls]));
 
         return $roll;
     }

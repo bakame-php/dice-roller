@@ -60,6 +60,6 @@ final class PercentileDie implements Dice
     {
         $result = random_int(1, 100);
 
-        return Toss::fromDice($this, $result);
+        return new Toss($result, (string) $result);
     }
 }

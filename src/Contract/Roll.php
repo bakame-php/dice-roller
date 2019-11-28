@@ -26,11 +26,6 @@ interface Roll
     public function operation(): string;
 
     /**
-     * The rollable source expression.
-     */
-    public function expression(): string;
-
-    /**
      * The rollable value as a string.
      */
     public function toString(): string;
@@ -40,5 +35,5 @@ interface Roll
      *
      * @return array<string, string|int>
      */
-    public function toArray(): array;
+    public function asArray(): array;
 }

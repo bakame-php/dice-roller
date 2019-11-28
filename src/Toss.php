@@ -14,62 +14,23 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\Rollable;
 
 final class Toss implements Roll, \JsonSerializable
 {
     /**
-     * @var string
+     * @var int
      */
-    private $expression;
+    private $value;
 
     /**
      * @var string
      */
     private $operation;
 
-    /**
-     * @var int
-     */
-    private $value;
-
-    public function __construct(string $expression, string $operation, int $value)
+    public function __construct(int $value, string $operation)
     {
-        $this->expression = $expression;
-        $this->operation = $operation;
         $this->value = $value;
-    }
-
-    /**
-     * Create a new instance from a generic Rollable instance.
-     */
-    public static function fromRollable(Rollable $rollable, int $value, string $operation): self
-    {
-        return new self($rollable->expression(), $operation, $value);
-    }
-
-    /**
-     * Create a new instance from a Dice instance.
-     */
-    public static function fromDice(Rollable $rollable, int $value): self
-    {
-        return self::fromRollable($rollable, $value, (string) $value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function expression(): string
-    {
-        return $this->expression;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function operation(): string
-    {
-        return $this->operation;
+        $this->operation = $operation;
     }
 
     /**
@@ -83,6 +44,14 @@ final class Toss implements Roll, \JsonSerializable
     /**
      * {@inheritDoc}
      */
+    public function operation(): string
+    {
+        return $this->operation;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function toString(): string
     {
         return (string) $this->value;
@@ -91,10 +60,9 @@ final class Toss implements Roll, \JsonSerializable
     /**
      * {@inheritDoc}
      */
-    public function toArray(): array
+    public function asArray(): array
     {
         return [
-            'expression' => $this->expression,
             'operation' => $this->operation,
             'value' => $this->value,
         ];

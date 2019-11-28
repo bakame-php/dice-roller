@@ -112,6 +112,6 @@ final class CustomDie implements Dice
         $index = random_int(0, count($this->values) - 1);
         $result = $this->values[$index];
 
-        return Toss::fromDice($this, $result);
+        return new Toss($result, (string) $result);
     }
 }

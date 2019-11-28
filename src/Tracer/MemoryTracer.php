@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Trace;
+namespace Bakame\DiceRoller\Tracer;
 
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\TraceContext;
@@ -25,13 +25,13 @@ use function sprintf;
 final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializable, Tracer
 {
     /**
-     * @var array
+     * @var array<int, array{context:TraceContext, value:Roll}>
      */
     private $collection = [];
 
     public function addTrace(Roll $roll, TraceContext $context): void
     {
-        $this->collection[] = $context->toArray() + $roll->toArray();
+        $this->collection[] = ['context' => $context, 'value' => $roll];
     }
 
     public function count(): int
@@ -58,7 +58,11 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
 
     public function jsonSerialize(): array
     {
-        return $this->collection;
+        $mapper = static function (array  $trace): array {
+            return $trace['context']->asArray() + $trace['value']->asArray();
+        };
+
+        return array_map($mapper, $this->collection);
     }
 
     /**

@@ -13,15 +13,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-use JsonSerializable;
-
-interface TraceContext extends JsonSerializable
+interface InjectTracer
 {
-    public function rollable(): Rollable;
-
-    public function source(): string;
-
-    public function extensions(): array;
-
-    public function asArray(): array;
+    /**
+     * inject a Tracer.
+     */
+    public function setTracer(Tracer $tracer): void;
 }

@@ -21,8 +21,8 @@ use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Trace\LogTracer;
-use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -38,7 +38,7 @@ final class CupTest extends TestCase
 
     public function setUp(): void
     {
-        $this->tracer = LogTracer::fromNullLogger();
+        $this->tracer = Psr3LogTracer::fromNullLogger();
     }
 
     /**
@@ -170,8 +170,8 @@ final class CupTest extends TestCase
      */
     public function testTracer(): void
     {
-        $logger = new MemoryLogger();
-        $tracer = new LogTracer($logger, LogLevel::DEBUG);
+        $logger = new Psr3Logger();
+        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
         $cup = Cup::fromRollable(new CustomDie(2, -3, -5), 12);
         $cup->setTracer($tracer);
         $cup->roll();
@@ -184,6 +184,7 @@ final class CupTest extends TestCase
      * @covers ::count
      * @covers ::getIterator
      * @covers \Bakame\DiceRoller\Toss
+     * @covers \Bakame\DiceRoller\Tracer\NullTracer
      */
     public function testFiveFourSidedDice(): void
     {

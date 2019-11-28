@@ -13,19 +13,19 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\InjectTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\TraceContext;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyRollableInstances;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\Trace\Context;
-use Bakame\DiceRoller\Trace\LogTracer;
+use Bakame\DiceRoller\Tracer\Context;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -38,7 +38,7 @@ use function strpos;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements Modifier, TracerAware
+final class DropKeep implements Modifier, InjectTracer
 {
     public const DROP_HIGHEST = 'DH';
     public const DROP_LOWEST = 'DL';
@@ -114,7 +114,7 @@ final class DropKeep implements Modifier, TracerAware
         $this->pool = $pool;
         $this->threshold = $threshold;
         $this->algo = $algo;
-        $this->setTracer(LogTracer::fromNullLogger());
+        $this->setTracer(new NullTracer());
     }
 
     /**
@@ -207,9 +207,9 @@ final class DropKeep implements Modifier, TracerAware
         $values = $this->filter($values);
         $result = (int) array_sum($values);
         $operation = implode(' + ', array_map($mapper, $values));
-        $roll = Toss::fromRollable($this, $result, $operation);
+        $roll = new Toss($result, $operation);
 
-        $this->tracer->addTrace($roll, new Context($method));
+        $this->tracer->addTrace($roll, new Context($this, $method));
 
         return $roll;
     }

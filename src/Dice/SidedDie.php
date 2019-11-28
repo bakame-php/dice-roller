@@ -97,6 +97,6 @@ final class SidedDie implements Dice
     {
         $result = random_int(1, $this->sides);
 
-        return Toss::fromDice($this, $result);
+        return new Toss($result, (string) $result);
     }
 }

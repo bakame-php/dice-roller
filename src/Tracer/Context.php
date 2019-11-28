@@ -11,13 +11,18 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Trace;
+namespace Bakame\DiceRoller\Tracer;
 
+use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\TraceContext;
-use JsonSerializable;
 
-final class Context implements TraceContext, JsonSerializable
+final class Context implements TraceContext
 {
+    /**
+     * @var Rollable
+     */
+    private $rollable;
+
     /**
      * @var string
      */
@@ -28,12 +33,21 @@ final class Context implements TraceContext, JsonSerializable
      */
     private $extensions;
 
-    public function __construct(string $source, array $extensions = [])
+    public function __construct(Rollable $rollable, string $source, array $extensions = [])
     {
         unset($extensions['source'], $extensions['operation'], $extensions['expression'], $extensions['result']);
 
+        $this->rollable = $rollable;
         $this->source = $source;
         $this->extensions = $extensions;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function rollable(): Rollable
+    {
+        return $this->rollable;
     }
 
     /**
@@ -55,9 +69,9 @@ final class Context implements TraceContext, JsonSerializable
     /**
      * {@inheritDoc}
      */
-    public function toArray(): array
+    public function asArray(): array
     {
-        return ['source' => $this->source] + $this->extensions;
+        return ['source' => $this->source, 'expression' => $this->rollable->expression()] + $this->extensions;
     }
 
     /**
@@ -65,6 +79,6 @@ final class Context implements TraceContext, JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return $this->toArray();
+        return $this->asArray();
     }
 }

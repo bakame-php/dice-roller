@@ -19,8 +19,8 @@ use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\Trace\LogTracer;
-use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -91,7 +91,7 @@ final class ArithmeticTest extends TestCase
 
             public function roll(): Roll
             {
-                return new Toss('expression', '1', 1);
+                return new Toss(1, '1');
             }
 
             public function expression(): string
@@ -206,18 +206,18 @@ final class ArithmeticTest extends TestCase
      * @covers ::decorate
      * @covers ::calculate
      * @covers ::setTracer
-     * @covers \Bakame\DiceRoller\Trace\LogTracer
-     * @covers \Bakame\DiceRoller\Trace\MemoryLogger
+     * @covers \Bakame\DiceRoller\Tracer\Psr3LogTracer
+     * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
      */
     public function testTracer(): void
     {
-        $logger = new MemoryLogger();
+        $logger = new Psr3Logger();
         $arithmetic = new Arithmetic(
             new CustomDie(-1, -1, -1),
             Arithmetic::EXP,
             3
         );
-        $tracer = new LogTracer($logger, LogLevel::DEBUG);
+        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
         $arithmetic->setTracer($tracer);
         $arithmetic->roll();
         $arithmetic->maximum();

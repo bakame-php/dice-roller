@@ -60,6 +60,6 @@ final class FudgeDie implements Dice
     {
         $result = random_int(-1, 1);
 
-        return Toss::fromDice($this, $result);
+        return new Toss($result, (string) $result);
     }
 }

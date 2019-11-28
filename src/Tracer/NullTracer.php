@@ -11,12 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller\Tracer;
 
-interface TracerAware
+use Bakame\DiceRoller\Contract\Roll;
+use Bakame\DiceRoller\Contract\TraceContext;
+use Bakame\DiceRoller\Contract\Tracer;
+
+final class NullTracer implements Tracer
 {
-    /**
-     * Sets the object tracer.
-     */
-    public function setTracer(Tracer $tracer): void;
+    public function addTrace(Roll $roll, TraceContext $context): void
+    {
+    }
 }

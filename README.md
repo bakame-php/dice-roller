@@ -98,13 +98,13 @@ echo $pool->roll()->value();     // returns 12
 
 use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Trace\LogTracer;
-use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Psr\Log\LogLevel;
 
 $parser = new ExpressionParser();
-$psr3Logger = new MemoryLogger();
-$tracer = new LogTracer($psr3Logger);
+$psr3Logger = new Psr3Logger();
+$tracer = new Psr3LogTracer($psr3Logger);
 $factory = new Factory($parser, $tracer);
 $pool = $factory->newInstance('2D6+3');
 
@@ -548,14 +548,14 @@ echo $modifier->expression(); // displays (3D6+DF)!=3
 
 ## Tracing and Profiling
 
-If you want to know how internally your roll result is calculated your `Rollable` object must implements the `TracerAware` interface.
+If you want to know how internally your roll result is calculated your `Rollable` object must implements the `InjectTracer` interface.
 
 ```php
 <?php
 
 namespace Bakame\DiceRoller\Contract;
 
-interface TracerAware
+interface InjectTracer
 {
     public function setTracer(Tracer $tracer): void;
 }
@@ -572,7 +572,7 @@ use Bakame\DiceRoller\Contract\Roll;
 
 interface Tracer
 {
-    public function addTrace(Rollable $rollable, Roll $roll, TraceContext $context): void;
+    public function addTrace(Roll $roll, TraceContext $context): void;
 }
 ```
 
@@ -590,7 +590,7 @@ No configuration is needed you just need to give your object an instantiated `Me
 ```php
 <?php
 
-use Bakame\DiceRoller\Trace\MemoryTracer;
+use Bakame\DiceRoller\Tracer\MemoryTracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 
@@ -654,12 +654,12 @@ Configuring the logger is done on instantiation.
 ```php
 <?php
 
-use Bakame\DiceRoller\Trace\MemoryLogger;
-use Bakame\DiceRoller\Trace\LogTracer;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use Psr\Log\LogLevel;
 
-$logger = new MemoryLogger();
-$tracer = new LogTracer($logger, LogLevel::DEBUG, '{expression} = {result}');
+$logger = new Psr3Logger();
+$tracer = new Psr3LogTracer($logger, LogLevel::DEBUG, '{expression} = {result}');
 ```
 
 Even though, the library comes bundles with a `Psr\Log\LoggerInterface` implementation you should consider using a better flesh out implementation than the one provided out of the box.

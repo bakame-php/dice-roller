@@ -20,8 +20,8 @@ use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\Trace\LogTracer;
-use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -92,7 +92,7 @@ final class DropKeepTest extends TestCase
 
             public function roll(): Roll
             {
-                return new Toss('expression', '1', 1);
+                return new Toss(1, '1');
             }
 
             public function expression(): string
@@ -114,7 +114,7 @@ final class DropKeepTest extends TestCase
 
             public function roll(): Roll
             {
-                return new Toss('expression', '2', 2);
+                return new Toss(2, '2');
             }
 
             public function expression(): string
@@ -190,14 +190,14 @@ final class DropKeepTest extends TestCase
      * @covers ::decorate
      * @covers ::filter
      * @covers ::setTracer
-     * @covers \Bakame\DiceRoller\Trace\LogTracer
-     * @covers \Bakame\DiceRoller\Trace\MemoryLogger
+     * @covers \Bakame\DiceRoller\Tracer\Psr3LogTracer
+     * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
      * @covers ::getInnerRollable
      */
     public function testTracer(): void
     {
-        $logger = new MemoryLogger();
-        $tracer = new LogTracer($logger, LogLevel::DEBUG);
+        $logger = new Psr3Logger();
+        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
         $dropKeep = new DropKeep(Cup::fromRollable(new SidedDie(6), 3), DropKeep::DROP_LOWEST, 2);
         $dropKeep->setTracer($tracer);
         $dropKeep->roll();

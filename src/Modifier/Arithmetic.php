@@ -13,22 +13,22 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\InjectTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\Trace\Context;
-use Bakame\DiceRoller\Trace\LogTracer;
+use Bakame\DiceRoller\Tracer\Context;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use function abs;
 use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements Modifier, TracerAware
+final class Arithmetic implements Modifier, InjectTracer
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -81,7 +81,7 @@ final class Arithmetic implements Modifier, TracerAware
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setTracer(LogTracer::fromNullLogger());
+        $this->setTracer(new NullTracer());
     }
 
     /**
@@ -150,9 +150,9 @@ final class Arithmetic implements Modifier, TracerAware
     {
         $result = $this->calculate($value);
         $operation = $value.' '.$this->operator.' '.$this->value;
-        $roll = Toss::fromRollable($this, $result, $operation);
+        $roll = new Toss($result, $operation);
 
-        $this->tracer->addTrace($roll, new Context($method));
+        $this->tracer->addTrace($roll, new Context($this, $method));
 
         return $roll;
     }

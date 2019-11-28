@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Contract\InjectTracer;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Contract\TracerAware;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Trace\Context;
-use Bakame\DiceRoller\Trace\LogTracer;
+use Bakame\DiceRoller\Tracer\Context;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use Iterator;
 use function array_count_values;
 use function array_filter;
@@ -32,7 +32,7 @@ use function count;
 use function implode;
 use function sprintf;
 
-final class Cup implements Pool, TracerAware
+final class Cup implements Pool, InjectTracer
 {
     /**
      * @var Rollable[]
@@ -52,7 +52,7 @@ final class Cup implements Pool, TracerAware
     public function __construct(Rollable ...$items)
     {
         $this->items = array_filter($items, [$this, 'isValid']);
-        $this->setTracer(LogTracer::fromNullLogger());
+        $this->setTracer(new NullTracer());
     }
 
     /**
@@ -195,8 +195,8 @@ final class Cup implements Pool, TracerAware
 
         $result = (int) array_sum($sum);
         $operation = implode(' + ', array_map($mapper, $sum));
-        $roll = Toss::fromRollable($this, $result, $operation);
-        $context = new Context($method);
+        $roll = new Toss($result, $operation);
+        $context = new Context($this, $method);
         $this->tracer->addTrace($roll, $context);
 
         return $roll;

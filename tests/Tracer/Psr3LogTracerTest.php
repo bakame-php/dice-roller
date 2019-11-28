@@ -9,34 +9,34 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Trace;
+namespace Bakame\DiceRoller\Test\Tracer;
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Trace\LogTracer;
-use Bakame\DiceRoller\Trace\MemoryLogger;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Trace\LogTracer
+ * @coversDefaultClass \Bakame\DiceRoller\Tracer\Psr3LogTracer
  */
-final class LogTracerTest extends TestCase
+final class Psr3LogTracerTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\Trace\MemoryLogger
+     * @var \Bakame\DiceRoller\Tracer\Psr3Logger
      */
     private $logger;
 
     /**
-     * @var \Bakame\DiceRoller\Trace\LogTracer
+     * @var \Bakame\DiceRoller\Tracer\Psr3LogTracer
      */
     private $tracer;
 
     protected function setUp(): void
     {
-        $this->logger = new MemoryLogger();
-        $this->tracer = new LogTracer($this->logger);
+        $this->logger = new Psr3Logger();
+        $this->tracer = new Psr3LogTracer($this->logger);
     }
 
     public function testLogger(): void
@@ -51,11 +51,11 @@ final class LogTracerTest extends TestCase
 
     public function testLogFormat(): void
     {
-        self::assertSame(LogTracer::DEFAULT_LOG_FORMAT, $this->tracer->logFormat());
+        self::assertSame(Psr3LogTracer::DEFAULT_LOG_FORMAT, $this->tracer->logFormat());
     }
 
     /**
-     * @covers \Bakame\DiceRoller\Trace\MemoryLogger
+     * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
      * @covers ::addTrace
      */
     public function testDiceRollerLogger(): void
@@ -63,7 +63,7 @@ final class LogTracerTest extends TestCase
         $this->logger->clear();
         self::assertCount(0, $this->logger->getLogs());
         $rollable = Cup::fromRollable(new SidedDie(6), 3);
-        $rollable->setTracer(new LogTracer($this->logger, 'foobar'));
+        $rollable->setTracer(new Psr3LogTracer($this->logger, 'foobar'));
         $rollable->roll();
         self::assertCount(1, $this->logger->getLogs());
         $this->logger->clear('foobar');

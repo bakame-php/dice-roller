@@ -11,12 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Trace;
+namespace Bakame\DiceRoller\Tracer;
 
 use Psr\Log\AbstractLogger;
 use function strtr;
 
-final class MemoryLogger extends AbstractLogger
+final class Psr3Logger extends AbstractLogger
 {
     /**
      * @var array

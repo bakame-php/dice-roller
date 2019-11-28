@@ -20,12 +20,11 @@ class TossTest extends TestCase
 {
     public function testItCanBeInstantiated(): void
     {
-        $roll = new Toss('foo', 'bar', 42);
-        $arrExpected = ['expression' => 'foo', 'operation' => 'bar', 'value' => 42];
-        self::assertSame('foo', $roll->expression());
-        self::assertSame('bar', $roll->operation());
+        $roll = new Toss(42, '22 + 20');
+        $arrExpected = ['operation' => '22 + 20', 'value' => 42];
+        self::assertSame('22 + 20', $roll->operation());
         self::assertSame(42, $roll->value());
-        self::assertSame($arrExpected, $roll->toArray());
+        self::assertSame($arrExpected, $roll->asArray());
         self::assertSame('42', $roll->toString());
         self::assertSame('42', json_encode($roll));
     }

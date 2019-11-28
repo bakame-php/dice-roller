@@ -11,22 +11,23 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Test\Trace;
+namespace Bakame\DiceRoller\Test\Tracer;
 
+use Bakame\DiceRoller\Contract\Roll;
+use Bakame\DiceRoller\Contract\TraceContext;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Trace\MemoryTracer;
+use Bakame\DiceRoller\Tracer\MemoryTracer;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use function get_class;
 use function json_encode;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Trace\MemoryTracer
+ * @coversDefaultClass \Bakame\DiceRoller\Tracer\MemoryTracer
  */
 class MemoryTracerTest extends TestCase
 {
-
     /**
      * @covers ::addTrace
      * @covers ::count
@@ -58,9 +59,7 @@ class MemoryTracerTest extends TestCase
         $cup->setTracer($tracer);
         $cup->roll();
         foreach ($tracer as $trace) {
-            self::assertArrayHasKey('source', $trace);
-            self::assertArrayHasKey('expression', $trace);
-            self::assertArrayHasKey('operation', $trace);
+            self::assertArrayHasKey('context', $trace);
             self::assertArrayHasKey('value', $trace);
         }
     }
@@ -72,7 +71,12 @@ class MemoryTracerTest extends TestCase
         $cup->setTracer($tracer);
 
         /** @var string $expectedJson */
-        $expectedJson = json_encode([['source' => get_class($cup).'::roll'] +  $cup->roll()->toArray()]);
+        $expectedJson = json_encode([
+            [
+                'source' => get_class($cup).'::roll',
+                'expression' => $cup->expression(),
+            ] +  $cup->roll()->asArray(),
+        ]);
 
         /** @var string $tracerJson */
         $tracerJson = json_encode($tracer);
@@ -89,8 +93,8 @@ class MemoryTracerTest extends TestCase
         $cup->maximum();
         $cup->roll();
         self::assertCount(4, $tracer);
-        self::assertSame(get_class($cup).'::roll', $tracer->get(1)['source']);
-        self::assertSame(get_class($cup).'::maximum', $tracer->get(-2)['source']);
+        self::assertInstanceOf(TraceContext::class, $tracer->get(1)['context']);
+        self::assertInstanceOf(Roll::class, $tracer->get(-2)['value']);
     }
 
     public function testAccessingByOffsetThrowsOutOfBoundExceptionIfTracerIsEmpty(): void
