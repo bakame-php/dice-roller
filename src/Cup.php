@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\InjectTracer;
+use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
@@ -32,7 +32,7 @@ use function count;
 use function implode;
 use function sprintf;
 
-final class Cup implements Pool, InjectTracer
+final class Cup implements Pool, AcceptsTracer
 {
     /**
      * @var Rollable[]

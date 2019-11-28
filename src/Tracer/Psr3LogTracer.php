@@ -24,7 +24,7 @@ use function array_search;
 
 final class Psr3LogTracer implements Tracer
 {
-    public const DEFAULT_LOG_FORMAT = '[{source}] - {expression} : {operation} = {result}';
+    public const DEFAULT_LOG_FORMAT = '[{source}] - {expression} : {operation} = {value}';
 
     /**
      * @var LoggerInterface

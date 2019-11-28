@@ -28,12 +28,10 @@ interface Roll
     /**
      * The rollable value as a string.
      */
-    public function toString(): string;
+    public function asString(): string;
 
     /**
      * The rollable value as an array.
-     *
-     * @return array<string, string|int>
      */
     public function asArray(): array;
 }

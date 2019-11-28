@@ -555,7 +555,7 @@ If you want to know how internally your roll result is calculated your `Rollable
 
 namespace Bakame\DiceRoller\Contract;
 
-interface InjectTracer
+interface AcceptsTracer
 {
     public function setTracer(Tracer $tracer): void;
 }
@@ -568,8 +568,6 @@ The interface enables getting the trace from the last operation as well as profi
 
 namespace Bakame\DiceRoller\Contract;
 
-use Bakame\DiceRoller\Contract\Roll;
-
 interface Tracer
 {
     public function addTrace(Roll $roll, TraceContext $context): void;
@@ -580,8 +578,9 @@ interface Tracer
 
 The package comes bundle with:
  
-- the `Bakame\DiceRoller\Trace\LogTracer` which sends the traces to a PSR-3 compliant logger.
-- the `Bakame\DiceRoller\Trace\MemoryTracer` which keeps the trace in a in-memory collection.
+- the `Bakame\DiceRoller\Tracer\NullTracer` which keeps no info about tracing.
+- the `Bakame\DiceRoller\Tracer\MemoryTracer` which keeps the trace in a in-memory collection.
+- the `Bakame\DiceRoller\Tracer\Psr3LogTracer` which sends the traces to a PSR-3 compliant logger.
 
 ### Tracing using the MemoryTracer
 
@@ -613,7 +612,7 @@ $tracer->isEmpty(); //returns true
 
 **The `MemoryTracer` can also be encoded using `json_encode`.**
 
-### Tracing using the LogTracer
+### Tracing using the Prs3LogTracer
 
 ```php
 <?php
@@ -624,7 +623,7 @@ use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-final class LogTracer implements Tracer
+final class Psr3LogTracer implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{method}] - {rollable} : {trace} = {result}';
     public function __construct(
@@ -640,14 +639,14 @@ final class LogTracer implements Tracer
 
 The `LogTrace` log messages, by default, will match this format:
 
-    [{source}] - {subject} : {expression} = {result}
+    [{source}] - {expression} : {operation} = {value}
 
 The context keys are:
 
 - `{source}`: The method that has created the profile entry.
-- `{subject}`: The string representation of the `Rollable` object to be analyzed.
-- `{expression}`: The mathematical expression that produced the result.
-- `{result}`: The result from performing the calculation.
+- `{expression}`: The string representation of the `Rollable` object to be analyzed.
+- `{operation}`: The mathematical operation that produced the result.
+- `{value}`: The result from performing the calculation.
 
 Configuring the logger is done on instantiation.
 

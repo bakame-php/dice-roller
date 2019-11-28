@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\InjectTracer;
+use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
@@ -35,7 +35,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Modifier, InjectTracer
+final class Explode implements Modifier, AcceptsTracer
 {
     const EQ = '=';
     const GT = '>';

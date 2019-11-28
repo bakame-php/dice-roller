@@ -52,7 +52,7 @@ final class Toss implements Roll, \JsonSerializable
     /**
      * {@inheritDoc}
      */
-    public function toString(): string
+    public function asString(): string
     {
         return (string) $this->value;
     }

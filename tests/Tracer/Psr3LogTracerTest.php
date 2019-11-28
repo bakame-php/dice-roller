@@ -24,12 +24,12 @@ use Psr\Log\LogLevel;
 final class Psr3LogTracerTest extends TestCase
 {
     /**
-     * @var \Bakame\DiceRoller\Tracer\Psr3Logger
+     * @var Psr3Logger
      */
     private $logger;
 
     /**
-     * @var \Bakame\DiceRoller\Tracer\Psr3LogTracer
+     * @var Psr3LogTracer
      */
     private $tracer;
 

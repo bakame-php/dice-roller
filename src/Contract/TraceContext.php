@@ -17,11 +17,23 @@ use JsonSerializable;
 
 interface TraceContext extends JsonSerializable
 {
+    /**
+     * The Rollable object from which the context originate from.
+     */
     public function rollable(): Rollable;
 
+    /**
+     * The action from which the context originate from.
+     */
     public function source(): string;
 
+    /**
+     * Optional associated information.
+     */
     public function extensions(): array;
 
+    /**
+     * array representation of the context.
+     */
     public function asArray(): array;
 }

@@ -30,6 +30,8 @@ use function sprintf;
 
 final class CustomDie implements Dice
 {
+    private const REGEXP_EXPRESSION = '/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i';
+
     /**
      * @var int[]
      */
@@ -59,7 +61,7 @@ final class CustomDie implements Dice
      */
     public static function fromExpression(string $expression): self
     {
-        if (1 !== preg_match('/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i', $expression, $matches)) {
+        if (1 !== preg_match(self::REGEXP_EXPRESSION, $expression, $matches)) {
             throw new UnknownExpression(sprintf('the submitted die format `%s` is invalid.', $expression));
         }
 

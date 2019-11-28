@@ -18,11 +18,13 @@ use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Bakame\DiceRoller\Exception\UnknownExpression;
 use Bakame\DiceRoller\Toss;
+use function preg_match;
 use function random_int;
 use function sprintf;
 
 final class SidedDie implements Dice
 {
+    private const REGEXP_EXPRESSION = '/^d(?<sides>\d+)$/i';
     /**
      * @var int
      */
@@ -45,13 +47,13 @@ final class SidedDie implements Dice
     }
 
     /**
-     * new instance from a string expression.
+     * New instance from a string expression.
      *
      * @throws UnknownExpression if the expression is not valid.
      */
     public static function fromExpression(string $expression): self
     {
-        if (1 === preg_match('/^d(?<sides>\d+)$/i', $expression, $matches)) {
+        if (1 === preg_match(self::REGEXP_EXPRESSION, $expression, $matches)) {
             return new self((int) $matches['sides']);
         }
 
