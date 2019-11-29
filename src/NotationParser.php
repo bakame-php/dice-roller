@@ -28,9 +28,7 @@ use function substr;
 
 final class NotationParser implements Parser
 {
-    private const SIDE_COUNT = '6';
-
-    private const DICE_COUNT = 1;
+    private const DEFAULT_SIMPLE_POOL = ['type' => '6', 'quantity' => '1'];
 
     private const POOL_PATTERN = ',^
         (?<dice>
@@ -65,7 +63,7 @@ final class NotationParser implements Parser
     }
 
     /**
-     * Extract pool expressions from a generic string expression.
+     * Extract pool notation from a generic dice notation.
      *
      * @return string[]
      */
@@ -114,7 +112,7 @@ final class NotationParser implements Parser
         }
 
         if (1 !== preg_match(self::POOL_PATTERN, $notation, $matches)) {
-            throw new UnknownNotation(sprintf('the submitted expression `%s` is invalid or not supported', $notation));
+            throw new UnknownNotation(sprintf('the submitted notation `%s` is invalid or not supported', $notation));
         }
 
         if (1 !== preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
@@ -139,13 +137,13 @@ final class NotationParser implements Parser
             return ['composite' => $this->parse($notation)];
         }
 
-        $pool = ['type' => self::SIDE_COUNT, 'quantity' => self::DICE_COUNT];
+        $pool = self::DEFAULT_SIMPLE_POOL;
         if ('' !== $matches['type']) {
             $pool['type'] = $matches['type'];
         }
 
         if ('' !== $matches['quantity']) {
-            $pool['quantity'] = (int) $matches['quantity'];
+            $pool['quantity'] = $matches['quantity'];
         }
 
         $pool['type'] = strtoupper('D'.$pool['type']);

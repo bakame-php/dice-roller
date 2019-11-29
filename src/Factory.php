@@ -59,7 +59,7 @@ final class Factory
     }
 
     /**
-     * Returns a new rollable object from a string expression.
+     * Returns a new rollable object from a dice notation.
      */
     public function newInstance(string $notation): Rollable
     {
@@ -69,7 +69,7 @@ final class Factory
     }
 
     /**
-     * Returns a new rollable object from a parsed expression.
+     * Returns a new rollable object from a parsed dice notation.
      */
     private function create(array $parsed): Rollable
     {
@@ -95,7 +95,7 @@ final class Factory
     }
 
     /**
-     * Generates the Pool from the expression matched pattern.
+     * Generates the Pool from the dice notation matched pattern.
      *
      * @throws SyntaxError
      * @throws UnknownNotation
@@ -111,10 +111,10 @@ final class Factory
             $die->setTracer($this->tracer);
         }
 
-        $rollable = Cup::fromRollable($die, $parts['simple']['quantity']);
-        $rollable->setTracer($this->tracer);
+        $cup = Cup::fromRollable($die, (int) $parts['simple']['quantity']);
+        $cup->setTracer($this->tracer);
 
-        return $rollable;
+        return $cup;
     }
 
     /**

@@ -200,6 +200,7 @@ final class Cup implements Pool, AcceptsTracer
         $result = (int) array_sum($sum);
         $operation = implode(' + ', array_map($mapper, $sum));
         $roll = new Toss($result, $operation, new TossContext($this, $method));
+
         $this->tracer->append($roll);
 
         return $roll;

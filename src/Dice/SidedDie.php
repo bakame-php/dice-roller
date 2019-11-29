@@ -58,9 +58,9 @@ final class SidedDie implements Dice, AcceptsTracer
     }
 
     /**
-     * New instance from a string expression.
+     * New instance from a dice notation.
      *
-     * @throws UnknownNotation if the expression is not valid.
+     * @throws UnknownNotation if the dice notation is not valid.
      */
     public static function fromNotation(string $notation): self
     {

@@ -64,7 +64,7 @@ final class CustomDie implements Dice, AcceptsTracer
     }
 
     /**
-     * new instance from a string expression.
+     * new instance from a dice notation.
      *
      * @throws TooFewSides
      * @throws UnknownNotation

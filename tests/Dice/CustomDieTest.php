@@ -46,16 +46,16 @@ final class CustomDieTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidExpression
+     * @dataProvider invalidNotation
      * @covers ::fromNotation
      */
-    public function testfromStringWithWrongValue(string $expression): void
+    public function testfromStringWithWrongValue(string $notation): void
     {
         self::expectException(CanNotBeRolled::class);
-        CustomDie::fromNotation($expression);
+        CustomDie::fromNotation($notation);
     }
 
-    public function invalidExpression(): iterable
+    public function invalidNotation(): iterable
     {
         return [
             'invalid format' => ['1'],

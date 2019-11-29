@@ -18,7 +18,7 @@ use Bakame\DiceRoller\Exception\UnknownNotation;
 interface Parser
 {
     /**
-     * Extract pool expressions from a generic string expression.
+     * Extract dice definitions from a dice notation.
      *
      * @throws UnknownNotation If the dice notation can not be parsed
      */
