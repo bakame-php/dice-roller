@@ -56,7 +56,7 @@ final class Psr3LogTracerTest extends TestCase
 
     /**
      * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
-     * @covers ::addTrace
+     * @covers ::append
      */
     public function testDiceRollerLogger(): void
     {

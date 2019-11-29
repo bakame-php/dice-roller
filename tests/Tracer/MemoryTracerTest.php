@@ -28,7 +28,7 @@ use function json_encode;
 class MemoryTracerTest extends TestCase
 {
     /**
-     * @covers ::addTrace
+     * @covers ::append
      * @covers ::count
      * @covers ::isEmpty
      * @covers ::clear

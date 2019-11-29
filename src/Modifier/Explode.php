@@ -190,7 +190,7 @@ final class Explode implements Modifier, AcceptsTracer
         $minimum = $this->pool->minimum();
         $roll = new Toss($minimum, (string) $minimum, new TossContext($this, __METHOD__));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll->value();
     }
@@ -202,7 +202,7 @@ final class Explode implements Modifier, AcceptsTracer
     {
         $roll = new Toss(PHP_INT_MAX, (string) PHP_INT_MAX, new TossContext($this, __METHOD__));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll->value();
     }
@@ -230,7 +230,7 @@ final class Explode implements Modifier, AcceptsTracer
         $nbRolls = count($values);
         $roll = new Toss($result, $operation, new TossContext($this, __METHOD__, ['totalRollsCount' => $nbRolls]));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll;
     }

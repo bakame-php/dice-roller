@@ -572,7 +572,7 @@ namespace Bakame\DiceRoller\Contract;
 
 interface Tracer
 {
-    public function addTrace(Roll $roll): void;
+    public function append(Roll $roll): void;
 }
 ```
 

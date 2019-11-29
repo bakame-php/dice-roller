@@ -28,7 +28,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
      */
     private $collection = [];
 
-    public function addTrace(Roll $roll): void
+    public function append(Roll $roll): void
     {
         $this->collection[] = $roll;
     }

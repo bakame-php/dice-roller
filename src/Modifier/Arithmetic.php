@@ -152,7 +152,7 @@ final class Arithmetic implements Modifier, AcceptsTracer
         $operation = $value.' '.$this->operator.' '.$this->value;
         $roll = new Toss($result, $operation, new TossContext($this, $method));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll;
     }

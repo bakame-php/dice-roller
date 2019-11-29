@@ -61,7 +61,7 @@ final class Psr3LogTracer implements Tracer
     /**
      * {@inheritDoc}
      */
-    public function addTrace(Roll $roll): void
+    public function append(Roll $roll): void
     {
         static $psr3logLevels = null;
         $psr3logLevels = $psr3logLevels ?? (new ReflectionClass(LogLevel::class))->getConstants();

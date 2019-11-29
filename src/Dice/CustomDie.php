@@ -116,7 +116,7 @@ final class CustomDie implements Dice, AcceptsTracer
         $result = min($this->values);
         $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll->value();
     }
@@ -129,7 +129,7 @@ final class CustomDie implements Dice, AcceptsTracer
         $result = max($this->values);
         $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll->value();
     }
@@ -143,7 +143,7 @@ final class CustomDie implements Dice, AcceptsTracer
         $result = $this->values[$index];
         $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll;
     }

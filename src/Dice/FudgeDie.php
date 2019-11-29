@@ -65,7 +65,7 @@ final class FudgeDie implements Dice, AcceptsTracer
     public function minimum(): int
     {
         $roll = new Toss(-1, '-1', new TossContext($this, __METHOD__));
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll->value();
     }
@@ -76,7 +76,7 @@ final class FudgeDie implements Dice, AcceptsTracer
     public function maximum(): int
     {
         $roll = new Toss(1, '1', new TossContext($this, __METHOD__));
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll->value();
     }
@@ -89,7 +89,7 @@ final class FudgeDie implements Dice, AcceptsTracer
         $result = random_int(-1, 1);
         $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll;
     }

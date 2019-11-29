@@ -209,7 +209,7 @@ final class DropKeep implements Modifier, AcceptsTracer
         $operation = implode(' + ', array_map($mapper, $values));
         $roll = new Toss($result, $operation, new TossContext($this, $method));
 
-        $this->tracer->addTrace($roll);
+        $this->tracer->append($roll);
 
         return $roll;
     }

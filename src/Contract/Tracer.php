@@ -16,7 +16,7 @@ namespace Bakame\DiceRoller\Contract;
 interface Tracer
 {
     /**
-     * Record a Rollable operation.
+     * Add a Roll object to the current Tracer instance.
      */
-    public function addTrace(Roll $roll): void;
+    public function append(Roll $roll): void;
 }
