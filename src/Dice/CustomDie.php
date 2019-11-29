@@ -13,11 +13,15 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Dice;
 
+use Bakame\DiceRoller\TossContext;
+use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Contract\Roll;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\TooFewSides;
-use Bakame\DiceRoller\Exception\UnknownExpression;
+use Bakame\DiceRoller\Exception\UnknownNotation;
 use Bakame\DiceRoller\Toss;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use function array_map;
 use function count;
 use function explode;
@@ -28,14 +32,19 @@ use function preg_match;
 use function random_int;
 use function sprintf;
 
-final class CustomDie implements Dice
+final class CustomDie implements Dice, AcceptsTracer
 {
-    private const REGEXP_EXPRESSION = '/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i';
+    private const REGEXP_NOTATION = '/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i';
 
     /**
      * @var int[]
      */
     private $values = [];
+
+    /**
+     * @var Tracer
+     */
+    private $tracer;
 
     /**
      * New instance.
@@ -51,18 +60,19 @@ final class CustomDie implements Dice
         }
 
         $this->values = $values;
+        $this->setTracer(new NullTracer());
     }
 
     /**
      * new instance from a string expression.
      *
      * @throws TooFewSides
-     * @throws UnknownExpression
+     * @throws UnknownNotation
      */
-    public static function fromExpression(string $expression): self
+    public static function fromNotation(string $notation): self
     {
-        if (1 !== preg_match(self::REGEXP_EXPRESSION, $expression, $matches)) {
-            throw new UnknownExpression(sprintf('the submitted die format `%s` is invalid.', $expression));
+        if (1 !== preg_match(self::REGEXP_NOTATION, $notation, $matches)) {
+            throw new UnknownNotation(sprintf('the submitted die format `%s` is invalid.', $notation));
         }
 
         $mapper = function (string $value): int {
@@ -77,7 +87,15 @@ final class CustomDie implements Dice
     /**
      * {@inheritdoc}
      */
-    public function expression(): string
+    public function setTracer(Tracer $tracer): void
+    {
+        $this->tracer = $tracer;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function notation(): string
     {
         return 'D['.implode(',', $this->values).']';
     }
@@ -95,7 +113,12 @@ final class CustomDie implements Dice
      */
     public function minimum(): int
     {
-        return min($this->values);
+        $result = min($this->values);
+        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
+
+        $this->tracer->addTrace($roll);
+
+        return $roll->value();
     }
 
     /**
@@ -103,7 +126,12 @@ final class CustomDie implements Dice
      */
     public function maximum(): int
     {
-        return max($this->values);
+        $result = max($this->values);
+        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
+
+        $this->tracer->addTrace($roll);
+
+        return $roll->value();
     }
 
     /**
@@ -113,7 +141,10 @@ final class CustomDie implements Dice
     {
         $index = random_int(0, count($this->values) - 1);
         $result = $this->values[$index];
+        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 
-        return new Toss($result, (string) $result);
+        $this->tracer->addTrace($roll);
+
+        return $roll;
     }
 }

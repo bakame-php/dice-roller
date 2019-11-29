@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Tracer;
 
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\TraceContext;
 use Bakame\DiceRoller\Contract\Tracer;
 use Countable;
 use Iterator;
@@ -25,13 +24,13 @@ use function sprintf;
 final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializable, Tracer
 {
     /**
-     * @var array<int, array{context:TraceContext, value:Roll}>
+     * @var Roll[]
      */
     private $collection = [];
 
-    public function addTrace(Roll $roll, TraceContext $context): void
+    public function addTrace(Roll $roll): void
     {
-        $this->collection[] = ['context' => $context, 'value' => $roll];
+        $this->collection[] = $roll;
     }
 
     public function count(): int
@@ -58,8 +57,8 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
 
     public function jsonSerialize(): array
     {
-        $mapper = static function (array  $trace): array {
-            return $trace['context']->asArray() + $trace['value']->asArray();
+        $mapper = static function (Roll $roll): array {
+            return $roll->asArray();
         };
 
         return array_map($mapper, $this->collection);
@@ -70,7 +69,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
      *
      * @throws \OutOfBoundsException If the offset is illegal for the current instance
      */
-    public function get(int $offset): array
+    public function get(int $offset): Roll
     {
         $index = $this->filterOffset($offset);
         if (null !== $index) {

@@ -18,5 +18,5 @@ interface Tracer
     /**
      * Record a Rollable operation.
      */
-    public function addTrace(Roll $roll, TraceContext $context): void;
+    public function addTrace(Roll $roll): void;
 }

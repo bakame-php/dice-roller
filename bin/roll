@@ -3,7 +3,7 @@
 
 ini_set('display_errors', 'stderr');
 
-use Bakame\DiceRoller\ExpressionParser;
+use Bakame\DiceRoller\NotationParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
@@ -100,10 +100,10 @@ Examples:
 
      Getting the result of a single roll
      $yellow$script 2D+6$reset
-     
-     Getting the result of multiple roll and its associated trace 
+
+     Getting the result of multiple roll and its associated trace
      $yellow$script --iteration=4 --logs 2D+6$reset
-     
+
      Getting the roll information
      $yellow$script --info 2D+6$reset
 HELP;
@@ -140,28 +140,28 @@ if (2 > count($argv) || isset($opts['help']) || isset($opts['h'])) {
     die(0);
 }
 
-$expression = array_pop($argv);
-$expression = trim($expression);
+$notation = array_pop($argv);
+$notation = trim($notation);
 
-if (0 === strpos($expression, '-')) {
+if (0 === strpos($notation, '-')) {
     fail("$redbg Make sure your dice annotation is the last argument of your call! $reset");
 
     die(65);
 }
 
 $logger = new Psr3Logger();
-$factory = new Factory(new ExpressionParser(), new Psr3LogTracer($logger));
+$factory = new Factory(new NotationParser(), new Psr3LogTracer($logger));
 
 try {
-    $rollable = $factory->newInstance($expression);
+    $rollable = $factory->newInstance($notation);
 } catch (Exception $exception) {
-    fail(sprintf($parseErrorMessage, $expression, $exception->getMessage()));
+    fail(sprintf($parseErrorMessage, $notation, $exception->getMessage()));
 
     die(65);
 }
 
 if (isset($opts['info'])) {
-   success(sprintf($rollableInfo, $rollable->expression(), $rollable->minimum(), $rollable->maximum()));
+   success(sprintf($rollableInfo, $rollable->notation(), $rollable->minimum(), $rollable->maximum()));
 }
 
 $logger->clear();

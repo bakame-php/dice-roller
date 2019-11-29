@@ -11,12 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\TraceContext;
+use Bakame\DiceRoller\Contract\RollContext;
 
-final class Context implements TraceContext
+final class TossContext implements RollContext
 {
     /**
      * @var Rollable
@@ -35,7 +35,7 @@ final class Context implements TraceContext
 
     public function __construct(Rollable $rollable, string $source, array $extensions = [])
     {
-        unset($extensions['source'], $extensions['operation'], $extensions['expression'], $extensions['result']);
+        unset($extensions['source'], $extensions['operation'], $extensions['notation'], $extensions['result']);
 
         $this->rollable = $rollable;
         $this->source = $source;
@@ -71,7 +71,7 @@ final class Context implements TraceContext
      */
     public function asArray(): array
     {
-        return ['source' => $this->source, 'expression' => $this->rollable->expression()] + $this->extensions;
+        return ['source' => $this->source, 'notation' => $this->rollable->notation()] + $this->extensions;
     }
 
     /**

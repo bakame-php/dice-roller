@@ -13,18 +13,18 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\TraceContext;
+use Bakame\DiceRoller\Contract\RollContext;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyRollableInstances;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\Tracer\Context;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use function array_map;
 use function array_slice;
@@ -74,7 +74,7 @@ final class DropKeep implements Modifier, AcceptsTracer
     private $algo;
 
     /**
-     * @var TraceContext|null
+     * @var RollContext|null
      */
     private $trace;
 
@@ -142,9 +142,9 @@ final class DropKeep implements Modifier, AcceptsTracer
     /**
      * {@inheritdoc}
      */
-    public function expression(): string
+    public function notation(): string
     {
-        $str = $this->pool->expression();
+        $str = $this->pool->notation();
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }
@@ -207,9 +207,9 @@ final class DropKeep implements Modifier, AcceptsTracer
         $values = $this->filter($values);
         $result = (int) array_sum($values);
         $operation = implode(' + ', array_map($mapper, $values));
-        $roll = new Toss($result, $operation);
+        $roll = new Toss($result, $operation, new TossContext($this, $method));
 
-        $this->tracer->addTrace($roll, new Context($this, $method));
+        $this->tracer->addTrace($roll);
 
         return $roll;
     }

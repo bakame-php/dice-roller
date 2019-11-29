@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Test\Tracer;
 
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\TraceContext;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
@@ -59,8 +58,7 @@ class MemoryTracerTest extends TestCase
         $cup->setTracer($tracer);
         $cup->roll();
         foreach ($tracer as $trace) {
-            self::assertArrayHasKey('context', $trace);
-            self::assertArrayHasKey('value', $trace);
+            self::assertInstanceOf(Roll::class, $trace);
         }
     }
 
@@ -74,7 +72,7 @@ class MemoryTracerTest extends TestCase
         $expectedJson = json_encode([
             [
                 'source' => get_class($cup).'::roll',
-                'expression' => $cup->expression(),
+                'notation' => $cup->notation(),
             ] +  $cup->roll()->asArray(),
         ]);
 
@@ -88,13 +86,13 @@ class MemoryTracerTest extends TestCase
         $tracer = new MemoryTracer();
         $cup = Cup::fromRollable(new SidedDie(6), 3);
         $cup->setTracer($tracer);
-        $cup->minimum();
-        $cup->roll();
-        $cup->maximum();
-        $cup->roll();
+        $minRoll = $cup->minimum();
+        $regularRoll = $cup->roll();
+        $maxRoll = $cup->maximum();
+        $lastRoll = $cup->roll();
         self::assertCount(4, $tracer);
-        self::assertInstanceOf(TraceContext::class, $tracer->get(1)['context']);
-        self::assertInstanceOf(Roll::class, $tracer->get(-2)['value']);
+        self::assertSame($regularRoll, $tracer->get(1));
+        self::assertSame($lastRoll, $tracer->get(-1));
     }
 
     public function testAccessingByOffsetThrowsOutOfBoundExceptionIfTracerIsEmpty(): void

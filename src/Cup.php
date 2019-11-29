@@ -19,7 +19,6 @@ use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Tracer\Context;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use Iterator;
 use function array_count_values;
@@ -120,14 +119,14 @@ final class Cup implements Pool, AcceptsTracer
     /**
      * {@inheritdoc}
      */
-    public function expression(): string
+    public function notation(): string
     {
         if ([] === $this->items) {
             return '0';
         }
 
         $mapper = function (Rollable $rollable): string {
-            return $rollable->expression();
+            return $rollable->notation();
         };
 
         $walker = function (&$value, $offset): void {
@@ -195,9 +194,8 @@ final class Cup implements Pool, AcceptsTracer
 
         $result = (int) array_sum($sum);
         $operation = implode(' + ', array_map($mapper, $sum));
-        $roll = new Toss($result, $operation);
-        $context = new Context($this, $method);
-        $this->tracer->addTrace($roll, $context);
+        $roll = new Toss($result, $operation, new TossContext($this, $method));
+        $this->tracer->addTrace($roll);
 
         return $roll;
     }

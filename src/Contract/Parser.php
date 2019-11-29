@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-use Bakame\DiceRoller\Exception\UnknownExpression;
+use Bakame\DiceRoller\Exception\UnknownNotation;
 
 interface Parser
 {
     /**
      * Extract pool expressions from a generic string expression.
      *
-     * @throws UnknownExpression If the expression can not be parsed
+     * @throws UnknownNotation If the expression can not be parsed
      */
-    public function parse(string $expression): array;
+    public function parse(string $notation): array;
 }

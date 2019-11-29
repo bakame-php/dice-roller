@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Roll;
@@ -21,7 +22,6 @@ use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\Tracer\Context;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use function abs;
 use function intdiv;
@@ -103,9 +103,9 @@ final class Arithmetic implements Modifier, AcceptsTracer
     /**
      * {@inheritdoc}
      */
-    public function expression(): string
+    public function notation(): string
     {
-        $str = $this->rollable->expression();
+        $str = $this->rollable->notation();
         if (false !== strpos($str, '+')) {
             $str = '('.$str.')';
         }
@@ -150,9 +150,9 @@ final class Arithmetic implements Modifier, AcceptsTracer
     {
         $result = $this->calculate($value);
         $operation = $value.' '.$this->operator.' '.$this->value;
-        $roll = new Toss($result, $operation);
+        $roll = new Toss($result, $operation, new TossContext($this, $method));
 
-        $this->tracer->addTrace($roll, new Context($this, $method));
+        $this->tracer->addTrace($roll);
 
         return $roll;
     }

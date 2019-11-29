@@ -19,8 +19,8 @@ use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\NotationParser;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
@@ -66,7 +66,7 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::expression
+     * @covers ::notation
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::roll
@@ -77,12 +77,12 @@ final class CupTest extends TestCase
      */
     public function testRoll(): void
     {
-        $factory = new Factory(new ExpressionParser());
+        $factory = new Factory(new NotationParser());
         $cup = new Cup($factory->newInstance('4D10'), $factory->newInstance('2d4'));
         self::assertFalse($cup->isEmpty());
         self::assertSame(6, $cup->minimum());
         self::assertSame(48, $cup->maximum());
-        self::assertSame('4D10+2D4', $cup->expression());
+        self::assertSame('4D10+2D4', $cup->notation());
         self::assertCount(2, $cup);
         self::assertContainsOnlyInstancesOf(Rollable::class, $cup);
         for ($i = 0; $i < 5; $i++) {
@@ -149,13 +149,13 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::expression
+     * @covers ::notation
      * @covers ::isEmpty
      */
     public function testEmptyCup(): void
     {
         $cup = new Cup();
-        self::assertSame('0', $cup->expression());
+        self::assertSame('0', $cup->notation());
         self::assertTrue($cup->isEmpty());
         self::assertSame(0, $cup->roll()->value());
     }

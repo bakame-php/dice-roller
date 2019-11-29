@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Roll;
+use Bakame\DiceRoller\Contract\RollContext;
 
 final class Toss implements Roll, \JsonSerializable
 {
@@ -27,10 +28,16 @@ final class Toss implements Roll, \JsonSerializable
      */
     private $operation;
 
-    public function __construct(int $value, string $operation)
+    /**
+     * @var RollContext|null
+     */
+    private $context;
+
+    public function __construct(int $value, string $operation, ?RollContext $context = null)
     {
         $this->value = $value;
         $this->operation = $operation;
+        $this->context = $context;
     }
 
     /**
@@ -49,6 +56,11 @@ final class Toss implements Roll, \JsonSerializable
         return $this->operation;
     }
 
+    public function context(): ?RollContext
+    {
+        return $this->context;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -62,10 +74,16 @@ final class Toss implements Roll, \JsonSerializable
      */
     public function asArray(): array
     {
-        return [
+        $roll = [
             'operation' => $this->operation,
             'value' => $this->value,
         ];
+
+        if (null === $this->context) {
+            return $roll;
+        }
+
+        return $roll + $this->context->asArray();
     }
 
     /**

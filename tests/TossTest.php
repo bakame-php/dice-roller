@@ -27,5 +27,6 @@ class TossTest extends TestCase
         self::assertSame($arrExpected, $roll->asArray());
         self::assertSame('42', $roll->asString());
         self::assertSame('42', json_encode($roll));
+        self::assertNull($roll->context());
     }
 }

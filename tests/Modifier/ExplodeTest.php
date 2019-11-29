@@ -16,9 +16,9 @@ use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\ExpressionParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\NotationParser;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
@@ -55,7 +55,7 @@ final class ExplodeTest extends TestCase
 
     public function provideInvalidProperties(): iterable
     {
-        $cup = (new Factory(new ExpressionParser()))->newInstance('4d6');
+        $cup = (new Factory(new NotationParser()))->newInstance('4d6');
         return [
             'invalid comparion' => [
                 'cup' => $cup,
@@ -89,13 +89,13 @@ final class ExplodeTest extends TestCase
      * @dataProvider provideExplodingModifier
      *
      * @covers ::__construct
-     * @covers ::expression
+     * @covers ::notation
      * @covers ::getAnnotationSuffix
      *
      */
     public function testToString(Explode $roll, string $annotation): void
     {
-        self::assertSame($annotation, $roll->expression());
+        self::assertSame($annotation, $roll->notation());
     }
 
     public function provideExplodingModifier(): iterable

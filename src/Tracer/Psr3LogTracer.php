@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Tracer;
 
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\TraceContext;
 use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -24,7 +23,7 @@ use function array_search;
 
 final class Psr3LogTracer implements Tracer
 {
-    public const DEFAULT_LOG_FORMAT = '[{source}] - {expression} : {operation} = {value}';
+    public const DEFAULT_LOG_FORMAT = '[{source}] - {notation} : {operation} = {value}';
 
     /**
      * @var LoggerInterface
@@ -62,20 +61,18 @@ final class Psr3LogTracer implements Tracer
     /**
      * {@inheritDoc}
      */
-    public function addTrace(Roll $roll, TraceContext $context): void
+    public function addTrace(Roll $roll): void
     {
         static $psr3logLevels = null;
         $psr3logLevels = $psr3logLevels ?? (new ReflectionClass(LogLevel::class))->getConstants();
 
-        $logContext = $context->asArray() + $roll->asArray();
-
         if (false !== array_search($this->logLevel, $psr3logLevels, true)) {
-            $this->logger->{$this->logLevel}($this->logFormat, $logContext);
+            $this->logger->{$this->logLevel}($this->logFormat, $roll->asArray());
 
             return;
         }
 
-        $this->logger->log($this->logLevel, $this->logFormat, $logContext);
+        $this->logger->log($this->logLevel, $this->logFormat, $roll->asArray());
     }
 
     /**

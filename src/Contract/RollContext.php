@@ -15,7 +15,7 @@ namespace Bakame\DiceRoller\Contract;
 
 use JsonSerializable;
 
-interface TraceContext extends JsonSerializable
+interface RollContext extends JsonSerializable
 {
     /**
      * The Rollable object from which the context originate from.

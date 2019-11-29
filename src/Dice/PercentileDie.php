@@ -13,17 +13,39 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Dice;
 
+use Bakame\DiceRoller\TossContext;
+use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Contract\Roll;
+use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Toss;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use function random_int;
 
-final class PercentileDie implements Dice
+final class PercentileDie implements Dice, AcceptsTracer
 {
+    /**
+     * @var Tracer
+     */
+    private $tracer;
+
+    public function __construct(?Tracer $tracer = null)
+    {
+        $this->setTracer($tracer ?? new NullTracer());
+    }
+
     /**
      * {@inheritdoc}
      */
-    public function expression(): string
+    public function setTracer(Tracer $tracer): void
+    {
+        $this->tracer = $tracer;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function notation(): string
     {
         return 'D%';
     }
@@ -42,7 +64,11 @@ final class PercentileDie implements Dice
      */
     public function minimum(): int
     {
-        return 1;
+        $roll = new Toss(1, '1', new TossContext($this, __METHOD__));
+
+        $this->tracer->addTrace($roll);
+
+        return $roll->value();
     }
 
     /**
@@ -50,7 +76,11 @@ final class PercentileDie implements Dice
      */
     public function maximum(): int
     {
-        return 100;
+        $roll = new Toss(100, '100', new TossContext($this, __METHOD__));
+
+        $this->tracer->addTrace($roll);
+
+        return $roll->value();
     }
 
     /**
@@ -59,7 +89,10 @@ final class PercentileDie implements Dice
     public function roll(): Roll
     {
         $result = random_int(1, 100);
+        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 
-        return new Toss($result, (string) $result);
+        $this->tracer->addTrace($roll);
+
+        return $roll;
     }
 }

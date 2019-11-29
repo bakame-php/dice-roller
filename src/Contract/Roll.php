@@ -26,6 +26,11 @@ interface Roll
     public function operation(): string;
 
     /**
+     * The roll context.
+     */
+    public function context(): ?RollContext;
+
+    /**
      * The rollable value as a string.
      */
     public function asString(): string;

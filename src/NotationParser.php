@@ -15,7 +15,7 @@ namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Exception\UnknownExpression;
+use Bakame\DiceRoller\Exception\UnknownNotation;
 use function array_reduce;
 use function count;
 use function explode;
@@ -26,7 +26,7 @@ use function strpos;
 use function strtoupper;
 use function substr;
 
-final class ExpressionParser implements Parser
+final class NotationParser implements Parser
 {
     private const SIDE_COUNT = '6';
 
@@ -59,9 +59,9 @@ final class ExpressionParser implements Parser
     /**
      * {@inheritdoc}
      */
-    public function parse(string $expression): array
+    public function parse(string $notation): array
     {
-        return array_reduce($this->extractPool($expression), [$this, 'parsePool'], []);
+        return array_reduce($this->extractPool($notation), [$this, 'parsePool'], []);
     }
 
     /**
@@ -69,9 +69,9 @@ final class ExpressionParser implements Parser
      *
      * @return string[]
      */
-    private function extractPool(string $expression): array
+    private function extractPool(string $notation): array
     {
-        $parts = explode('+', $expression);
+        $parts = explode('+', $notation);
         $res = [];
         foreach ($parts as $offset => $value) {
             if (0 === $offset) {
@@ -104,17 +104,17 @@ final class ExpressionParser implements Parser
      *         - the pool definition
      *         - the pool modifiers
      *
-     * @throws UnknownExpression
+     * @throws UnknownNotation
      * @throws UnknownAlgorithm
      */
-    private function parsePool(array $retval, string $expression): array
+    private function parsePool(array $retval, string $notation): array
     {
-        if ('' === $expression) {
+        if ('' === $notation) {
             return $retval;
         }
 
-        if (1 !== preg_match(self::POOL_PATTERN, $expression, $matches)) {
-            throw new UnknownExpression(sprintf('the submitted expression `%s` is invalid or not supported', $expression));
+        if (1 !== preg_match(self::POOL_PATTERN, $notation, $matches)) {
+            throw new UnknownNotation(sprintf('the submitted expression `%s` is invalid or not supported', $notation));
         }
 
         if (1 !== preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
@@ -134,9 +134,9 @@ final class ExpressionParser implements Parser
      */
     private function getPoolDefinition(array $matches): array
     {
-        $expression = $matches['mixed'] ?? '';
-        if ('' !== $expression) {
-            return ['composite' => $this->parse($expression)];
+        $notation = $matches['mixed'] ?? '';
+        if ('' !== $notation) {
+            return ['composite' => $this->parse($notation)];
         }
 
         $pool = ['type' => self::SIDE_COUNT, 'quantity' => self::DICE_COUNT];

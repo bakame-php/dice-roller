@@ -23,13 +23,13 @@ final class FudgeDieTest extends TestCase
      * @covers ::size
      * @covers ::minimum
      * @covers ::maximum
-     * @covers ::expression
+     * @covers ::notation
      * @covers ::roll
      */
     public function testFudgeDice(): void
     {
         $dice = new FudgeDie();
-        self::assertSame('DF', $dice->expression());
+        self::assertSame('DF', $dice->notation());
         self::assertSame(3, $dice->size());
         self::assertSame(1, $dice->maximum());
         self::assertSame(-1, $dice->minimum());

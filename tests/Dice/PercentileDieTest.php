@@ -12,6 +12,7 @@
 namespace Bakame\DiceRoller\Test\Dice;
 
 use Bakame\DiceRoller\Dice\PercentileDie;
+use Bakame\DiceRoller\Tracer\MemoryTracer;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,20 +20,14 @@ use PHPUnit\Framework\TestCase;
  */
 final class PercentileDieTest extends TestCase
 {
-    /**
-     * @covers ::size
-     * @covers ::expression
-     * @covers ::minimum
-     * @covers ::maximum
-     * @covers ::roll
-     */
     public function testFudgeDice(): void
     {
         $dice = new PercentileDie();
+        $dice->setTracer(new MemoryTracer());
         self::assertSame(100, $dice->size());
         self::assertSame(100, $dice->maximum());
         self::assertSame(1, $dice->minimum());
-        self::assertSame('D%', $dice->expression());
+        self::assertSame('D%', $dice->notation());
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll()->value();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);

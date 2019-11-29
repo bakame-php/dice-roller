@@ -22,8 +22,8 @@ final class SidedDieTest extends TestCase
 {
     /**
      * @covers ::__construct
-     * @covers ::fromExpression
-     * @covers ::expression
+     * @covers ::fromNotation
+     * @covers ::notation
      * @covers ::size
      * @covers ::minimum
      * @covers ::maximum
@@ -34,8 +34,8 @@ final class SidedDieTest extends TestCase
         $expected = 6;
         $dice = new SidedDie($expected);
         self::assertSame($expected, $dice->size());
-        self::assertSame('D6', $dice->expression());
-        self::assertEquals($dice, SidedDie::fromExpression($dice->expression()));
+        self::assertSame('D6', $dice->notation());
+        self::assertEquals($dice, SidedDie::fromNotation($dice->notation()));
         self::assertSame($expected, $dice->maximum());
         self::assertSame(1, $dice->minimum());
         for ($i = 0; $i < 10; $i++) {
@@ -55,11 +55,11 @@ final class SidedDieTest extends TestCase
     }
 
     /**
-     * @covers ::fromExpression
+     * @covers ::fromNotation
      */
     public function testfromStringWithWrongValue(): void
     {
         self::expectException(CanNotBeRolled::class);
-        SidedDie::fromExpression('1');
+        SidedDie::fromNotation('1');
     }
 }

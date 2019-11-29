@@ -20,23 +20,14 @@ use PHPUnit\Framework\TestCase;
  */
 final class CustomDieTest extends TestCase
 {
-    /**
-     * @covers ::__construct
-     * @covers ::fromExpression
-     * @covers ::expression
-     * @covers ::size
-     * @covers ::minimum
-     * @covers ::maximum
-     * @covers ::roll
-     */
     public function testDice(): void
     {
         $dice = new CustomDie(1, 2, 2, 4, 4);
         self::assertSame(5, $dice->size());
         self::assertSame(4, $dice->maximum());
         self::assertSame(1, $dice->minimum());
-        self::assertSame('D[1,2,2,4,4]', $dice->expression());
-        self::assertEquals($dice, CustomDie::fromExpression($dice->expression()));
+        self::assertSame('D[1,2,2,4,4]', $dice->notation());
+        self::assertEquals($dice, CustomDie::fromNotation($dice->notation()));
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll()->value();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);
@@ -55,12 +46,12 @@ final class CustomDieTest extends TestCase
 
     /**
      * @dataProvider invalidExpression
-     * @covers ::fromExpression
+     * @covers ::fromNotation
      */
     public function testfromStringWithWrongValue(string $expression): void
     {
         self::expectException(CanNotBeRolled::class);
-        CustomDie::fromExpression($expression);
+        CustomDie::fromNotation($expression);
     }
 
     public function invalidExpression(): iterable

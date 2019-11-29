@@ -59,7 +59,7 @@ final class DropKeepTest extends TestCase
     }
 
     /**
-     * @covers ::expression
+     * @covers ::notation
      */
     public function testToString(): void
     {
@@ -69,7 +69,7 @@ final class DropKeepTest extends TestCase
             new SidedDie(4)
         ), DropKeep::DROP_LOWEST, 2);
 
-        self::assertSame('(D3+D[-3,-2,-1]+D4)DL2', $cup->expression());
+        self::assertSame('(D3+D[-3,-2,-1]+D4)DL2', $cup->notation());
     }
 
 
@@ -95,7 +95,7 @@ final class DropKeepTest extends TestCase
                 return new Toss(1, '1');
             }
 
-            public function expression(): string
+            public function notation(): string
             {
                 return '1';
             }
@@ -117,7 +117,7 @@ final class DropKeepTest extends TestCase
                 return new Toss(2, '2');
             }
 
-            public function expression(): string
+            public function notation(): string
             {
                 return '2';
             }
@@ -217,7 +217,7 @@ final class DropKeepTest extends TestCase
      */
     public function testGetInnerRollableMethod(): void
     {
-        $custom = CustomDie::fromExpression('d[1,2,3]');
+        $custom = CustomDie::fromNotation('d[1,2,3]');
         $rollable = new DropKeep($custom, DropKeep::DROP_LOWEST, 1);
         self::assertSame($custom, $rollable->getInnerRollable());
     }

@@ -36,7 +36,7 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::newInstance
-     * @covers \Bakame\DiceRoller\ExpressionParser
+     * @covers \Bakame\DiceRoller\NotationParser
      * @covers ::addRollable
      * @covers ::createRollable
      * @covers ::decorate
@@ -66,25 +66,25 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers \Bakame\DiceRoller\ExpressionParser
+     * @covers \Bakame\DiceRoller\NotationParser
      * @covers ::addRollable
      * @covers ::createRollable
      * @covers ::flattenRollable
      * @covers ::decorate
      * @covers ::createDice
      * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::expression
-     * @covers \Bakame\DiceRoller\Dice\SidedDie::expression
-     * @covers \Bakame\DiceRoller\Dice\FudgeDie::expression
-     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::expression
-     * @covers \Bakame\DiceRoller\Modifier\DropKeep::expression
-     * @covers \Bakame\DiceRoller\Modifier\Explode::expression
+     * @covers \Bakame\DiceRoller\Cup::notation
+     * @covers \Bakame\DiceRoller\Dice\SidedDie::notation
+     * @covers \Bakame\DiceRoller\Dice\FudgeDie::notation
+     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::notation
+     * @covers \Bakame\DiceRoller\Modifier\DropKeep::notation
+     * @covers \Bakame\DiceRoller\Modifier\Explode::notation
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString): void
     {
         $cup = $this->factory->newInstance($expected);
-        self::assertSame($toString, $cup->expression());
+        self::assertSame($toString, $cup->notation());
     }
 
     public function validStringProvider(): iterable
@@ -120,7 +120,7 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers ::createDice
      * @covers ::decorate
-     * @covers \Bakame\DiceRoller\ExpressionParser
+     * @covers \Bakame\DiceRoller\NotationParser
      * @dataProvider permissiveParserProvider
      */
     public function testPermissiveParser(string $full, string $short): void
