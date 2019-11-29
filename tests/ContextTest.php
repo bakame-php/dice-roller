@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
 use PHPUnit\Framework\TestCase;
 use function get_class;

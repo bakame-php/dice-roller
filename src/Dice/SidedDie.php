@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Dice;
 
-use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Contract\Roll;
@@ -21,6 +20,7 @@ use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Bakame\DiceRoller\Exception\UnknownNotation;
 use Bakame\DiceRoller\Toss;
+use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use function preg_match;
 use function random_int;
