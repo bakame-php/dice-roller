@@ -24,7 +24,7 @@ final class Psr3Logger extends AbstractLogger
     private $logs = [];
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function log($level, $message, array $context = []): void
     {

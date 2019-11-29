@@ -72,20 +72,23 @@ final class SidedDie implements Dice, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function notation(): string
     {
@@ -93,7 +96,7 @@ final class SidedDie implements Dice, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function size(): int
     {
@@ -101,7 +104,7 @@ final class SidedDie implements Dice, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function minimum(): int
     {
@@ -113,7 +116,7 @@ final class SidedDie implements Dice, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function maximum(): int
     {
@@ -125,7 +128,7 @@ final class SidedDie implements Dice, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function roll(): Roll
     {

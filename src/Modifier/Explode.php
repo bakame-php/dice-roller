@@ -136,7 +136,7 @@ final class Explode implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function setTracer(Tracer $tracer): void
     {
@@ -144,7 +144,7 @@ final class Explode implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getInnerRollable(): Rollable
     {
@@ -157,13 +157,16 @@ final class Explode implements Modifier, AcceptsTracer
         return $arr[0];
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function notation(): string
     {
@@ -188,7 +191,7 @@ final class Explode implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function minimum(): int
     {
@@ -201,7 +204,7 @@ final class Explode implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function maximum(): int
     {
@@ -213,7 +216,7 @@ final class Explode implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function roll(): Roll
     {

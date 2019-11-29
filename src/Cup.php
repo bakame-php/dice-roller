@@ -61,9 +61,8 @@ final class Cup implements Pool, AcceptsTracer
     {
         return !$rollable instanceof Pool || !$rollable->isEmpty();
     }
-
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function setTracer(Tracer $tracer): void
     {
@@ -89,9 +88,8 @@ final class Cup implements Pool, AcceptsTracer
 
         return new self(...$items);
     }
-
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function isEmpty(): bool
     {
@@ -120,9 +118,8 @@ final class Cup implements Pool, AcceptsTracer
     {
         return $this->notation();
     }
-
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function notation(): string
     {
@@ -144,9 +141,8 @@ final class Cup implements Pool, AcceptsTracer
 
         return implode('+', $pool);
     }
-
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function roll(): Roll
     {
@@ -157,9 +153,8 @@ final class Cup implements Pool, AcceptsTracer
 
         return $this->decorate($sum, __METHOD__);
     }
-
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function minimum(): int
     {
@@ -170,9 +165,8 @@ final class Cup implements Pool, AcceptsTracer
 
         return $this->decorate($sum, __METHOD__)->value();
     }
-
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function maximum(): int
     {

@@ -85,7 +85,7 @@ final class Arithmetic implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function setTracer(Tracer $tracer): void
     {
@@ -93,20 +93,23 @@ final class Arithmetic implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getInnerRollable(): Rollable
     {
         return $this->rollable;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function notation(): string
     {
@@ -119,7 +122,7 @@ final class Arithmetic implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function roll(): Roll
     {
@@ -129,7 +132,7 @@ final class Arithmetic implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function minimum(): int
     {
@@ -139,7 +142,7 @@ final class Arithmetic implements Modifier, AcceptsTracer
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function maximum(): int
     {

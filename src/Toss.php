@@ -56,6 +56,9 @@ final class Toss implements Roll
         return $this->operation;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function context(): ?RollContext
     {
         return $this->context;

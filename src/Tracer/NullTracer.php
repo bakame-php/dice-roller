@@ -18,6 +18,9 @@ use Bakame\DiceRoller\Contract\Tracer;
 
 final class NullTracer implements Tracer
 {
+    /**
+     * {@inheritDoc}
+     */
     public function append(Roll $roll): void
     {
     }

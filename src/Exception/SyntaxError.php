@@ -14,8 +14,7 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Exception;
 
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
-use InvalidArgumentException;
 
-class SyntaxError extends InvalidArgumentException implements CanNotBeRolled
+class SyntaxError extends \InvalidArgumentException implements CanNotBeRolled
 {
 }

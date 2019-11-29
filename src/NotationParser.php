@@ -55,7 +55,7 @@ final class NotationParser implements Parser
     $,xi';
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function parse(string $notation): array
     {
