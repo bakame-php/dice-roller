@@ -18,7 +18,6 @@ use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\RollContext;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyRollableInstances;
@@ -72,11 +71,6 @@ final class DropKeep implements Modifier, AcceptsTracer
      * @var string
      */
     private $algo;
-
-    /**
-     * @var RollContext|null
-     */
-    private $trace;
 
     /**
      * @var Tracer
@@ -137,6 +131,11 @@ final class DropKeep implements Modifier, AcceptsTracer
         $arr = iterator_to_array($this->pool, false);
 
         return $arr[0];
+    }
+
+    public function jsonSerialize(): string
+    {
+        return $this->notation();
     }
 
     /**

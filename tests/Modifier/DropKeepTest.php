@@ -24,6 +24,7 @@ use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use function json_encode;
 
 /**
  * @coversDefaultClass \Bakame\DiceRoller\Modifier\DropKeep
@@ -60,6 +61,7 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::notation
+     * @covers ::jsonSerialize
      */
     public function testToString(): void
     {
@@ -69,7 +71,9 @@ final class DropKeepTest extends TestCase
             new SidedDie(4)
         ), DropKeep::DROP_LOWEST, 2);
 
-        self::assertSame('(D3+D[-3,-2,-1]+D4)DL2', $cup->notation());
+        $expectedNotation = '(D3+D[-3,-2,-1]+D4)DL2';
+        self::assertSame($expectedNotation, $cup->notation());
+        self::assertSame(json_encode($expectedNotation), json_encode($cup));
     }
 
 
@@ -99,6 +103,11 @@ final class DropKeepTest extends TestCase
             {
                 return '1';
             }
+
+            public function jsonSerialize(): string
+            {
+                return $this->notation();
+            }
         };
 
         $dice2 = new class() implements Rollable {
@@ -120,6 +129,11 @@ final class DropKeepTest extends TestCase
             public function notation(): string
             {
                 return '2';
+            }
+
+            public function jsonSerialize(): string
+            {
+                return $this->notation();
             }
         };
 

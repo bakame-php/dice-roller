@@ -23,6 +23,7 @@ use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use function json_encode;
 
 /**
  * @coversDefaultClass \Bakame\DiceRoller\Modifier\Explode
@@ -91,11 +92,12 @@ final class ExplodeTest extends TestCase
      * @covers ::__construct
      * @covers ::notation
      * @covers ::getAnnotationSuffix
-     *
+     * @covers ::jsonSerialize
      */
-    public function testToString(Explode $roll, string $annotation): void
+    public function testToString(Explode $roll, string $notation): void
     {
-        self::assertSame($annotation, $roll->notation());
+        self::assertSame($notation, $roll->notation());
+        self::assertSame(json_encode($notation), json_encode($roll));
     }
 
     public function provideExplodingModifier(): iterable

@@ -116,6 +116,11 @@ final class Cup implements Pool, AcceptsTracer
         }
     }
 
+    public function jsonSerialize(): string
+    {
+        return $this->notation();
+    }
+
     /**
      * {@inheritdoc}
      */

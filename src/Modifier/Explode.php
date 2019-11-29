@@ -157,6 +157,11 @@ final class Explode implements Modifier, AcceptsTracer
         return $arr[0];
     }
 
+    public function jsonSerialize(): string
+    {
+        return $this->notation();
+    }
+
     /**
      * {@inheritdoc}
      */

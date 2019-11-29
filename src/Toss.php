@@ -16,7 +16,7 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\RollContext;
 
-final class Toss implements Roll, \JsonSerializable
+final class Toss implements Roll
 {
     /**
      * @var int

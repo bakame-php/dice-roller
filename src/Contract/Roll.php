@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Roll
+interface Roll extends \JsonSerializable
 {
     /**
      * The roll value as in integer.
@@ -21,7 +21,7 @@ interface Roll
     public function value(): int;
 
     /**
-     * The operations needed to obtain the resulted roll value.
+     * The executed operation to obtain the roll value.
      */
     public function operation(): string;
 
@@ -31,12 +31,12 @@ interface Roll
     public function context(): ?RollContext;
 
     /**
-     * The rollable value as a string.
+     * The roll value as a string.
      */
     public function asString(): string;
 
     /**
-     * The rollable value as an array.
+     * The roll value as an array.
      */
     public function asArray(): array;
 }

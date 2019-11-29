@@ -27,6 +27,7 @@ final class CustomDieTest extends TestCase
         self::assertSame(4, $dice->maximum());
         self::assertSame(1, $dice->minimum());
         self::assertSame('D[1,2,2,4,4]', $dice->notation());
+        self::assertSame(json_encode('D[1,2,2,4,4]'), json_encode($dice));
         self::assertEquals($dice, CustomDie::fromNotation($dice->notation()));
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll()->value();

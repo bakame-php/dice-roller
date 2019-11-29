@@ -16,7 +16,7 @@ namespace Bakame\DiceRoller\Contract;
 interface AcceptsTracer
 {
     /**
-     * inject a Tracer.
+     * Inject a Roll Tracer instance.
      */
     public function setTracer(Tracer $tracer): void;
 }

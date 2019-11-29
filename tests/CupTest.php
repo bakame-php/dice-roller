@@ -25,6 +25,7 @@ use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use function json_encode;
 
 /**
  * @coversDefaultClass \Bakame\DiceRoller\Cup
@@ -183,22 +184,24 @@ final class CupTest extends TestCase
     /**
      * @covers ::count
      * @covers ::getIterator
+     * @covers ::jsonSerialize
      * @covers \Bakame\DiceRoller\Toss
      * @covers \Bakame\DiceRoller\Tracer\NullTracer
      */
     public function testFiveFourSidedDice(): void
     {
-        $group = Cup::fromRollable(new SidedDie(4), 5);
-        self::assertCount(5, $group);
-        self::assertContainsOnlyInstancesOf(SidedDie::class, $group);
-        foreach ($group as $dice) {
+        $cup = Cup::fromRollable(new SidedDie(4), 5);
+        self::assertSame(json_encode('5D4'), json_encode($cup));
+        self::assertCount(5, $cup);
+        self::assertContainsOnlyInstancesOf(SidedDie::class, $cup);
+        foreach ($cup as $dice) {
             self::assertSame(4, $dice->size());
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $result = $group->roll()->value();
-            self::assertGreaterThanOrEqual($group->minimum(), $result);
-            self::assertLessThanOrEqual($group->maximum(), $result);
+            $result = $cup->roll()->value();
+            self::assertGreaterThanOrEqual($cup->minimum(), $result);
+            self::assertLessThanOrEqual($cup->maximum(), $result);
         }
     }
 }

@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-use JsonSerializable;
-
-interface RollContext extends JsonSerializable
+interface RollContext extends \JsonSerializable
 {
     /**
      * The Rollable object from which the context originate from.
@@ -33,7 +31,7 @@ interface RollContext extends JsonSerializable
     public function extensions(): array;
 
     /**
-     * array representation of the context.
+     * Array representation of the context.
      */
     public function asArray(): array;
 }

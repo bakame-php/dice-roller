@@ -14,21 +14,13 @@ namespace Bakame\DiceRoller\Test\Dice;
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Dice\SidedDie;
 use PHPUnit\Framework\TestCase;
+use function json_encode;
 
 /**
  * @coversDefaultClass \Bakame\DiceRoller\Dice\SidedDie
  */
 final class SidedDieTest extends TestCase
 {
-    /**
-     * @covers ::__construct
-     * @covers ::fromNotation
-     * @covers ::notation
-     * @covers ::size
-     * @covers ::minimum
-     * @covers ::maximum
-     * @covers ::roll
-     */
     public function testSixSidedValues(): void
     {
         $expected = 6;
@@ -38,6 +30,7 @@ final class SidedDieTest extends TestCase
         self::assertEquals($dice, SidedDie::fromNotation($dice->notation()));
         self::assertSame($expected, $dice->maximum());
         self::assertSame(1, $dice->minimum());
+        self::assertSame(json_encode('D6'), json_encode($dice));
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll()->value();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);

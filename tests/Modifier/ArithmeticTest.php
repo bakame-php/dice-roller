@@ -23,6 +23,7 @@ use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use function json_encode;
 
 /**
  * @coversDefaultClass \Bakame\DiceRoller\Modifier\Arithmetic
@@ -58,6 +59,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::notation
+     * @covers ::jsonSerialize
      * @covers ::getInnerRollable
      */
     public function testToString(): void
@@ -70,6 +72,7 @@ final class ArithmeticTest extends TestCase
 
         $cup = new Arithmetic($pool, '^', 3);
         self::assertSame('(2D3+D4)^3', $cup->notation());
+        self::assertSame(json_encode('(2D3+D4)^3'), json_encode($cup));
         self::assertSame($pool, $cup->getInnerRollable());
     }
 
@@ -97,6 +100,11 @@ final class ArithmeticTest extends TestCase
             public function notation(): string
             {
                 return '1';
+            }
+
+            public function jsonSerialize(): string
+            {
+                return $this->notation();
             }
         };
 

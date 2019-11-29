@@ -11,7 +11,7 @@
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Rollable
+interface Rollable extends \JsonSerializable
 {
     /**
      * Returns the rollable minimun result.
@@ -33,8 +33,7 @@ interface Rollable
     public function roll(): Roll;
 
     /**
-     * Returns the string representation of the
-     * Rollable object using Dice annotation.
+     * Returns the Rollable dice annotation as a string.
      */
     public function notation(): string;
 }

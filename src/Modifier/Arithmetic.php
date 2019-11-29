@@ -100,6 +100,11 @@ final class Arithmetic implements Modifier, AcceptsTracer
         return $this->rollable;
     }
 
+    public function jsonSerialize(): string
+    {
+        return $this->notation();
+    }
+
     /**
      * {@inheritdoc}
      */

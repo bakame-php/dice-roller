@@ -20,7 +20,7 @@ interface Parser
     /**
      * Extract pool expressions from a generic string expression.
      *
-     * @throws UnknownNotation If the expression can not be parsed
+     * @throws UnknownNotation If the dice notation can not be parsed
      */
     public function parse(string $notation): array;
 }

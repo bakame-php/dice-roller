@@ -28,6 +28,7 @@ final class PercentileDieTest extends TestCase
         self::assertSame(100, $dice->maximum());
         self::assertSame(1, $dice->minimum());
         self::assertSame('D%', $dice->notation());
+        self::assertSame(json_encode('D%'), json_encode($dice));
         for ($i = 0; $i < 10; $i++) {
             $test = $dice->roll()->value();
             self::assertGreaterThanOrEqual($dice->minimum(), $test);

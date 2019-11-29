@@ -79,6 +79,11 @@ final class SidedDie implements Dice, AcceptsTracer
         $this->tracer = $tracer;
     }
 
+    public function jsonSerialize(): string
+    {
+        return $this->notation();
+    }
+
     /**
      * {@inheritdoc}
      */
