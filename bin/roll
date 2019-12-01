@@ -150,10 +150,10 @@ if (0 === strpos($notation, '-')) {
 }
 
 $logger = new Psr3Logger();
-$factory = new Factory(new NotationParser(), new Psr3LogTracer($logger));
+$factory = new Factory(new NotationParser());
 
 try {
-    $rollable = $factory->newInstance($notation);
+    $rollable = $factory->newInstance($notation, new Psr3LogTracer($logger));
 } catch (Exception $exception) {
     fail(sprintf($parseErrorMessage, $notation, $exception->getMessage()));
 

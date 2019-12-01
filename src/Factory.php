@@ -29,7 +29,6 @@ use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\Tracer\NullTracer;
-use function array_reduce;
 use function count;
 use function iterator_to_array;
 use function strpos;
@@ -42,39 +41,35 @@ final class Factory
     private $parser;
 
     /**
-     * @var Tracer
-     */
-    private $tracer;
-
-    /**
-     * new Instance.
-     *
      * @param ?Parser $parser
-     * @param ?Tracer $tracer
      */
-    public function __construct(?Parser $parser = null, ?Tracer $tracer = null)
+    public function __construct(?Parser $parser = null)
     {
         $this->parser = $parser ?? new NotationParser();
-        $this->tracer = $tracer ?? new NullTracer();
     }
 
     /**
      * Returns a new rollable object from a dice notation.
+     * @param ?Tracer $tracer
      */
-    public function newInstance(string $notation): Rollable
+    public function newInstance(string $notation, ?Tracer $tracer = null): Rollable
     {
         $parsed = $this->parser->parse($notation);
+        $tracer = $tracer ?? new NullTracer();
 
-        return $this->create($parsed);
+        return $this->create($parsed, $tracer);
     }
 
     /**
      * Returns a new rollable object from a parsed dice notation.
      */
-    private function create(array $parsed): Rollable
+    private function create(array $parsed, Tracer $tracer): Rollable
     {
-        $rollable = array_reduce($parsed, [$this, 'addRollable'], new Cup());
-        $rollable->setTracer($this->tracer);
+        $rollable = new Cup();
+        $rollable->setTracer($tracer);
+        foreach ($parsed as $parts) {
+            $rollable = $this->addRollable($rollable, $parts, $tracer);
+        }
 
         return $this->flattenRollable($rollable);
     }
@@ -85,10 +80,16 @@ final class Factory
      * @throws SyntaxError
      * @throws UnknownNotation
      */
-    private function addRollable(Cup $pool, array $parts): Cup
+    private function addRollable(Cup $pool, array $parts, Tracer $tracer): Cup
     {
-        $rollable = $this->createRollable($parts['definition']);
-        $rollable = array_reduce($parts['modifiers'], [$this, 'decorate'], $rollable);
+        $rollable = $this->createRollable($parts['definition'], $tracer);
+        foreach ($parts['modifiers'] as $matches) {
+            $rollable = $this->decorate($rollable, $matches);
+            if ($rollable instanceof AcceptsTracer) {
+                $rollable->setTracer($tracer);
+            }
+        }
+
         $rollable = $this->flattenRollable($rollable);
 
         return $pool->withAddedRollable($rollable);
@@ -100,19 +101,19 @@ final class Factory
      * @throws SyntaxError
      * @throws UnknownNotation
      */
-    private function createRollable(array $parts): Rollable
+    private function createRollable(array $parts, Tracer $tracer): Rollable
     {
         if (isset($parts['composite'])) {
-            return $this->create($parts['composite']);
+            return $this->create($parts['composite'], $tracer);
         }
 
         $die = $this->createDice($parts['simple']['type']);
         if ($die instanceof AcceptsTracer) {
-            $die->setTracer($this->tracer);
+            $die->setTracer($tracer);
         }
 
         $cup = Cup::fromRollable($die, (int) $parts['simple']['quantity']);
-        $cup->setTracer($this->tracer);
+        $cup->setTracer($tracer);
 
         return $cup;
     }
@@ -149,23 +150,14 @@ final class Factory
     private function decorate(Rollable $rollable, array $matches): Rollable
     {
         if ('arithmetic' === $matches['modifier']) {
-            $modifier = new Arithmetic($rollable, $matches['operator'], $matches['value']);
-            $modifier->setTracer($this->tracer);
-
-            return $modifier;
+            return new Arithmetic($rollable, $matches['operator'], $matches['value']);
         }
 
         if ('dropkeep' === $matches['modifier']) {
-            $modifier = new DropKeep($rollable, $matches['operator'], $matches['value']);
-            $modifier->setTracer($this->tracer);
-
-            return $modifier;
+            return new DropKeep($rollable, $matches['operator'], $matches['value']);
         }
 
-        $modifier = new Explode($rollable, $matches['operator'], $matches['value']);
-        $modifier->setTracer($this->tracer);
-
-        return $modifier;
+        return new Explode($rollable, $matches['operator'], $matches['value']);
     }
 
     /**
@@ -181,8 +173,6 @@ final class Factory
             return $rollable;
         }
 
-        $arr = iterator_to_array($rollable, false);
-
-        return $arr[0];
+        return iterator_to_array($rollable, false)[0];
     }
 }

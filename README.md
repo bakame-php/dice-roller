@@ -80,15 +80,17 @@ Use the library bundled rollable objects to build a dice pool to roll.
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\Tracer\MemoryTracer;
 
-$pool = new Arithmetic(
-    new Cup(new SidedDie(6), new SidedDie(6)),
-    Arithmetic::ADD,
-    3
-);
+$tracer = new MemoryTracer();
+$cup = new Cup(new SidedDie(6), new SidedDie(6));
+$cup->setTracer($tracer);
 
-echo $pool->notation(); // returns 2D6+3
-echo $pool->roll()->value();     // returns 12
+$pool = new Arithmetic($cup, Arithmetic::ADD, 3);
+$pool->setTracer($tracer);
+
+echo $pool->notation();      // returns 2D6+3
+echo $pool->roll()->value(); // returns 12
 ```
 
 ## Tracing and profiling an operation
@@ -105,8 +107,8 @@ use Psr\Log\LogLevel;
 $parser = new NotationParser();
 $psr3Logger = new Psr3Logger();
 $tracer = new Psr3LogTracer($psr3Logger);
-$factory = new Factory($parser, $tracer);
-$pool = $factory->newInstance('2D6+3');
+$factory = new Factory($parser);
+$pool = $factory->newInstance('2D6+3', $tracer);
 
 echo $pool->notation();  // returns 2D6+3
 $roll = $pool->roll();
@@ -120,7 +122,7 @@ foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
 // [Bakame\DiceRoller\Cup::roll] - 2D6 : 5 + 4 = 9
 // [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 9 + 3 = 12
 
-//the MemoryLogger::getLogs method IS NOT PART OF PSR3 INTERFACE!!
+//the Psr3Logger::getLogs method IS NOT PART OF PSR3 INTERFACE!!
 ```
 
 ## Documentation
@@ -183,8 +185,8 @@ use Bakame\DiceRoller\Contract\Rollable;
 
 final class Factory
 {
-    public function __construct(?Parser $parser = null, ?Tracer $tracer = null);
-    public function newInstance(string $notation): Rollable;
+    public function __construct(?Parser $parser = null);
+    public function newInstance(string $notation, ?Tracer $tracer = null): Rollable;
 }
 ```
 
@@ -617,7 +619,7 @@ $tracer->isEmpty(); //returns true
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Trace;
+namespace Bakame\DiceRoller\Tracer;
 
 use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
@@ -637,7 +639,7 @@ final class Psr3LogTracer implements Tracer
 }
 ```
 
-The `LogTrace` log messages, by default, will match this format:
+The `LogTracer` log messages, by default, will match this format:
 
     [{source}] - {notation} : {operation} = {value}
 
