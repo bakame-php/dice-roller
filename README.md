@@ -83,7 +83,14 @@ use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
 
 $tracer = new MemoryTracer();
-$cup = new Cup(new SidedDie(6), new SidedDie(6));
+
+$die1 = new SidedDie(6);
+$die1->setTracer($tracer);
+
+$die2 = new SidedDie(6);
+$die2->setTracer($tracer);
+
+$cup = new Cup($die1, $die2);
 $cup->setTracer($tracer);
 
 $pool = new Arithmetic($cup, Arithmetic::ADD, 3);
