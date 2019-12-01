@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Contract\Context;
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\RollContext;
 
 final class Toss implements Roll
 {
@@ -29,11 +29,11 @@ final class Toss implements Roll
     private $operation;
 
     /**
-     * @var RollContext|null
+     * @var Context|null
      */
     private $context;
 
-    public function __construct(int $value, string $operation, ?RollContext $context = null)
+    public function __construct(int $value, string $operation, ?Context $context = null)
     {
         $this->value = $value;
         $this->operation = $operation;
@@ -59,7 +59,7 @@ final class Toss implements Roll
     /**
      * {@inheritDoc}
      */
-    public function context(): ?RollContext
+    public function context(): ?Context
     {
         return $this->context;
     }

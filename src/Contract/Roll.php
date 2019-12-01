@@ -28,7 +28,7 @@ interface Roll extends \JsonSerializable
     /**
      * The roll context.
      */
-    public function context(): ?RollContext;
+    public function context(): ?Context;
 
     /**
      * The roll value as a string.

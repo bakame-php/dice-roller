@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Contract\Context;
 use Bakame\DiceRoller\Contract\Rollable;
-use Bakame\DiceRoller\Contract\RollContext;
 
-final class TossContext implements RollContext
+final class TossContext implements Context
 {
     /**
      * @var string

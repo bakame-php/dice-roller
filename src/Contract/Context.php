@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface RollContext extends \JsonSerializable
+interface Context extends \JsonSerializable
 {
     /**
      * The original rollable string notation representation.
