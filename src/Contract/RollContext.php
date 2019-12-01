@@ -16,9 +16,9 @@ namespace Bakame\DiceRoller\Contract;
 interface RollContext extends \JsonSerializable
 {
     /**
-     * The Rollable object from which the context originate from.
+     * The original rollable string notation representation.
      */
-    public function rollable(): Rollable;
+    public function notation(): string;
 
     /**
      * The action from which the context originate from.

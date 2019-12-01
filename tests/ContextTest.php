@@ -41,7 +41,7 @@ class ContextTest extends TestCase
 
         $context = new TossContext($cup, $source);
         self::assertSame($source, $context->source());
-        self::assertSame($cup, $context->rollable());
+        self::assertSame($cup->notation(), $context->notation());
         self::assertEmpty($context->extensions());
         $expectedContext = ['source' => $source, 'notation' => $cup->notation()];
 

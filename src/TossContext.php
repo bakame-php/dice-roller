@@ -19,9 +19,9 @@ use Bakame\DiceRoller\Contract\RollContext;
 final class TossContext implements RollContext
 {
     /**
-     * @var Rollable
+     * @var string
      */
-    private $rollable;
+    private $notation;
 
     /**
      * @var string
@@ -37,7 +37,7 @@ final class TossContext implements RollContext
     {
         unset($extensions['source'], $extensions['operation'], $extensions['notation'], $extensions['result']);
 
-        $this->rollable = $rollable;
+        $this->notation = $rollable->notation();
         $this->source = $source;
         $this->extensions = $extensions;
     }
@@ -45,9 +45,9 @@ final class TossContext implements RollContext
     /**
      * {@inheritDoc}
      */
-    public function rollable(): Rollable
+    public function notation(): string
     {
-        return $this->rollable;
+        return $this->notation;
     }
 
     /**
@@ -71,7 +71,7 @@ final class TossContext implements RollContext
      */
     public function asArray(): array
     {
-        return ['source' => $this->source, 'notation' => $this->rollable->notation()] + $this->extensions;
+        return ['source' => $this->source, 'notation' => $this->notation] + $this->extensions;
     }
 
     /**
