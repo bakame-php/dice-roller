@@ -120,7 +120,7 @@ $pool = $factory->newInstance('2D6+3', $tracer);
 echo $pool->notation();  // returns 2D6+3
 $roll = $pool->roll();
 echo $roll->value();      // displays 12
-echo $roll->expression(); // displays 9 + 3
+echo $roll->notation(); // displays 9 + 3
 
 foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
     echo $log, PHP_EOL;
@@ -140,10 +140,10 @@ foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
 
 In order to roll the dice, the package comes bundles with:
 
-- a parser class, `Bakame\DiceRoller\NotationParser`, to split a roll expression into its inner pieces.
+- a parser class, `Bakame\DiceRoller\NotationParser`, to split a roll notation into its inner pieces.
 - a factory class, `Bakame\DiceRoller\Factory`, to create a `Rollable` object from the result of such parsing.
 
-The `NotationParser` implements a `Parser` interface whose `Parser::parse` must be able to extract roll rules in a case insentitive way from a string expression and convert them into an PHP `array`.
+The `NotationParser` implements a `Parser` interface whose `Parser::parse` must be able to extract roll rules in a case insentitive way from a string notation and convert them into an PHP `array`.
 
 ```php
 <?php
@@ -154,7 +154,7 @@ use Bakame\DiceRoller\Contract\Parser;
 
 final class NotationParser implements Parser
 {
-    public function parse(string $expression): array;
+    public function parse(string $notation): array;
 }
 ```
 
@@ -197,7 +197,7 @@ final class Factory
 }
 ```
 
-Using both classes we can then parse the following expression.
+Using both classes we can then parse the following notation.
 
 ```php
 <?php
@@ -211,7 +211,7 @@ $cup = $factory->newInstance('3D20+4+D4!>3/4^3');
 echo $cup->roll()->value();
 ```
 
-If the `Parser` or the `Factory` are not able to parse or create a `Rollable` object from the string expression a `Bakame\DiceRoller\Contract\CanNotBeRolled` exception will be thrown.
+If the `Parser` or the `Factory` are not able to parse or create a `Rollable` object from the string notation a `Bakame\DiceRoller\Contract\CanNotBeRolled` exception will be thrown.
 
 ### Rollable
 
@@ -227,14 +227,14 @@ interface Rollable
     public function minimum(): int;
     public function maximum(): int;
     public function roll(): Roll;
-    public function expression(): string;
+    public function notation(): string;
 }
 ```
 
 - `Rollable::minimum` returns the minimum value that can be returned during a roll;
 - `Rollable::maximum` returns the maximum value that can be returned during a roll;
 - `Rollable::roll` returns a a `Roll` object.
-- `Rollable::expression` returns the object string notation.
+- `Rollable::notation` returns the object string notation.
 
 **All exceptions thrown by the package extends the basic `Bakame\DiceRoller\Contract\CanNotBeRolled` exception.**
 
@@ -262,8 +262,8 @@ The following die type are bundled in the library:
 | `PercentileDie` | 100 sided die with values between `1` and `100`.      |
 | `CustomDie`     | die with custom side values                           |
 
-- A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\IllegalValue` exception is thrown on instantiation.  
-- If a named constructor does not recognize the string expression a `Bakame\DiceRoller\Exception\UnknownExpression`exception is thrown.
+- A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\SyntaxError` exception is thrown on instantiation.  
+- If a named constructor does not recognize the string notation a `Bakame\DiceRoller\Exception\UnknownNotation`exception is thrown.
 
 ##### Examples
 
@@ -323,11 +323,11 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface.
 ```php
 <?php
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
 
-final class Cup implements Pool, AcceptsTracer
+final class Cup implements Pool, SupportsTracing
 {
     public function __construct(Rollable ...$rollable);
     public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
@@ -352,7 +352,7 @@ echo Cup::fromRollable(new CustomDie(1, 2, 2, 4), 2)->notation(); // displays 2D
 echo Cup::fromRollable(new FudgeDie(), 42)->notation();           // displays 42DF
 ```
 
-A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\IllegalValue` is thrown.
+A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\SyntaxError` is thrown.
 
 When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
@@ -420,11 +420,11 @@ interface Modifier implements Rollable
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
 
-final class Arithmetic implements Modifier, AcceptsTracer
+final class Arithmetic implements Modifier, SupportsTracing
 {
     public const ADD = '+';
     public const SUB = '-';
@@ -465,11 +465,11 @@ echo $modifier->notation();  // displays D6*3;
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
 
-final class DropKeep implements Modifier, AcceptsTracer
+final class DropKeep implements Modifier, SupportsTracing
 {
     public const DROP_HIGHEST = 'dh';
     public const DROP_LOWEST = 'dl';
@@ -516,11 +516,11 @@ echo $modifier->notation(); // displays '4D6DH3'
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
 
-final class Explode implements Modifier, AcceptsTracer
+final class Explode implements Modifier, SupportsTracing
 {
     public const EQ = '=';
     public const GT = '>';
@@ -584,8 +584,6 @@ interface Tracer
     public function append(Roll $roll): void;
 }
 ```
-
-**In the current package only modifiers and the `Cup` objects implement such interfaces. Dices do not.**
 
 The package comes bundle with:
  
