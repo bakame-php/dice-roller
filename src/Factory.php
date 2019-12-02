@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
@@ -85,7 +85,7 @@ final class Factory
         $rollable = $this->createRollable($parts['definition'], $tracer);
         foreach ($parts['modifiers'] as $matches) {
             $rollable = $this->decorate($rollable, $matches);
-            if ($rollable instanceof AcceptsTracer) {
+            if ($rollable instanceof SupportsTracing) {
                 $rollable->setTracer($tracer);
             }
         }
@@ -108,7 +108,7 @@ final class Factory
         }
 
         $die = $this->createDice($parts['simple']['type']);
-        if ($die instanceof AcceptsTracer) {
+        if ($die instanceof SupportsTracing) {
             $die->setTracer($tracer);
         }
 

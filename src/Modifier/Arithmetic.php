@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
@@ -28,7 +28,7 @@ use function intdiv;
 use function sprintf;
 use function strpos;
 
-final class Arithmetic implements Modifier, AcceptsTracer
+final class Arithmetic implements Modifier, SupportsTracing
 {
     public const ADD = '+';
     public const SUB = '-';

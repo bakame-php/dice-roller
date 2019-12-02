@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Dice;
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Contract\Roll;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\TooFewSides;
 use Bakame\DiceRoller\Exception\UnknownNotation;
@@ -32,7 +32,7 @@ use function preg_match;
 use function random_int;
 use function sprintf;
 
-final class CustomDie implements Dice, AcceptsTracer
+final class CustomDie implements Dice, SupportsTracing
 {
     private const REGEXP_NOTATION = '/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i';
 

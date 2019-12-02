@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface AcceptsTracer
+interface SupportsTracing
 {
     /**
      * Inject a Roll Tracer instance.

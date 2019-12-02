@@ -566,7 +566,7 @@ If you want to know how internally your roll result is calculated your `Rollable
 
 namespace Bakame\DiceRoller\Contract;
 
-interface AcceptsTracer
+interface SupportsTracing
 {
     public function setTracer(Tracer $tracer): void;
 }

@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\SyntaxError;
@@ -35,7 +35,7 @@ use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
-final class Explode implements Modifier, AcceptsTracer
+final class Explode implements Modifier, SupportsTracing
 {
     const EQ = '=';
     const GT = '>';

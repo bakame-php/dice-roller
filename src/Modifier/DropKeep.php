@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\AcceptsTracer;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\TooManyRollableInstances;
@@ -37,7 +37,7 @@ use function strpos;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements Modifier, AcceptsTracer
+final class DropKeep implements Modifier, SupportsTracing
 {
     public const DROP_HIGHEST = 'DH';
     public const DROP_LOWEST = 'DL';
