@@ -24,7 +24,7 @@ class TossTest extends TestCase
         $arrExpected = ['operation' => '22 + 20', 'value' => 42];
         self::assertSame('22 + 20', $roll->operation());
         self::assertSame(42, $roll->value());
-        self::assertSame($arrExpected, $roll->asArray());
+        self::assertSame($arrExpected, $roll->info());
         self::assertSame('42', $roll->asString());
         self::assertSame('42', json_encode($roll));
         self::assertNull($roll->context());

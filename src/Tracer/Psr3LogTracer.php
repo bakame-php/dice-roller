@@ -67,12 +67,12 @@ final class Psr3LogTracer implements Tracer
         $psr3logLevels = $psr3logLevels ?? (new ReflectionClass(LogLevel::class))->getConstants();
 
         if (false !== array_search($this->logLevel, $psr3logLevels, true)) {
-            $this->logger->{$this->logLevel}($this->logFormat, $roll->asArray());
+            $this->logger->{$this->logLevel}($this->logFormat, $roll->info());
 
             return;
         }
 
-        $this->logger->log($this->logLevel, $this->logFormat, $roll->asArray());
+        $this->logger->log($this->logLevel, $this->logFormat, $roll->info());
     }
 
     /**

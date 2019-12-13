@@ -36,7 +36,7 @@ interface Roll extends \JsonSerializable
     public function asString(): string;
 
     /**
-     * The roll value as an array.
+     * The roll data presented as an array.
      */
-    public function asArray(): array;
+    public function info(): array;
 }

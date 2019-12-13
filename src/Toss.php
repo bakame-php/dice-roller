@@ -75,11 +75,11 @@ final class Toss implements Roll
     /**
      * {@inheritDoc}
      */
-    public function asArray(): array
+    public function info(): array
     {
         $roll = [
-            'operation' => $this->operation,
             'value' => $this->value,
+            'operation' => $this->operation,
         ];
 
         if (null === $this->context) {

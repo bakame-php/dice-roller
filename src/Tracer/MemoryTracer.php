@@ -54,6 +54,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
 
     /**
      * {@inheritDoc}
+     * @return Roll[]
      */
     public function getIterator(): Iterator
     {
@@ -76,7 +77,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
     public function jsonSerialize(): array
     {
         $mapper = static function (Roll $roll): array {
-            return $roll->asArray();
+            return $roll->info();
         };
 
         return array_map($mapper, $this->collection);

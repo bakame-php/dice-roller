@@ -80,56 +80,47 @@ Use the library bundled rollable objects to build a dice pool to roll.
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
-use Bakame\DiceRoller\Tracer\MemoryTracer;
-
-$tracer = new MemoryTracer();
 
 $die1 = new SidedDie(6);
-$die1->setTracer($tracer);
-
 $die2 = new SidedDie(6);
-$die2->setTracer($tracer);
-
 $cup = new Cup($die1, $die2);
-$cup->setTracer($tracer);
-
 $pool = new Arithmetic($cup, Arithmetic::ADD, 3);
-$pool->setTracer($tracer);
 
 echo $pool->notation();      // returns 2D6+3
 echo $pool->roll()->value(); // returns 12
 ```
 
-## Tracing and profiling an operation
+## Tracing an operation
 
 ```php
 <?php
 
 use Bakame\DiceRoller\NotationParser;
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Psr\Log\LogLevel;
+use Bakame\DiceRoller\Tracer\MemoryTracer;
 
 $parser = new NotationParser();
-$psr3Logger = new Psr3Logger();
-$tracer = new Psr3LogTracer($psr3Logger);
+$tracer = new MemoryTracer();
 $factory = new Factory($parser);
 $pool = $factory->newInstance('2D6+3', $tracer);
 
 echo $pool->notation();  // returns 2D6+3
 $roll = $pool->roll();
 echo $roll->value();      // displays 12
-echo $roll->notation(); // displays 9 + 3
+echo $roll->operation(); // displays 9 + 3
 
-foreach ($psr3Logger->getLogs(LogLevel::DEBUG) as $log) {
-    echo $log, PHP_EOL;
+foreach ($tracer as $log) {
+    echo sprintf(
+        '[%s] - %s : %s = %s',
+        $log->context()->source(),
+        $log->context()->notation(),
+        $log->operation(),
+        $log->value()
+    ), PHP_EOL;
 }
 
 // [Bakame\DiceRoller\Cup::roll] - 2D6 : 5 + 4 = 9
 // [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 9 + 3 = 12
-
-//the Psr3Logger::getLogs method IS NOT PART OF PSR3 INTERFACE!!
 ```
 
 ## Documentation

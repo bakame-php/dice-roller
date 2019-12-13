@@ -73,7 +73,7 @@ class MemoryTracerTest extends TestCase
             [
                 'source' => get_class($cup).'::roll',
                 'notation' => $cup->notation(),
-            ] +  $cup->roll()->asArray(),
+            ] +  $cup->roll()->info(),
         ]);
 
         /** @var string $tracerJson */
