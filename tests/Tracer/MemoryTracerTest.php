@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Test\Tracer;
 
-use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use function get_class;
+use function iterator_to_array;
 use function json_encode;
 
 /**
@@ -56,10 +56,11 @@ class MemoryTracerTest extends TestCase
         $tracer = new MemoryTracer();
         $cup = Cup::fromRollable(new SidedDie(6), 3);
         $cup->setTracer($tracer);
-        $cup->roll();
-        foreach ($tracer as $trace) {
-            self::assertInstanceOf(Roll::class, $trace);
-        }
+        $roll = $cup->roll();
+        $rolls = iterator_to_array($tracer);
+        $lastTrace =  array_pop($rolls);
+
+        self::assertEquals($roll, $lastTrace);
     }
 
     public function testJsonRepresentation(): void
