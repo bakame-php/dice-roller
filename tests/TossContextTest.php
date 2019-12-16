@@ -21,7 +21,7 @@ use Bakame\DiceRoller\Tracer\MemoryTracer;
 use PHPUnit\Framework\TestCase;
 use function get_class;
 
-class ContextTest extends TestCase
+class TossContextTest extends TestCase
 {
     /**
      * @var Tracer
@@ -54,9 +54,24 @@ class ContextTest extends TestCase
         $source = get_class($cup).'::roll';
 
         $context = new TossContext($cup, $source, ['bar' => 'baz', 'result' => 23]);
+        $arrExpected = ['source' => $source, 'notation' => $cup->notation(), 'bar' => 'baz', 'result' => 23];
+        self::assertArrayHasKey('bar', $context->asArray());
+        self::assertArrayHasKey('result', $context->asArray());
+        self::assertSame($arrExpected, $context->asArray());
+        self::assertSame($arrExpected, $context->jsonSerialize());
+    }
+
+
+    public function testContextWillFilterOutRollKeysFromOptionalValues(): void
+    {
+        $cup = Cup::fromRollable(new SidedDie(6), 3);
+        $source = get_class($cup).'::roll';
+
+        $context = new TossContext($cup, $source, ['bar' => 'baz', 'value' => 23, 'operation' => 'swordfish']);
         $arrExpected = ['source' => $source, 'notation' => $cup->notation(), 'bar' => 'baz'];
         self::assertArrayHasKey('bar', $context->asArray());
-        self::assertArrayNotHasKey('result', $context->asArray());
+        self::assertArrayNotHasKey('value', $context->asArray());
+        self::assertArrayNotHasKey('operation', $context->asArray());
         self::assertSame($arrExpected, $context->asArray());
         self::assertSame($arrExpected, $context->jsonSerialize());
     }

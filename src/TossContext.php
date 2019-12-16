@@ -35,7 +35,7 @@ final class TossContext implements Context
 
     public function __construct(Rollable $rollable, string $source, array $extensions = [])
     {
-        unset($extensions['source'], $extensions['operation'], $extensions['notation'], $extensions['result']);
+        unset($extensions['source'], $extensions['notation'], $extensions['value'], $extensions['operation']);
 
         $this->notation = $rollable->notation();
         $this->source = $source;
