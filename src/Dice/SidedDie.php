@@ -30,15 +30,9 @@ final class SidedDie implements Dice, SupportsTracing
 {
     private const REGEXP_NOTATION = '/^d(?<sides>\d+)$/i';
 
-    /**
-     * @var int
-     */
-    private $sides;
+    private int $sides;
 
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
     /**
      * new instance.

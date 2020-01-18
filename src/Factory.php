@@ -35,10 +35,7 @@ use function strpos;
 
 final class Factory
 {
-    /**
-     * @var Parser
-     */
-    private $parser;
+    private Parser $parser;
 
     /**
      * @param ?Parser $parser

@@ -24,10 +24,7 @@ use function random_int;
 
 final class PercentileDie implements Dice, SupportsTracing
 {
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
     public function __construct(?Tracer $tracer = null)
     {

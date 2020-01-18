@@ -18,20 +18,11 @@ use Bakame\DiceRoller\Contract\Roll;
 
 final class Toss implements Roll
 {
-    /**
-     * @var int
-     */
-    private $value;
+    private int $value;
 
-    /**
-     * @var string
-     */
-    private $operation;
+    private string $operation;
 
-    /**
-     * @var Context|null
-     */
-    private $context;
+    private ?Context $context;
 
     public function __construct(int $value, string $operation, ?Context $context = null)
     {

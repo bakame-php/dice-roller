@@ -18,10 +18,7 @@ use function strtr;
 
 final class Psr3Logger extends AbstractLogger
 {
-    /**
-     * @var array
-     */
-    private $logs = [];
+    private array $logs = [];
 
     /**
      * {@inheritDoc}

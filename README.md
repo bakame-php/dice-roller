@@ -26,7 +26,7 @@ This is a fork of [Ethtezahl/Dice-Roller](https://github.com/Ethtezahl/dice-roll
 
 ## System Requirements
 
-You need **PHP >= 7.2.0** but the latest stable version of PHP is recommended.
+You need **PHP >= 7.4.0** but the latest stable version of PHP is recommended.
 
 ## Installation
 

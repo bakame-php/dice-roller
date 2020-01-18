@@ -18,20 +18,11 @@ use Bakame\DiceRoller\Contract\Rollable;
 
 final class TossContext implements Context
 {
-    /**
-     * @var string
-     */
-    private $notation;
+    private string $notation;
 
-    /**
-     * @var string
-     */
-    private $source;
+    private string $source;
 
-    /**
-     * @var array
-     */
-    private $extensions;
+    private array $extensions;
 
     public function __construct(Rollable $rollable, string $source, array $extensions = [])
     {

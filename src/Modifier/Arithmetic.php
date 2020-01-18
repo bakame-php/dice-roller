@@ -44,25 +44,13 @@ final class Arithmetic implements Modifier, SupportsTracing
         self::MUL => 1,
     ];
 
-    /**
-     * @var Rollable
-     */
-    private $rollable;
+    private Rollable $rollable;
 
-    /**
-     * @var int
-     */
-    private $value;
+    private int $value;
 
-    /**
-     * @var string
-     */
-    private $operator;
+    private string $operator;
 
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
     /**
      * @throws UnknownAlgorithm if the operator is not recognized

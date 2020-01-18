@@ -36,15 +36,9 @@ final class CustomDie implements Dice, SupportsTracing
 {
     private const REGEXP_NOTATION = '/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i';
 
-    /**
-     * @var int[]
-     */
-    private $values = [];
+    private array $values = [];
 
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
     /**
      * New instance.

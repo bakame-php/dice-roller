@@ -25,20 +25,11 @@ final class Psr3LogTracer implements Tracer
 {
     public const DEFAULT_LOG_FORMAT = '[{source}] - {notation} : {operation} = {value}';
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /**
-     * @var string
-     */
-    private $logLevel;
+    private string $logLevel;
 
-    /**
-     * @var string
-     */
-    private $logFormat;
+    private string $logFormat;
 
     /**
      * New instance.
