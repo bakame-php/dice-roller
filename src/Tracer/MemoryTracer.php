@@ -26,7 +26,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
     /**
      * @var Roll[]
      */
-    private $collection = [];
+    private array $collection = [];
 
     /**
      * {@inheritDoc}

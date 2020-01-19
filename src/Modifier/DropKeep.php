@@ -51,36 +51,18 @@ final class DropKeep implements Modifier, SupportsTracing
         self::KEEP_LOWEST => 1,
     ];
 
-    /**
-     * The Collection of Rollable object to decorate.
-     *
-     * @var Pool
-     */
-    private $pool;
+    private Pool $pool;
 
     /**
      * The threshold number of Rollable object.
-     *
-     * @var int
      */
-    private $threshold;
+    private int $threshold;
 
-    /**
-     * The given algo.
-     *
-     * @var string
-     */
-    private $algo;
+    private string $algo;
 
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
-    /**
-     * @var bool
-     */
-    private $is_rollable_wrapped = false;
+    private bool $is_rollable_wrapped = false;
 
     /**
      * new instance.

@@ -41,40 +41,18 @@ final class Explode implements Modifier, SupportsTracing
     const GT = '>';
     const LT = '<';
 
-    /**
-     * The RollableCollection to decorate.
-     *
-     * @var Pool
-     */
-    private $pool;
+    private Pool $pool;
 
-    /**
-     * The threshold.
-     *
-     * @var int|null
-     */
-    private $threshold;
+    private ?int $threshold;
 
-    /**
-     * The comparison to use.
-     *
-     * @var string
-     */
-    private $compare;
+    private string $compare;
 
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
-    /**
-     * @var bool
-     */
-    private $is_rollable_wrapped = false;
+    private bool $is_rollable_wrapped = false;
 
     /**
      * new instance.
-     *
      *
      * @throws UnknownAlgorithm if the comparator is not recognized
      * @throws SyntaxError      if the Cup triggers infinite loop

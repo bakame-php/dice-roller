@@ -38,10 +38,7 @@ final class Cup implements Pool, SupportsTracing
      */
     private $items = [];
 
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
     /**
      * Cup constructor.
