@@ -1,17 +1,20 @@
-name: PHP Composer
+name: Dice Roller Test Suite
 
-on: [push,pull_request]
+on: [push, pull_request]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        php_version: ['7.4', '8.0']
+        
     steps:
     - uses: actions/checkout@v1
 
-    - name: Install dependencies
+    - name: Install dependencies for PHP ${{ matrix.php_version }}
       run: composer install --prefer-dist --no-progress --no-suggest
 
-    - name: Run test suite
+    - name: Run test suite on PHP ${{ matrix.php_version }}
       run: composer run-script test-linux
