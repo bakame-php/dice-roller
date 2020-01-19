@@ -54,7 +54,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
 
     /**
      * {@inheritDoc}
-     * @return Iterator<Roll>
+     * @return Iterator<int,Roll>
      */
     public function getIterator(): Iterator
     {
