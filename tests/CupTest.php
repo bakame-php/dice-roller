@@ -195,6 +195,7 @@ final class CupTest extends TestCase
         self::assertCount(5, $cup);
         self::assertContainsOnlyInstancesOf(SidedDie::class, $cup);
         foreach ($cup as $dice) {
+            self::assertInstanceOf(SidedDie::class, $dice);
             self::assertSame(4, $dice->size());
         }
 

@@ -41,8 +41,6 @@ final class CustomDie implements Dice, SupportsTracing
     private Tracer $tracer;
 
     /**
-     * New instance.
-     *
      * @param int ...$values
      *
      * @throws TooFewSides
@@ -58,7 +56,7 @@ final class CustomDie implements Dice, SupportsTracing
     }
 
     /**
-     * new instance from a dice notation.
+     * New instance from a dice notation.
      *
      * @throws TooFewSides
      * @throws UnknownNotation

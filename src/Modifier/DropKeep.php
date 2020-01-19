@@ -58,7 +58,7 @@ final class DropKeep implements Modifier, SupportsTracing
      */
     private int $threshold;
 
-    private string $algo;
+    private string $algorithm;
 
     private Tracer $tracer;
 
@@ -71,7 +71,7 @@ final class DropKeep implements Modifier, SupportsTracing
      * @throws UnknownAlgorithm         if the algorithm is not recognized
      * @throws TooManyRollableInstances if the RollableCollection is not valid
      */
-    public function __construct(Rollable $pool, string $algo, int $threshold)
+    public function __construct(Rollable $pool, string $algorithm, int $threshold)
     {
         if (!$pool instanceof Pool) {
             $this->is_rollable_wrapped = true;
@@ -82,14 +82,14 @@ final class DropKeep implements Modifier, SupportsTracing
             throw new TooManyRollableInstances(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pool), $threshold));
         }
 
-        $algo = strtoupper($algo);
-        if (!isset(self::OPERATOR[$algo])) {
-            throw new UnknownAlgorithm(sprintf('Unknown or unsupported sortable algorithm `%s`', $algo));
+        $algorithm = strtoupper($algorithm);
+        if (!isset(self::OPERATOR[$algorithm])) {
+            throw new UnknownAlgorithm(sprintf('Unknown or unsupported sortable algorithm `%s`', $algorithm));
         }
 
         $this->pool = $pool;
         $this->threshold = $threshold;
-        $this->algo = $algo;
+        $this->algorithm = $algorithm;
         $this->setTracer(new NullTracer());
     }
 
@@ -133,7 +133,7 @@ final class DropKeep implements Modifier, SupportsTracing
             $str = '('.$str.')';
         }
 
-        return $str.$this->algo.$this->threshold;
+        return $str.$this->algorithm.$this->threshold;
     }
 
     /**
@@ -203,15 +203,15 @@ final class DropKeep implements Modifier, SupportsTracing
      */
     private function filter(array $values): array
     {
-        if (self::DROP_HIGHEST === $this->algo) {
+        if (self::DROP_HIGHEST === $this->algorithm) {
             return $this->dropHighest($values);
         }
 
-        if (self::DROP_LOWEST === $this->algo) {
+        if (self::DROP_LOWEST === $this->algorithm) {
             return $this->dropLowest($values);
         }
 
-        if (self::KEEP_HIGHEST === $this->algo) {
+        if (self::KEEP_HIGHEST === $this->algorithm) {
             return $this->keepHighest($values);
         }
 
@@ -233,7 +233,7 @@ final class DropKeep implements Modifier, SupportsTracing
     }
 
     /**
-     *  Value comparison internal method.
+     * Value comparison internal method.
      */
     private function drop(int $data1, int $data2): int
     {

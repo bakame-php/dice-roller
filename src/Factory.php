@@ -47,6 +47,7 @@ final class Factory
 
     /**
      * Returns a new rollable object from a dice notation.
+     *
      * @param ?Tracer $tracer
      */
     public function newInstance(string $notation, ?Tracer $tracer = null): Rollable
@@ -58,7 +59,7 @@ final class Factory
     }
 
     /**
-     * Returns a new rollable object from a parsed dice notation.
+     * Returns a new Rollable object from a parsed dice notation.
      */
     private function create(array $parsed, Tracer $tracer): Rollable
     {
@@ -73,9 +74,6 @@ final class Factory
 
     /**
      * Adds a Rollable item to a pool.
-     *
-     * @throws SyntaxError
-     * @throws UnknownNotation
      */
     private function addRollable(Cup $pool, array $parts, Tracer $tracer): Cup
     {

@@ -52,8 +52,6 @@ final class Explode implements Modifier, SupportsTracing
     private bool $is_rollable_wrapped = false;
 
     /**
-     * new instance.
-     *
      * @throws UnknownAlgorithm if the comparator is not recognized
      * @throws SyntaxError      if the Cup triggers infinite loop
      */
@@ -67,11 +65,13 @@ final class Explode implements Modifier, SupportsTracing
         if (!in_array($compare, [self::EQ, self::GT, self::LT], true)) {
             throw new UnknownAlgorithm(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
         }
+
         $this->compare = $compare;
         $this->threshold = $threshold;
         if (!$this->isValidPool($pool)) {
             throw new SyntaxError(sprintf('This collection %s will generate a infinite loop', $pool->notation()));
         }
+
         $this->pool = $pool;
         $this->setTracer(new NullTracer());
     }

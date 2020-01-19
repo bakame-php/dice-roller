@@ -14,7 +14,7 @@ namespace Bakame\DiceRoller\Contract;
 interface Rollable extends \JsonSerializable
 {
     /**
-     * Returns the rollable minimun result.
+     * Returns the rollable minimum result.
      *
      * MUST be lesser than or equal to the maximum value
      */

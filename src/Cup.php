@@ -41,8 +41,6 @@ final class Cup implements Pool, SupportsTracing
     private Tracer $tracer;
 
     /**
-     * Cup constructor.
-     *
      * @param Rollable ...$items
      */
     public function __construct(Rollable ...$items)
@@ -58,6 +56,7 @@ final class Cup implements Pool, SupportsTracing
     {
         return !$rollable instanceof Pool || !$rollable->isEmpty();
     }
+
     /**
      * {@inheritDoc}
      */
@@ -67,7 +66,7 @@ final class Cup implements Pool, SupportsTracing
     }
 
     /**
-     * Create a new Cup containing only on type of Rollable object.
+     * Create a new Cup containing only one type of Rollable object.
      *
      * @throws SyntaxError
      */
@@ -85,6 +84,7 @@ final class Cup implements Pool, SupportsTracing
 
         return new self(...$items);
     }
+
     /**
      * {@inheritDoc}
      */
@@ -103,6 +103,8 @@ final class Cup implements Pool, SupportsTracing
 
     /**
      * Returns an external Iterator to iterate on each contained Rollable object.
+     *
+     * @return Iterator<Rollable>
      */
     public function getIterator(): Iterator
     {
@@ -111,10 +113,14 @@ final class Cup implements Pool, SupportsTracing
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
+
     /**
      * {@inheritDoc}
      */
@@ -138,6 +144,7 @@ final class Cup implements Pool, SupportsTracing
 
         return implode('+', $pool);
     }
+
     /**
      * {@inheritDoc}
      */
@@ -150,6 +157,7 @@ final class Cup implements Pool, SupportsTracing
 
         return $this->decorate($sum, __METHOD__);
     }
+
     /**
      * {@inheritDoc}
      */
@@ -162,6 +170,7 @@ final class Cup implements Pool, SupportsTracing
 
         return $this->decorate($sum, __METHOD__)->value();
     }
+
     /**
      * {@inheritDoc}
      */
