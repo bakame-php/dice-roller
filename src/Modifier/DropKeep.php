@@ -32,7 +32,6 @@ use function count;
 use function implode;
 use function iterator_to_array;
 use function rsort;
-use function sprintf;
 use function strpos;
 use function strtoupper;
 use function uasort;
@@ -83,7 +82,7 @@ final class DropKeep implements Modifier, SupportsTracing
 
         $algorithm = strtoupper($algorithm);
         if (!isset(self::OPERATOR[$algorithm])) {
-            throw new UnknownAlgorithm(sprintf('Unknown or unsupported sortable algorithm `%s`', $algorithm));
+            throw UnknownAlgorithm::dueToUnknownAlgorithm($algorithm);
         }
 
         $this->pool = $pool;

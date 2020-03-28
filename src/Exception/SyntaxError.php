@@ -16,7 +16,7 @@ namespace Bakame\DiceRoller\Exception;
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
 
-class SyntaxError extends \InvalidArgumentException implements CanNotBeRolled
+final class SyntaxError extends \InvalidArgumentException implements CanNotBeRolled
 {
     public static function dueToTooFewSides(int $size): self
     {

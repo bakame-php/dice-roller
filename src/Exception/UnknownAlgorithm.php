@@ -15,6 +15,15 @@ namespace Bakame\DiceRoller\Exception;
 
 use Bakame\DiceRoller\Contract\CanNotBeRolled;
 
-class UnknownAlgorithm extends \InvalidArgumentException implements CanNotBeRolled
+final class UnknownAlgorithm extends \InvalidArgumentException implements CanNotBeRolled
 {
+    public static function dueToUnknownAlgorithm(string $algorithm): self
+    {
+        return new self(sprintf('Unknown or unsupported sortable algorithm `%s`', $algorithm));
+    }
+
+    public static function dueToInvalidComparisonOperator(string $comparator): self
+    {
+        return new self(sprintf('The compared string `%s` is invalid or unsupported.', $comparator));
+    }
 }

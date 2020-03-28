@@ -31,7 +31,6 @@ use function count;
 use function implode;
 use function in_array;
 use function iterator_to_array;
-use function sprintf;
 use function strpos;
 use const PHP_INT_MAX;
 
@@ -63,7 +62,7 @@ final class Explode implements Modifier, SupportsTracing
         }
 
         if (!in_array($compare, [self::EQ, self::GT, self::LT], true)) {
-            throw new UnknownAlgorithm(sprintf('The submitted compared string `%s` is invalid or unsuported', $compare));
+            throw UnknownAlgorithm::dueToInvalidComparisonOperator($compare);
         }
 
         $this->compare = $compare;
