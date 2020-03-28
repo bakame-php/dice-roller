@@ -11,11 +11,12 @@
 
 namespace Bakame\DiceRoller\Test\Modifier;
 
-use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\NotationParser;
@@ -46,23 +47,19 @@ final class ExplodeTest extends TestCase
      * @covers ::__construct
      * @covers ::isValidPool
      * @covers ::isValidRollable
-     *
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
     public function testConstructorThrows(Pool $cup, string $compare, int $threshold): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(SyntaxError::class);
         new Explode($cup, $compare, $threshold);
     }
 
     public function provideInvalidProperties(): iterable
     {
         $cup = (new Factory(new NotationParser()))->newInstance('4d6');
+
         return [
-            'invalid comparion' => [
-                'cup' => $cup,
-                'compare' => 'foobar',
-                'threshold' => 6,
-            ],
             'greater than invalid threshold' => [
                 'cup' => $cup,
                 'compare' => Explode::GT,
@@ -84,6 +81,20 @@ final class ExplodeTest extends TestCase
                 'threshold' => 2,
             ],
         ];
+    }
+
+    /**
+     * @dataProvider provideInvalidProperties
+     *
+     * @covers ::__construct
+     * @covers \Bakame\DiceRoller\Exception\UnknownAlgorithm
+     */
+    public function testConstructorThrowsUnknownAlgorithmException(): void
+    {
+        self::expectException(UnknownAlgorithm::class);
+
+        $cup = (new Factory(new NotationParser()))->newInstance('4d6');
+        new Explode($cup, 'foobar', 6);
     }
 
     /**

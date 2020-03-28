@@ -14,13 +14,11 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Parser;
-use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Exception\UnknownNotation;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use function array_reduce;
 use function count;
 use function explode;
 use function preg_match;
-use function sprintf;
 use function stripos;
 use function strpos;
 use function strtoupper;
@@ -102,8 +100,7 @@ final class NotationParser implements Parser
      *         - the pool definition
      *         - the pool modifiers
      *
-     * @throws UnknownNotation
-     * @throws UnknownAlgorithm
+     * @throws SyntaxError
      */
     private function parsePool(array $retval, string $notation): array
     {
@@ -112,11 +109,11 @@ final class NotationParser implements Parser
         }
 
         if (1 !== preg_match(self::POOL_PATTERN, $notation, $matches)) {
-            throw new UnknownNotation(sprintf('the submitted notation `%s` is invalid or not supported', $notation));
+            throw SyntaxError::dueToInvalidNotation($notation);
         }
 
         if (1 !== preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
-            throw new UnknownAlgorithm(sprintf('the submitted modifier `%s` is invalid or not supported', $matches['modifier']));
+            throw SyntaxError::dueToInvalidModifier($matches['modifier']);
         }
 
         $retval[] = [

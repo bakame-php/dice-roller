@@ -19,13 +19,11 @@ use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use function abs;
 use function intdiv;
-use function sprintf;
 use function strpos;
 
 final class Arithmetic implements Modifier, SupportsTracing
@@ -53,17 +51,17 @@ final class Arithmetic implements Modifier, SupportsTracing
     private Tracer $tracer;
 
     /**
-     * @throws UnknownAlgorithm if the operator is not recognized
-     * @throws SyntaxError      if the value is invalid for a given operator
+     * @throws SyntaxError if the operator is not recognized
+     * @throws SyntaxError if the value is invalid for a given operator
      */
     public function __construct(Rollable $rollable, string $operator, int $value)
     {
         if (!isset(self::OPERATOR[$operator])) {
-            throw new UnknownAlgorithm(sprintf('Invalid or Unsupported operator `%s`', $operator));
+            throw SyntaxError::dueToInvalidOperator($operator);
         }
 
         if (0 > $value || (0 === $value && $operator == self::DIV)) {
-            throw new SyntaxError(sprintf('The submitted value `%s` is invalid for the given `%s` operator', $value, $operator));
+            throw SyntaxError::dueToOperatorAndValueMismatched($operator, $value);
         }
 
         $this->rollable = $rollable;

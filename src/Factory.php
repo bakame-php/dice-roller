@@ -24,7 +24,6 @@ use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Exception\UnknownNotation;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
@@ -94,7 +93,6 @@ final class Factory
      * Generates the Pool from the dice notation matched pattern.
      *
      * @throws SyntaxError
-     * @throws UnknownNotation
      */
     private function createRollable(array $parts, Tracer $tracer): Rollable
     {
@@ -117,7 +115,6 @@ final class Factory
      * Parse Rollable definition.
      *
      * @throws SyntaxError
-     * @throws UnknownNotation
      */
     private function createDice(string $notation): Dice
     {
@@ -140,7 +137,6 @@ final class Factory
      * Decorates the Rollable object with modifiers objects.
      *
      * @throws SyntaxError
-     * @throws UnknownNotation
      */
     private function decorate(Rollable $rollable, array $matches): Rollable
     {

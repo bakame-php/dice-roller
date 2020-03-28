@@ -69,7 +69,7 @@ final class Explode implements Modifier, SupportsTracing
         $this->compare = $compare;
         $this->threshold = $threshold;
         if (!$this->isValidPool($pool)) {
-            throw new SyntaxError(sprintf('This collection %s will generate a infinite loop', $pool->notation()));
+            throw SyntaxError::dueToInfiniteLoop($pool);
         }
 
         $this->pool = $pool;

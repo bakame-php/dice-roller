@@ -20,7 +20,7 @@ use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Exception\TooManyRollableInstances;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
@@ -68,8 +68,7 @@ final class DropKeep implements Modifier, SupportsTracing
      * new instance.
      *
      *
-     * @throws UnknownAlgorithm         if the algorithm is not recognized
-     * @throws TooManyRollableInstances if the RollableCollection is not valid
+     * @throws UnknownAlgorithm if the algorithm is not recognized
      */
     public function __construct(Rollable $pool, string $algorithm, int $threshold)
     {
@@ -79,7 +78,7 @@ final class DropKeep implements Modifier, SupportsTracing
         }
 
         if (count($pool) < $threshold) {
-            throw new TooManyRollableInstances(sprintf('The number of rollable objects `%s` MUST be lesser or equal to the threshold value `%s`', count($pool), $threshold));
+            throw SyntaxError::dueToTooManyRollableInstances($pool, $threshold);
         }
 
         $algorithm = strtoupper($algorithm);

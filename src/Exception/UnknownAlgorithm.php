@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Exception;
 
-class UnknownAlgorithm extends UnknownNotation
+use Bakame\DiceRoller\Contract\CanNotBeRolled;
+
+class UnknownAlgorithm extends \InvalidArgumentException implements CanNotBeRolled
 {
 }

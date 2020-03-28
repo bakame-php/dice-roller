@@ -11,12 +11,12 @@
 
 namespace Bakame\DiceRoller\Test\Modifier;
 
-use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
@@ -32,28 +32,31 @@ final class ArithmeticTest extends TestCase
 {
     /**
      * @covers ::__construct
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
     public function testArithmeticConstructorThrows1(): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(SyntaxError::class);
         new Arithmetic(new SidedDie(6), '+', -3);
     }
 
     /**
      * @covers ::__construct
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
     public function testArithmeticConstructorThrows2(): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(SyntaxError::class);
         new Arithmetic(new SidedDie(6), '**', 3);
     }
 
     /**
      * @covers ::__construct
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
     public function testArithmeticConstructorThrows3(): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(SyntaxError::class);
         new Arithmetic(new SidedDie(6), '/', 0);
     }
 

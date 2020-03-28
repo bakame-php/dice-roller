@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-use Bakame\DiceRoller\Exception\UnknownNotation;
+use Bakame\DiceRoller\Exception\SyntaxError;
 
 interface Parser
 {
     /**
      * Extract dice definitions from a dice notation.
      *
-     * @throws UnknownNotation If the dice notation can not be parsed
+     * @throws SyntaxError If the dice notation can not be parsed
      */
     public function parse(string $notation): array;
 }

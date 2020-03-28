@@ -31,7 +31,7 @@ class MemoryTracerTest extends TestCase
      * @covers ::append
      * @covers ::count
      * @covers ::isEmpty
-     * @covers ::clear
+     * @covers ::reset
      */
     public function testAddTrace(): void
     {
@@ -43,7 +43,7 @@ class MemoryTracerTest extends TestCase
         $cup->roll();
         self::assertCount(1, $tracer);
         self::assertFalse($tracer->isEmpty());
-        $tracer->clear();
+        $tracer->reset();
         self::assertCount(0, $tracer);
         self::assertTrue($tracer->isEmpty());
     }

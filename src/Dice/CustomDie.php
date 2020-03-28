@@ -17,8 +17,7 @@ use Bakame\DiceRoller\Contract\Dice;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Exception\TooFewSides;
-use Bakame\DiceRoller\Exception\UnknownNotation;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
@@ -30,7 +29,6 @@ use function max;
 use function min;
 use function preg_match;
 use function random_int;
-use function sprintf;
 
 final class CustomDie implements Dice, SupportsTracing
 {
@@ -43,12 +41,12 @@ final class CustomDie implements Dice, SupportsTracing
     /**
      * @param int ...$values
      *
-     * @throws TooFewSides
+     * @throws SyntaxError
      */
     public function __construct(int ...$values)
     {
         if (2 > count($values)) {
-            throw new TooFewSides(sprintf('Your die must have at least 2 sides, `%s` given.', count($values)));
+            throw SyntaxError::dueToTooFewSides(count($values));
         }
 
         $this->values = $values;
@@ -58,13 +56,13 @@ final class CustomDie implements Dice, SupportsTracing
     /**
      * New instance from a dice notation.
      *
-     * @throws TooFewSides
-     * @throws UnknownNotation
+     * @throws SyntaxError if the number of side is invalid
+     * @throws SyntaxError if the notation is not supported or invalid
      */
     public static function fromNotation(string $notation): self
     {
         if (1 !== preg_match(self::REGEXP_NOTATION, $notation, $matches)) {
-            throw new UnknownNotation(sprintf('the submitted die format `%s` is invalid.', $notation));
+            throw SyntaxError::dueToInvalidNotation($notation);
         }
 
         $mapper = function (string $value): int {

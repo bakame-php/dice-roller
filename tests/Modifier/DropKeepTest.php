@@ -11,13 +11,14 @@
 
 namespace Bakame\DiceRoller\Test\Modifier;
 
-use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
@@ -43,19 +44,23 @@ final class DropKeepTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
     public function testConstructorThrows1(): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(SyntaxError::class);
+
         new DropKeep($this->cup, DropKeep::DROP_LOWEST, 6);
     }
 
     /**
      * @covers ::__construct
+     * @covers \Bakame\DiceRoller\Exception\UnknownAlgorithm
      */
     public function testConstructorThrows2(): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(UnknownAlgorithm::class);
+
         new DropKeep($this->cup, 'foobar', 3);
     }
 

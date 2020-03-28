@@ -95,13 +95,11 @@ echo $pool->roll()->value(); // returns 12
 ```php
 <?php
 
-use Bakame\DiceRoller\NotationParser;
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
 
-$parser = new NotationParser();
 $tracer = new MemoryTracer();
-$factory = new Factory($parser);
+$factory = new Factory();
 $pool = $factory->newInstance('2D6+3', $tracer);
 
 echo $pool->notation();  // returns 2D6+3
@@ -109,13 +107,13 @@ $roll = $pool->roll();
 echo $roll->value();      // displays 12
 echo $roll->operation(); // displays 9 + 3
 
-foreach ($tracer as $log) {
+foreach ($tracer as $trace) {
     echo sprintf(
         '[%s] - %s : %s = %s',
-        $log->context()->source(),
-        $log->context()->notation(),
-        $log->operation(),
-        $log->value()
+        $trace->context()->source(),
+        $trace->context()->notation(),
+        $trace->operation(),
+        $trace->value()
     ), PHP_EOL;
 }
 
@@ -550,7 +548,7 @@ echo $modifier->notation(); // displays (3D6+DF)!=3
 
 ## Tracing and Profiling
 
-If you want to know how internally your roll result is calculated your `Rollable` object must implements the `InjectTracer` interface.
+If you want to know how internally your roll result is calculated your `Rollable` object must implements the `SupportsTracing` interface.
 
 ```php
 <?php
@@ -604,7 +602,7 @@ foreach ($tracer as $roll) {
 }
 //or
 $trace = $tracer->get(0);
-$tracer->clear();  //clear all the traces from the object
+$tracer->reset();  //clear all the traces from the object
 $tracer->isEmpty(); //returns true
 ```
 

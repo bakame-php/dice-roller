@@ -29,14 +29,13 @@ use function array_sum;
 use function array_walk;
 use function count;
 use function implode;
-use function sprintf;
 
 final class Cup implements Pool, SupportsTracing
 {
     /**
      * @var Rollable[]
      */
-    private $items = [];
+    private array $items = [];
 
     private Tracer $tracer;
 
@@ -73,7 +72,7 @@ final class Cup implements Pool, SupportsTracing
     public static function fromRollable(Rollable $rollable, int $quantity = 1): self
     {
         if ($quantity < 1) {
-            throw new SyntaxError(sprintf('The quantity of dice `%s` is not valid. Should be > 0', $quantity));
+            throw SyntaxError::dueToTooFewRollableInstances($quantity);
         }
         --$quantity;
 

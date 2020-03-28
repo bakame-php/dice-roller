@@ -11,8 +11,8 @@
 
 namespace Bakame\DiceRoller\Test\Dice;
 
-use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Dice\CustomDie;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -38,20 +38,22 @@ final class CustomDieTest extends TestCase
 
     /**
      * @covers ::__construct
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
     public function testConstructorWithWrongValue(): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(SyntaxError::class);
         new CustomDie(1);
     }
 
     /**
      * @dataProvider invalidNotation
      * @covers ::fromNotation
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
     public function testfromStringWithWrongValue(string $notation): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(SyntaxError::class);
         CustomDie::fromNotation($notation);
     }
 

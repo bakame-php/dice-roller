@@ -11,9 +11,9 @@
 
 namespace Bakame\DiceRoller\Test;
 
-use Bakame\DiceRoller\Contract\CanNotBeRolled;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Factory;
 use PHPUnit\Framework\TestCase;
 use Traversable;
@@ -37,6 +37,7 @@ final class FactoryTest extends TestCase
      * @covers ::__construct
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\NotationParser
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
      * @covers ::addRollable
      * @covers ::createRollable
      * @covers ::decorate
@@ -45,7 +46,7 @@ final class FactoryTest extends TestCase
      */
     public function testInvalidGroupDefinition(string $expected): void
     {
-        self::expectException(CanNotBeRolled::class);
+        self::expectException(SyntaxError::class);
         $this->factory->newInstance($expected);
     }
 

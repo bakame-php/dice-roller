@@ -54,6 +54,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
 
     /**
      * {@inheritDoc}
+     *
      * @return Iterator<int,Roll>
      */
     public function getIterator(): Iterator
@@ -64,9 +65,10 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
     }
 
     /**
-     * Clears all Roll objects from the current Tracer.
+     * Resets the MemoryTracer to its initial state
+     * by clearing all internal traces present in the object.
      */
-    public function clear(): void
+    public function reset(): void
     {
         $this->collection = [];
     }
