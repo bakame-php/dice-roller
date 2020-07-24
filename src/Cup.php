@@ -129,9 +129,7 @@ final class Cup implements Pool, SupportsTracing
             return '0';
         }
 
-        $mapper = function (Rollable $rollable): string {
-            return $rollable->notation();
-        };
+        $mapper = fn (Rollable $rollable): string => $rollable->notation();
 
         $walker = function (&$value, $offset): void {
             $value = $value > 1 ? $value.$offset : $offset;

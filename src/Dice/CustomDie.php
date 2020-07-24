@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\Dice;
+use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\SystemRandomInt;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
@@ -28,27 +30,30 @@ use function implode;
 use function max;
 use function min;
 use function preg_match;
-use function random_int;
 
 final class CustomDie implements Dice, SupportsTracing
 {
-    private const REGEXP_NOTATION = '/^d\[(?<definition>((-?\d+),)*(-?\d+))\]$/i';
+    private const REGEXP_NOTATION = '/^d\[(?<definition>(\s?(-?\d+)\s?,)*(\s?-?\d+)\s?)\]$/i';
 
     private array $values = [];
+
+    private RandomIntGenerator $randomIntGenerator;
 
     private Tracer $tracer;
 
     /**
-     * @param int ...$values
+     * @param array<int> $values
      *
-     * @throws SyntaxError
+     * @throws SyntaxError if the number of side is invalid
      */
-    public function __construct(int ...$values)
+    private function __construct(array $values, RandomIntGenerator $randomIntGenerator = null)
     {
-        if (2 > count($values)) {
-            throw SyntaxError::dueToTooFewSides(count($values));
+        $nbSides = count($values);
+        if (2 > $nbSides) {
+            throw SyntaxError::dueToTooFewSides($nbSides);
         }
 
+        $this->randomIntGenerator = $randomIntGenerator ?? new SystemRandomInt();
         $this->values = $values;
         $this->setTracer(new NullTracer());
     }
@@ -56,22 +61,17 @@ final class CustomDie implements Dice, SupportsTracing
     /**
      * New instance from a dice notation.
      *
-     * @throws SyntaxError if the number of side is invalid
      * @throws SyntaxError if the notation is not supported or invalid
      */
-    public static function fromNotation(string $notation): self
+    public static function fromNotation(string $notation, RandomIntGenerator $randomIntGenerator = null): self
     {
         if (1 !== preg_match(self::REGEXP_NOTATION, $notation, $matches)) {
             throw SyntaxError::dueToInvalidNotation($notation);
         }
 
-        $mapper = function (string $value): int {
-            return (int) $value;
-        };
+        $sides = array_map(fn (string $value): int => (int) trim($value), explode(',', $matches['definition']));
 
-        $sides = array_map($mapper, explode(',', $matches['definition']));
-
-        return new self(...$sides);
+        return new self($sides, $randomIntGenerator);
     }
 
     /**
@@ -137,7 +137,7 @@ final class CustomDie implements Dice, SupportsTracing
      */
     public function roll(): Roll
     {
-        $index = random_int(0, count($this->values) - 1);
+        $index = $this->randomIntGenerator->generateInt(0, count($this->values) - 1);
         $result = $this->values[$index];
         $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 

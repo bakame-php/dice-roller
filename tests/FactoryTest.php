@@ -11,6 +11,7 @@
 
 namespace Bakame\DiceRoller\Test;
 
+use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
@@ -199,15 +200,21 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithSingleDice(): void
     {
-        $dice = $this->factory->newInstance('d8');
+        $randomIntProvider = new class() implements RandomIntGenerator {
+            public function generateInt(int $minimum, int $maximum): int
+            {
+                return 3;
+            }
+        };
+
+        $dice = $this->factory->newInstance('d8', null, $randomIntProvider);
         self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(8, $dice->size());
 
-        for ($i = 0; $i < 5; $i++) {
-            $test = $dice->roll()->value();
-            self::assertGreaterThanOrEqual($dice->minimum(), $test);
-            self::assertLessThanOrEqual($dice->maximum(), $test);
-        }
+        $test = $dice->roll()->value();
+        self::assertSame(3, $test);
+        self::assertGreaterThanOrEqual($dice->minimum(), $test);
+        self::assertLessThanOrEqual($dice->maximum(), $test);
     }
 
     /**
@@ -219,17 +226,24 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithDefaultDice(): void
     {
-        $dice = $this->factory->newInstance('d');
+        $randomIntProvider = new class() implements RandomIntGenerator {
+            public function generateInt(int $minimum, int $maximum): int
+            {
+                return 5;
+            }
+        };
+
+        $dice = $this->factory->newInstance('d', null, $randomIntProvider);
         self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(6, $dice->size());
         self::assertSame(1, $dice->minimum());
         self::assertSame(6, $dice->maximum());
 
-        for ($i = 0; $i < 5; $i++) {
-            $test = $dice->roll()->value();
-            self::assertGreaterThanOrEqual($dice->minimum(), $test);
-            self::assertLessThanOrEqual($dice->maximum(), $test);
-        }
+        $test = $dice->roll()->value();
+
+        self::assertSame(5, $test);
+        self::assertGreaterThanOrEqual($dice->minimum(), $test);
+        self::assertLessThanOrEqual($dice->maximum(), $test);
     }
 
     /**
@@ -242,7 +256,14 @@ final class FactoryTest extends TestCase
      */
     public function testRollWithMultipleDice(): void
     {
-        $cup = $this->factory->newInstance('2D6+3d4');
+        $randomIntProvider = new class() implements RandomIntGenerator {
+            public function generateInt(int $minimum, int $maximum): int
+            {
+                return 2;
+            }
+        };
+
+        $cup = $this->factory->newInstance('2D6+3d4', null, $randomIntProvider);
         self::assertInstanceOf(Traversable::class, $cup);
         self::assertCount(2, $cup);
         $res = iterator_to_array($cup, false);
@@ -259,10 +280,9 @@ final class FactoryTest extends TestCase
             self::assertSame(4, $dice->size());
         }
 
-        for ($i = 0; $i < 5; $i++) {
-            $result = $cup->roll()->value();
-            self::assertGreaterThanOrEqual($cup->minimum(), $result);
-            self::assertLessThanOrEqual($cup->maximum(), $result);
-        }
+        $result = $cup->roll()->value();
+        self::assertSame(10, $result);
+        self::assertGreaterThanOrEqual($cup->minimum(), $result);
+        self::assertLessThanOrEqual($cup->maximum(), $result);
     }
 }

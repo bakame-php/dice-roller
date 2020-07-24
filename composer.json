@@ -55,7 +55,6 @@
         "test": [
             "@phpcs",
             "@phpstan-src",
-            "@phpstan-tests",
             "@phpunit"
         ],
         "test-linux": [

@@ -11,6 +11,7 @@
 
 namespace Bakame\DiceRoller\Test\Dice;
 
+use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
 use PHPUnit\Framework\TestCase;
@@ -23,19 +24,26 @@ final class SidedDieTest extends TestCase
 {
     public function testSixSidedValues(): void
     {
+        $randomIntProvider = new class() implements RandomIntGenerator {
+            public function generateInt(int $minimum, int $maximum): int
+            {
+                return 3;
+            }
+        };
+
         $expected = 6;
-        $dice = new SidedDie($expected);
+        $dice = new SidedDie($expected, $randomIntProvider);
         self::assertSame($expected, $dice->size());
         self::assertSame('D6', $dice->notation());
-        self::assertEquals($dice, SidedDie::fromNotation($dice->notation()));
+        self::assertEquals($dice, SidedDie::fromNotation($dice->notation(), $randomIntProvider));
         self::assertSame($expected, $dice->maximum());
         self::assertSame(1, $dice->minimum());
         self::assertSame(json_encode('D6'), json_encode($dice));
-        for ($i = 0; $i < 10; $i++) {
-            $test = $dice->roll()->value();
-            self::assertGreaterThanOrEqual($dice->minimum(), $test);
-            self::assertLessThanOrEqual($dice->maximum(), $test);
-        }
+
+        $test = $dice->roll()->value();
+        self::assertSame(3, $test);
+        self::assertGreaterThanOrEqual($dice->minimum(), $test);
+        self::assertLessThanOrEqual($dice->maximum(), $test);
     }
 
     /**
@@ -52,7 +60,7 @@ final class SidedDieTest extends TestCase
      * @covers ::fromNotation
      * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
-    public function testfromStringWithWrongValue(): void
+    public function testFromStringWithWrongValue(): void
     {
         self::expectException(SyntaxError::class);
         SidedDie::fromNotation('1');

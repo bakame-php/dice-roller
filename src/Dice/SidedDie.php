@@ -14,21 +14,24 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\Dice;
+use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\SystemRandomInt;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use function preg_match;
-use function random_int;
 
 final class SidedDie implements Dice, SupportsTracing
 {
     private const REGEXP_NOTATION = '/^d(?<sides>\d+)$/i';
 
     private int $sides;
+
+    private RandomIntGenerator $randomIntGenerator;
 
     private Tracer $tracer;
 
@@ -39,13 +42,15 @@ final class SidedDie implements Dice, SupportsTracing
      *
      * @throws SyntaxError if a SimpleDice contains less than 2 sides
      */
-    public function __construct(int $sides)
+    public function __construct(int $sides, RandomIntGenerator $randomIntGenerator = null)
     {
         if (2 > $sides) {
             throw SyntaxError::dueToTooFewSides($sides);
         }
 
         $this->sides = $sides;
+        $this->randomIntGenerator = $randomIntGenerator ?? new SystemRandomInt();
+
         $this->setTracer(new NullTracer());
     }
 
@@ -54,13 +59,13 @@ final class SidedDie implements Dice, SupportsTracing
      *
      * @throws SyntaxError if the dice notation is not valid.
      */
-    public static function fromNotation(string $notation): self
+    public static function fromNotation(string $notation, RandomIntGenerator $randomIntGenerator = null): self
     {
         if (1 !== preg_match(self::REGEXP_NOTATION, $notation, $matches)) {
             throw SyntaxError::dueToInvalidNotation($notation);
         }
 
-        return new self((int) $matches['sides']);
+        return new self((int) $matches['sides'], $randomIntGenerator);
     }
 
     /**
@@ -124,7 +129,7 @@ final class SidedDie implements Dice, SupportsTracing
      */
     public function roll(): Roll
     {
-        $result = random_int(1, $this->sides);
+        $result = $this->randomIntGenerator->generateInt(1, $this->sides);
 
         $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 

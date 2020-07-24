@@ -71,7 +71,7 @@ final class ExplodeTest extends TestCase
                 'threshold' => 7,
             ],
             'equals invalid threshold' => [
-                'cup' => new Cup(new CustomDie(1, 1, 1)),
+                'cup' => new Cup(CustomDie::fromNotation('d[1, 1, 1]')),
                 'compare' => Explode::EQ,
                 'threshold' => 1,
             ],
@@ -119,7 +119,7 @@ final class ExplodeTest extends TestCase
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => new Explode(Cup::fromRollable(new CustomDie(-1, -1, -1), 4), Explode::GT, 1),
+                'roll' => new Explode(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), Explode::GT, 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
@@ -193,7 +193,7 @@ final class ExplodeTest extends TestCase
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $explode = new Explode(new CustomDie(-1, -1, -2), Explode::EQ, -1);
+        $explode = new Explode(CustomDie::fromNotation('d[-1, -1, -2]'), Explode::EQ, -1);
         $explode->setTracer($tracer);
         $explode->roll();
         $explode->maximum();

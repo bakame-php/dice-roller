@@ -72,7 +72,7 @@ final class DropKeepTest extends TestCase
     {
         $cup = new DropKeep((new Cup())->withAddedRollable(
             new SidedDie(3),
-            new CustomDie(-3, -2, -1),
+            CustomDie::fromNotation('d[-3, -2, -1]'),
             new SidedDie(4)
         ), DropKeep::DROP_LOWEST, 2);
 
@@ -225,7 +225,7 @@ final class DropKeepTest extends TestCase
         self::assertInstanceOf(Pool::class, $dropKeep->getInnerRollable());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
 
-        $pool = new CustomDie(-1, -2, -3);
+        $pool = CustomDie::fromNotation('d[-1, -2, -3]');
         $dropKeep = new DropKeep($pool, DropKeep::KEEP_LOWEST, 1);
         $dropKeep->roll();
         self::assertGreaterThan(3, $logger->getLogs(LogLevel::DEBUG));

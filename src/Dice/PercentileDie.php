@@ -14,21 +14,25 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\Dice;
+use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
+use Bakame\DiceRoller\SystemRandomInt;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
-use function random_int;
 
 final class PercentileDie implements Dice, SupportsTracing
 {
+    private RandomIntGenerator $randomIntGenerator;
+
     private Tracer $tracer;
 
-    public function __construct(?Tracer $tracer = null)
+    public function __construct(RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null)
     {
-        $this->setTracer($tracer ?? new NullTracer());
+        $this->randomIntGenerator = $randomIntGenerator ?? new SystemRandomInt();
+        $this->tracer = $tracer ?? new NullTracer();
     }
 
     /**
@@ -92,7 +96,7 @@ final class PercentileDie implements Dice, SupportsTracing
      */
     public function roll(): Roll
     {
-        $result = random_int(1, 100);
+        $result = $this->randomIntGenerator->generateInt(1, 100);
         $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 
         $this->tracer->append($roll);

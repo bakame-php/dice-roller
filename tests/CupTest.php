@@ -49,7 +49,7 @@ final class CupTest extends TestCase
     public function testWithRollable(): void
     {
         $cup = new Cup();
-        $altCup = $cup->withAddedRollable(new FudgeDie(), new CustomDie(-1, 1, -1));
+        $altCup = $cup->withAddedRollable(new FudgeDie(), CustomDie::fromNotation('D[-1,1,-1]'));
         self::assertNotEquals($cup, $altCup);
     }
 
@@ -60,7 +60,7 @@ final class CupTest extends TestCase
     public function testWithRollableReturnsSameInstance(): void
     {
         $cup = new Cup(new FudgeDie());
-        $altCup = $cup->withAddedRollable(new \Bakame\DiceRoller\Cup());
+        $altCup = $cup->withAddedRollable(new Cup());
 
         self::assertSame($cup, $altCup);
     }
@@ -123,7 +123,7 @@ final class CupTest extends TestCase
             ],
             'custom dice' => [
                 'quantity' => 5,
-                'template' => new CustomDie(1, 2, 2, 3, 5),
+                'template' => CustomDie::fromNotation('D[1, 2, 2, 3, 5]'),
             ],
         ];
     }
@@ -173,7 +173,7 @@ final class CupTest extends TestCase
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $cup = Cup::fromRollable(new CustomDie(2, -3, -5), 12);
+        $cup = Cup::fromRollable(CustomDie::fromNotation('d[2, -3, -5]'), 12);
         $cup->setTracer($tracer);
         $cup->roll();
         $cup->maximum();

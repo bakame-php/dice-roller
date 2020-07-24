@@ -1,8 +1,8 @@
 includes:
-- vendor/phpstan/phpstan-strict-rules/rules.neon
+  - vendor/phpstan/phpstan-strict-rules/rules.neon
 parameters:
-    ignoreErrors:
-    	- '#Variable method call on Psr\\Log\\LoggerInterface#'
-    reportUnmatchedIgnoredErrors: true
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
+  ignoreErrors:
+    - '#Variable method call on Psr\\Log\\LoggerInterface#'
+  reportUnmatchedIgnoredErrors: true
+  checkMissingIterableValueType: false
+  checkGenericClassInNonGenericObjectType: false

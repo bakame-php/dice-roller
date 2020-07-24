@@ -176,13 +176,14 @@ The `Factory` class uses a `Parser` implementation to return a `Rollable` object
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Parser;
+use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Contract\Rollable;
 
 final class Factory
 {
-    public function __construct(?Parser $parser = null);
-    public function newInstance(string $notation, ?Tracer $tracer = null): Rollable;
+    public function __construct(Parser $parser = null);
+    public function newInstance(string $notation, Tracer $tracer = null, RandomIntGenerator $randomIntGenerator = null): Rollable;
 }
 ```
 

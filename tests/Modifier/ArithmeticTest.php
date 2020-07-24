@@ -11,6 +11,7 @@
 
 namespace Bakame\DiceRoller\Test\Modifier;
 
+use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
@@ -123,7 +124,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testRollWithNegativeDiceValue(): void
     {
-        $dice = new CustomDie(-1, -1, -1);
+        $dice = CustomDie::fromNotation('d[-1, -1, -1]');
 
         $cup = new Arithmetic($dice, Arithmetic::EXP, 3);
         self::assertSame(-1, $cup->roll()->value());
@@ -201,12 +202,18 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmeticExponentWithNegativeValue(): void
     {
-        $arithmetic = new Arithmetic(new CustomDie(-1, -1, -1), Arithmetic::EXP, 3);
-        $rollValue = $arithmetic->roll()->value();
+        $randomIntGenerator = new class() implements RandomIntGenerator {
+            public function generateInt(int $minimum, int $maximum): int
+            {
+                return 2;
+            }
+        };
+
+        $arithmetic = new Arithmetic(CustomDie::fromNotation('d[-1, 10, 3]', $randomIntGenerator), Arithmetic::EXP, 3);
+        $value = $arithmetic->roll()->value();
         self::assertSame(-1, $arithmetic->minimum());
-        self::assertSame(-1, $arithmetic->maximum());
-        self::assertGreaterThanOrEqual(-1, $rollValue);
-        self::assertLessThanOrEqual(-1, $rollValue);
+        self::assertSame(1000, $arithmetic->maximum());
+        self::assertSame(27, $value);
     }
 
     /**
@@ -224,7 +231,7 @@ final class ArithmeticTest extends TestCase
     {
         $logger = new Psr3Logger();
         $arithmetic = new Arithmetic(
-            new CustomDie(-1, -1, -1),
+            CustomDie::fromNotation('d[-1, -1, -1]'),
             Arithmetic::EXP,
             3
         );

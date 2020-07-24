@@ -11,6 +11,7 @@
 
 namespace Bakame\DiceRoller\Test\Dice;
 
+use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
 use PHPUnit\Framework\TestCase;
@@ -22,17 +23,24 @@ final class PercentileDieTest extends TestCase
 {
     public function testFudgeDice(): void
     {
-        $dice = new PercentileDie();
+        $randomIntProvider = new class() implements RandomIntGenerator {
+            public function generateInt(int $minimum, int $maximum): int
+            {
+                return 42;
+            }
+        };
+
+        $dice = new PercentileDie($randomIntProvider);
         $dice->setTracer(new MemoryTracer());
         self::assertSame(100, $dice->size());
         self::assertSame(100, $dice->maximum());
         self::assertSame(1, $dice->minimum());
         self::assertSame('D%', $dice->notation());
         self::assertSame(json_encode('D%'), json_encode($dice));
-        for ($i = 0; $i < 10; $i++) {
-            $test = $dice->roll()->value();
-            self::assertGreaterThanOrEqual($dice->minimum(), $test);
-            self::assertLessThanOrEqual($dice->maximum(), $test);
-        }
+
+        $test = $dice->roll()->value();
+        self::assertSame(42, $test);
+        self::assertGreaterThanOrEqual($dice->minimum(), $test);
+        self::assertLessThanOrEqual($dice->maximum(), $test);
     }
 }
