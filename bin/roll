@@ -11,23 +11,17 @@ use Psr\Log\LogLevel;
 
 function writeln(array $messages, $output): int
 {
-    $message = implode(PHP_EOL, $messages). PHP_EOL;
-
-    return fwrite($output, $message);
+    return fwrite($output, implode(PHP_EOL, $messages). PHP_EOL);
 }
 
 function success($message, $output = STDOUT): int
 {
-    $messages = (array) $message;
-
-    return writeln($messages, $output);
+    return writeln((array) $message, $output);
 }
 
 function fail(string $message, $output = STDERR): int
 {
-    $messages = (array) $message;
-
-    return writeln($messages, $output);
+    return writeln((array) $message, $output);
 }
 
 function autoload(string $errorMessage): void
@@ -43,17 +37,6 @@ function autoload(string $errorMessage): void
     fail($errorMessage);
 
     die(1);
-}
-
-function flushTracer(Psr3Logger $logger, string $format): void
-{
-    $mapper = function ($log) use ($format) {
-        return sprintf($format, $log);
-    };
-
-    $messages = array_map($mapper, $logger->getLogs(LogLevel::DEBUG));
-    success($messages);
-    $logger->clear();
 }
 
 /**
@@ -170,7 +153,9 @@ success("$yellow ====== ROLL RESULTS ======= $reset");
 for ($i = 0; $i < $opts['iteration']; ++$i) {
     success(sprintf($rollOutputFormat, $i+1, $rollable->roll()->value()));
     if (isset($opts['logs'])) {
-        flushTracer($logger, $logOutputFormat);
+        success(array_map(fn (string $log): string => sprintf($logOutputFormat, $log), $logger->getLogs(LogLevel::DEBUG)));
+
+        $logger->clear();
     }
 }
 die(0);
