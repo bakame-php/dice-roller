@@ -21,7 +21,6 @@ use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
@@ -51,30 +50,42 @@ final class Explode implements Modifier, SupportsTracing
     private bool $is_rollable_wrapped = false;
 
     /**
-     * @throws UnknownAlgorithm if the comparator is not recognized
-     * @throws SyntaxError      if the Cup triggers infinite loop
+     * @throws SyntaxError if the Cup triggers infinite loop
      */
-    public function __construct(Rollable $pool, string $compare, int $threshold = null)
+    private function __construct(Rollable $pool, string $compare, int $threshold = null, Tracer $tracer = null)
     {
+        $this->compare = $compare;
+        $this->threshold = $threshold;
+        $tracer = $tracer ?? new NullTracer();
+
         if (!$pool instanceof Pool) {
             $this->is_rollable_wrapped = true;
             $pool = new Cup($pool);
+            $pool->setTracer($tracer);
         }
 
-        if (!in_array($compare, [self::EQ, self::GT, self::LT], true)) {
-            throw UnknownAlgorithm::dueToInvalidComparisonOperator($compare);
-        }
-
-        $this->compare = $compare;
-        $this->threshold = $threshold;
         if (!$this->isValidPool($pool)) {
             throw SyntaxError::dueToInfiniteLoop($pool);
         }
 
         $this->pool = $pool;
-        $this->setTracer(new NullTracer());
+        $this->tracer = $tracer;
     }
 
+    public static function eq(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
+    {
+        return new self($rollable, self::EQ, $threshold, $tracer);
+    }
+
+    public static function gt(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
+    {
+        return new self($rollable, self::GT, $threshold, $tracer);
+    }
+
+    public static function lt(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
+    {
+        return new self($rollable, self::LT, $threshold, $tracer);
+    }
     /**
      * Tells whether the Pool can be used.
      */
@@ -129,9 +140,7 @@ final class Explode implements Modifier, SupportsTracing
             return $this->pool;
         }
 
-        $arr = iterator_to_array($this->pool, false);
-
-        return $arr[0];
+        return iterator_to_array($this->pool, false)[0];
     }
 
     /**
@@ -197,23 +206,16 @@ final class Explode implements Modifier, SupportsTracing
      */
     public function roll(): Roll
     {
-        $mapper = static function ($value) {
-            if (0 > $value) {
-                return '('.$value.')';
-            }
-
-            return $value;
-        };
-
         $values = [];
         foreach ($this->pool as $rollable) {
             $values = $this->calculate($values, $rollable);
         }
 
-        $result = (int) array_sum($values);
-        $operation = implode(' + ', array_map($mapper, $values));
-        $nbRolls = count($values);
-        $roll = new Toss($result, $operation, new TossContext($this, __METHOD__, ['totalRollsCount' => $nbRolls]));
+        $roll = new Toss(
+            (int) array_sum($values),
+            implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $values)),
+            new TossContext($this, __METHOD__, ['totalRollsCount' => count($values)])
+        );
 
         $this->tracer->append($roll);
 

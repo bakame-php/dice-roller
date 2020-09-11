@@ -14,12 +14,10 @@ namespace Bakame\DiceRoller\Test\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
+use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Exception\UnknownAlgorithm;
-use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\NotationParser;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
@@ -44,6 +42,9 @@ final class ExplodeTest extends TestCase
     /**
      * @dataProvider provideInvalidProperties
      *
+     * @covers ::eq
+     * @covers ::gt
+     * @covers ::lt
      * @covers ::__construct
      * @covers ::isValidPool
      * @covers ::isValidRollable
@@ -52,49 +53,49 @@ final class ExplodeTest extends TestCase
     public function testConstructorThrows(Pool $cup, string $compare, int $threshold): void
     {
         self::expectException(SyntaxError::class);
-        new Explode($cup, $compare, $threshold);
+
+        if ('=' === $compare) {
+            Explode::eq($cup, $threshold);
+        } elseif ('>' === $compare) {
+            Explode::gt($cup, $threshold);
+        } elseif ('<' === $compare) {
+            Explode::lt($cup, $threshold);
+        }
     }
 
     public function provideInvalidProperties(): iterable
     {
-        $cup = (new Factory(new NotationParser()))->newInstance('4d6');
+        $cup = Cup::fromRollable(new SidedDie(6), 4);
 
         return [
             'greater than invalid threshold' => [
                 'cup' => $cup,
-                'compare' => Explode::GT,
+                'compare' => '>',
                 'threshold' => 0,
             ],
             'lesser than invalid threshold' => [
                 'cup' => $cup,
-                'compare' => Explode::LT,
+                'compare' => '<',
                 'threshold' => 7,
             ],
             'equals invalid threshold' => [
                 'cup' => new Cup(CustomDie::fromNotation('d[1, 1, 1]')),
-                'compare' => Explode::EQ,
+                'compare' => '=',
                 'threshold' => 1,
             ],
             'empty cup object' => [
                 'cup' => new Cup(),
-                'compare' => Explode::EQ,
+                'compare' => '=',
                 'threshold' => 2,
             ],
         ];
     }
 
-    /**
-     * @dataProvider provideInvalidProperties
-     *
-     * @covers ::__construct
-     * @covers \Bakame\DiceRoller\Exception\UnknownAlgorithm
-     */
-    public function testConstructorThrowsUnknownAlgorithmException(): void
+    public function testGetInnerRollable(): void
     {
-        self::expectException(UnknownAlgorithm::class);
+        $rollable = new FudgeDie();
 
-        $cup = (new Factory(new NotationParser()))->newInstance('4d6');
-        new Explode($cup, 'foobar', 6);
+        self::assertSame($rollable, Explode::eq($rollable, 1)->getInnerRollable());
     }
 
     /**
@@ -111,30 +112,48 @@ final class ExplodeTest extends TestCase
         self::assertSame(json_encode($notation), json_encode($roll));
     }
 
+    /**
+     * @covers ::isValid
+     */
+    public function testExplodeGreaterThen(): void
+    {
+        $rollable = Explode::gt(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1);
+        $roll = $rollable->roll();
+
+        self::assertTrue($roll->value() <= $rollable->maximum());
+        self::assertTrue($roll->value() >= $rollable->minimum());
+    }
+
     public function provideExplodingModifier(): iterable
     {
         return [
             [
-                'roll' => new Explode(new Cup(new SidedDie(3), new SidedDie(3), new SidedDie(4)), Explode::EQ, 3),
+                'roll' => Explode::eq(new Cup(new SidedDie(3), new SidedDie(3), new SidedDie(4)), 3),
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => new Explode(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), Explode::GT, 1),
+                'roll' => Explode::gt(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => new Explode(Cup::fromRollable(new SidedDie(6), 4), Explode::EQ, 1),
+                'roll' => Explode::eq(Cup::fromRollable(new SidedDie(6), 4), 1),
                 'annotation' => '4D6!',
             ],
             [
-                'roll' => new Explode(new SidedDie(6), Explode::EQ, 3),
+                'roll' => Explode::eq(new SidedDie(6), 3),
                 'annotation' => 'D6!=3',
+            ],
+            [
+                'roll' => Explode::lt(new SidedDie(6), 3),
+                'annotation' => 'D6!<3',
             ],
         ];
     }
 
     /**
-     * @covers ::__construct
+     * @covers ::eq
+     * @covers ::gt
+     * @covers ::lt
      * @covers ::getInnerRollable
      * @covers ::minimum
      * @covers ::maximum
@@ -145,7 +164,14 @@ final class ExplodeTest extends TestCase
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max): void
     {
-        $explode = new Explode($this->cup, $algo, $threshold);
+        if ('=' === $algo) {
+            $explode = Explode::eq($this->cup, $threshold);
+        } elseif ('>' === $algo) {
+            $explode = Explode::gt($this->cup, $threshold);
+        } elseif ('<' === $algo) {
+            $explode = Explode::lt($this->cup, $threshold);
+        }
+
         $rollValue = $explode->roll()->value();
         self::assertSame($this->cup, $explode->getInnerRollable());
         self::assertSame($min, $explode->minimum());
@@ -158,19 +184,19 @@ final class ExplodeTest extends TestCase
     {
         return [
             'equals' => [
-                'algo' => Explode::EQ,
+                'algo' => '=',
                 'threshold' => 3,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
             ],
             'greater than' => [
-                'algo' => Explode::GT,
+                'algo' => '=',
                 'threshold' => 5,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
             ],
             'lesser than' => [
-                'algo' => Explode::LT,
+                'algo' => '=',
                 'threshold' => 2,
                 'min' => 4,
                 'max' => PHP_INT_MAX,
@@ -185,6 +211,7 @@ final class ExplodeTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTracer
+     * @covers ::isValid
      * @covers ::getInnerRollable
      * @covers \Bakame\DiceRoller\Tracer\Psr3LogTracer
      * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
@@ -192,13 +219,16 @@ final class ExplodeTest extends TestCase
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
-        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $explode = new Explode(CustomDie::fromNotation('d[-1, -1, -2]'), Explode::EQ, -1);
-        $explode->setTracer($tracer);
+        $explode = Explode::lt(
+            CustomDie::fromNotation('d[-1, -1, -2]'),
+            -2,
+            new Psr3LogTracer($logger, LogLevel::DEBUG)
+        );
+
         $explode->roll();
         $explode->maximum();
         $explode->minimum();
-        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
+        self::assertCount(4, $logger->getLogs(LogLevel::DEBUG));
         self::assertInstanceOf(CustomDie::class, $explode->getInnerRollable());
     }
 }

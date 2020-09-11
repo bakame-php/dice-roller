@@ -18,7 +18,6 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
@@ -43,44 +42,28 @@ final class DropKeepTest extends TestCase
     }
 
     /**
-     * @covers ::__construct
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
-     */
-    public function testConstructorThrows1(): void
-    {
-        self::expectException(SyntaxError::class);
-
-        new DropKeep($this->cup, DropKeep::DROP_LOWEST, 6);
-    }
-
-    /**
-     * @covers ::__construct
-     * @covers \Bakame\DiceRoller\Exception\UnknownAlgorithm
-     */
-    public function testConstructorThrows2(): void
-    {
-        self::expectException(UnknownAlgorithm::class);
-
-        new DropKeep($this->cup, 'foobar', 3);
-    }
-
-    /**
      * @covers ::notation
      * @covers ::jsonSerialize
      */
     public function testToString(): void
     {
-        $cup = new DropKeep((new Cup())->withAddedRollable(
+        $cup = DropKeep::dropLowest((new Cup())->withAddedRollable(
             new SidedDie(3),
             CustomDie::fromNotation('d[-3, -2, -1]'),
             new SidedDie(4)
-        ), DropKeep::DROP_LOWEST, 2);
+        ), 2);
 
         $expectedNotation = '(D3+D[-3,-2,-1]+D4)DL2';
         self::assertSame($expectedNotation, $cup->notation());
         self::assertSame(json_encode($expectedNotation), json_encode($cup));
     }
 
+    public function testThrowsExceptionOnConstructorError(): void
+    {
+        self::expectException(SyntaxError::class);
+
+        DropKeep::dropHighest(Cup::fromRollable(new SidedDie(6), 23), 56);
+    }
 
     /**
      * @covers ::roll
@@ -143,8 +126,8 @@ final class DropKeepTest extends TestCase
         };
 
         $rollables = (new Cup())->withAddedRollable($dice1, clone $dice1, $dice2, clone $dice2);
-        $cup = new DropKeep($rollables, DropKeep::DROP_LOWEST, 1);
-        self::assertSame(5, $cup->roll()->value());
+
+        self::assertSame(5, DropKeep::dropLowest($rollables, 1)->roll()->value());
     }
 
     /**
@@ -152,21 +135,30 @@ final class DropKeepTest extends TestCase
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::decorate
-     * @covers ::filter
-     * @covers ::keepLowest
-     * @covers ::keepHighest
-     * @covers ::drop
      * @covers ::dropLowest
      * @covers ::dropHighest
+     * @covers ::slice
+     * @covers ::keepLowest
+     * @covers ::keepHighest
      * @covers ::roll
      * @dataProvider validParametersProvider
      */
     public function testModifier(string $algo, int $threshold, int $min, int $max): void
     {
-        $cup = new DropKeep($this->cup, $algo, $threshold);
-        $result = $cup->roll()->value();
+        if ('DL' === $algo) {
+            $cup = DropKeep::dropLowest($this->cup, $threshold);
+        } elseif ('DH' === $algo) {
+            $cup = DropKeep::dropHighest($this->cup, $threshold);
+        } elseif ('KL' === $algo) {
+            $cup = DropKeep::keepLowest($this->cup, $threshold);
+        } elseif ('KH' === $algo) {
+            $cup = DropKeep::keepHighest($this->cup, $threshold);
+        }
+
         self::assertSame($min, $cup->minimum());
         self::assertSame($max, $cup->maximum());
+
+        $result = $cup->roll()->value();
         self::assertGreaterThanOrEqual($min, $result);
         self::assertLessThanOrEqual($max, $result);
     }
@@ -175,25 +167,25 @@ final class DropKeepTest extends TestCase
     {
         return [
             'dl' => [
-                'algo' => DropKeep::DROP_LOWEST,
+                'algo' => 'DL',
                 'threshold' => 3,
                 'min' => 1,
                 'max' => 6,
             ],
             'dh' => [
-                'algo' => DropKeep::DROP_HIGHEST,
+                'algo' => 'DH',
                 'threshold' => 2,
                 'min' => 2,
                 'max' => 12,
             ],
             'kl' => [
-                'algo' => DropKeep::KEEP_LOWEST,
+                'algo' => 'KL',
                 'threshold' => 2,
                 'min' => 2,
                 'max' => 12,
             ],
             'kh' => [
-                'algo' => DropKeep::KEEP_HIGHEST,
+                'algo' => 'KH',
                 'threshold' => 3,
                 'min' => 3,
                 'max' => 18,
@@ -207,7 +199,6 @@ final class DropKeepTest extends TestCase
      * @covers ::maximum
      * @covers ::roll
      * @covers ::decorate
-     * @covers ::filter
      * @covers ::setTracer
      * @covers \Bakame\DiceRoller\Tracer\Psr3LogTracer
      * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
@@ -216,17 +207,20 @@ final class DropKeepTest extends TestCase
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
-        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $dropKeep = new DropKeep(Cup::fromRollable(new SidedDie(6), 3), DropKeep::DROP_LOWEST, 2);
-        $dropKeep->setTracer($tracer);
+        $dropKeep = DropKeep::dropLowest(
+            Cup::fromRollable(new SidedDie(6), 3),
+            2,
+            new Psr3LogTracer($logger, LogLevel::DEBUG)
+        );
         $dropKeep->roll();
         $dropKeep->maximum();
         $dropKeep->minimum();
+
         self::assertInstanceOf(Pool::class, $dropKeep->getInnerRollable());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
 
         $pool = CustomDie::fromNotation('d[-1, -2, -3]');
-        $dropKeep = new DropKeep($pool, DropKeep::KEEP_LOWEST, 1);
+        $dropKeep = DropKeep::dropLowest($pool, 1);
         $dropKeep->roll();
         self::assertGreaterThan(3, $logger->getLogs(LogLevel::DEBUG));
     }
@@ -237,7 +231,8 @@ final class DropKeepTest extends TestCase
     public function testGetInnerRollableMethod(): void
     {
         $custom = CustomDie::fromNotation('d[1,2,3]');
-        $rollable = new DropKeep($custom, DropKeep::DROP_LOWEST, 1);
+        $rollable = DropKeep::dropLowest($custom, 1);
+
         self::assertSame($custom, $rollable->getInnerRollable());
     }
 }

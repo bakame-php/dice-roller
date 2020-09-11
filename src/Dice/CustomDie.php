@@ -46,7 +46,7 @@ final class CustomDie implements Dice, SupportsTracing
      *
      * @throws SyntaxError if the number of side is invalid
      */
-    private function __construct(array $values, RandomIntGenerator $randomIntGenerator = null)
+    private function __construct(array $values, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null)
     {
         $nbSides = count($values);
         if (2 > $nbSides) {
@@ -55,7 +55,7 @@ final class CustomDie implements Dice, SupportsTracing
 
         $this->randomIntGenerator = $randomIntGenerator ?? new SystemRandomInt();
         $this->values = $values;
-        $this->setTracer(new NullTracer());
+        $this->tracer = $tracer ?? new NullTracer();
     }
 
     /**
@@ -63,7 +63,7 @@ final class CustomDie implements Dice, SupportsTracing
      *
      * @throws SyntaxError if the notation is not supported or invalid
      */
-    public static function fromNotation(string $notation, RandomIntGenerator $randomIntGenerator = null): self
+    public static function fromNotation(string $notation, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null): self
     {
         if (1 !== preg_match(self::REGEXP_NOTATION, $notation, $matches)) {
             throw SyntaxError::dueToInvalidNotation($notation);
@@ -71,52 +71,41 @@ final class CustomDie implements Dice, SupportsTracing
 
         $sides = array_map(fn (string $value): int => (int) trim($value), explode(',', $matches['definition']));
 
-        return new self($sides, $randomIntGenerator);
+        return new self($sides, $randomIntGenerator, $tracer);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function notation(): string
     {
         return 'D['.implode(',', $this->values).']';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function size(): int
     {
         return count($this->values);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function minimum(): int
     {
-        $result = min($this->values);
-        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
+        return $this->generate(min($this->values), __METHOD__)->value();
+    }
+
+    private function generate(int $value, string $method): Roll
+    {
+        $roll = new Toss($value, (string) $value, new TossContext($this, $method));
 
         $this->tracer->append($roll);
 
-        return $roll->value();
+        return $roll;
     }
 
     /**
@@ -124,12 +113,7 @@ final class CustomDie implements Dice, SupportsTracing
      */
     public function maximum(): int
     {
-        $result = max($this->values);
-        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
-
-        $this->tracer->append($roll);
-
-        return $roll->value();
+        return $this->generate(max($this->values), __METHOD__)->value();
     }
 
     /**
@@ -138,11 +122,7 @@ final class CustomDie implements Dice, SupportsTracing
     public function roll(): Roll
     {
         $index = $this->randomIntGenerator->generateInt(0, count($this->values) - 1);
-        $result = $this->values[$index];
-        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
 
-        $this->tracer->append($roll);
-
-        return $roll;
+        return $this->generate($this->values[$index], __METHOD__);
     }
 }

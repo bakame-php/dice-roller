@@ -11,6 +11,7 @@
 
 namespace Bakame\DiceRoller\Test;
 
+use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
@@ -48,6 +49,7 @@ final class FactoryTest extends TestCase
     public function testInvalidGroupDefinition(string $expected): void
     {
         self::expectException(SyntaxError::class);
+
         $this->factory->newInstance($expected);
     }
 
@@ -73,14 +75,16 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers ::flattenRollable
      * @covers ::decorate
+     * @covers ::createArithmeticModifier
      * @covers ::createDice
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::notation
-     * @covers \Bakame\DiceRoller\Dice\SidedDie::notation
-     * @covers \Bakame\DiceRoller\Dice\FudgeDie::notation
-     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::notation
-     * @covers \Bakame\DiceRoller\Modifier\DropKeep::notation
-     * @covers \Bakame\DiceRoller\Modifier\Explode::notation
+     * @covers \Bakame\DiceRoller\Dice\SidedDie
+     * @covers \Bakame\DiceRoller\Dice\FudgeDie
+     * @covers \Bakame\DiceRoller\Dice\CustomDie
+     * @covers \Bakame\DiceRoller\Modifier\Arithmetic
+     * @covers \Bakame\DiceRoller\Modifier\DropKeep
+     * @covers \Bakame\DiceRoller\Modifier\Explode
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString): void
@@ -116,18 +120,20 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::newInstance
      * @covers ::create
-     * @covers ::addRollable
-     * @covers ::createRollable
-     * @covers ::createDice
-     * @covers ::decorate
+     * @covers ::createExplodeModifier
+     * @covers ::createArithmeticModifier
+     * @covers ::createDropKeepModifier
+     *
      * @covers \Bakame\DiceRoller\NotationParser
      * @dataProvider permissiveParserProvider
      */
     public function testPermissiveParser(string $full, string $short): void
     {
-        self::assertEquals($this->factory->newInstance($full), $this->factory->newInstance($short));
+        $shortRoll = $this->factory->newInstance($short);
+        $fullRoll = $this->factory->newInstance($full);
+
+        self::assertEquals($shortRoll, $fullRoll);
     }
 
     public function permissiveParserProvider(): iterable
@@ -284,5 +290,68 @@ final class FactoryTest extends TestCase
         self::assertSame(10, $result);
         self::assertGreaterThanOrEqual($cup->minimum(), $result);
         self::assertLessThanOrEqual($cup->maximum(), $result);
+    }
+
+    public function testInvalidArithmeticOperator(): void
+    {
+        $parser = new class() implements Parser {
+            public function parse(string $notation): array
+            {
+                return [[
+                    'definition' => [
+                        'simple' => ['type' => 'D6', 'quantity' => '4'],
+                    ],
+                    'modifiers' => [
+                        ['modifier' => 'arithmetic', 'operator' => '%', 'value' => 2],
+                    ],
+                ]];
+            }
+        };
+
+        self::expectException(SyntaxError::class);
+
+        (new Factory($parser))->newInstance('test');
+    }
+
+    public function testInvalidDropKeepOperator(): void
+    {
+        $parser = new class() implements Parser {
+            public function parse(string $notation): array
+            {
+                return [[
+                    'definition' => [
+                        'simple' => ['type' => 'D6', 'quantity' => '4'],
+                    ],
+                    'modifiers' => [
+                        ['modifier' => 'dropkeep', 'operator' => 'DV', 'value' => 2],
+                    ],
+                ]];
+            }
+        };
+
+        self::expectException(SyntaxError::class);
+
+        (new Factory($parser))->newInstance('test');
+    }
+
+    public function testInvalidExplodeOperator(): void
+    {
+        $parser = new class() implements Parser {
+            public function parse(string $notation): array
+            {
+                return [[
+                    'definition' => [
+                        'simple' => ['type' => 'D6', 'quantity' => '4'],
+                    ],
+                    'modifiers' => [
+                        ['modifier' => 'explode', 'operator' => '>=', 'value' => 2],
+                    ],
+                ]];
+            }
+        };
+
+        self::expectException(SyntaxError::class);
+
+        (new Factory($parser))->newInstance('test');
     }
 }

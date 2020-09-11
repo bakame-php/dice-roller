@@ -44,8 +44,8 @@ final class Cup implements Pool, SupportsTracing
      */
     public function __construct(Rollable ...$items)
     {
+        $this->tracer = new NullTracer();
         $this->items = array_filter($items, [$this, 'isValid']);
-        $this->setTracer(new NullTracer());
     }
 
     /**
@@ -129,13 +129,11 @@ final class Cup implements Pool, SupportsTracing
             return '0';
         }
 
-        $mapper = fn (Rollable $rollable): string => $rollable->notation();
-
         $walker = function (&$value, $offset): void {
             $value = $value > 1 ? $value.$offset : $offset;
         };
 
-        $parts = array_map($mapper, $this->items);
+        $parts = array_map(fn (Rollable $rollable): string => $rollable->notation(), $this->items);
         $pool = array_count_values($parts);
         array_walk($pool, $walker);
 
@@ -186,16 +184,8 @@ final class Cup implements Pool, SupportsTracing
      */
     private function decorate(array $sum, string $method): Roll
     {
-        $mapper = static function ($value) {
-            if (0 > $value) {
-                return '('.$value.')';
-            }
-
-            return $value;
-        };
-
         $result = (int) array_sum($sum);
-        $operation = implode(' + ', array_map($mapper, $sum));
+        $operation = implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $sum));
         $roll = new Toss($result, $operation, new TossContext($this, $method));
 
         $this->tracer->append($roll);

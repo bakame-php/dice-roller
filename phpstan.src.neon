@@ -3,6 +3,9 @@ includes:
 parameters:
   ignoreErrors:
     - '#Variable method call on Psr\\Log\\LoggerInterface#'
+    - '#Variable static method call on Bakame\\DiceRoller\\Modifier\\Arithmetic.#'
+    - '#Variable static method call on Bakame\\DiceRoller\\Modifier\\DropKeep.#'
+    - '#Variable static method call on Bakame\\DiceRoller\\Modifier\\Explode.#'
   reportUnmatchedIgnoredErrors: true
   checkMissingIterableValueType: false
   checkGenericClassInNonGenericObjectType: false

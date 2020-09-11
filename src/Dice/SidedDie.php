@@ -42,7 +42,7 @@ final class SidedDie implements Dice, SupportsTracing
      *
      * @throws SyntaxError if a SimpleDice contains less than 2 sides
      */
-    public function __construct(int $sides, RandomIntGenerator $randomIntGenerator = null)
+    public function __construct(int $sides, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null)
     {
         if (2 > $sides) {
             throw SyntaxError::dueToTooFewSides($sides);
@@ -50,8 +50,7 @@ final class SidedDie implements Dice, SupportsTracing
 
         $this->sides = $sides;
         $this->randomIntGenerator = $randomIntGenerator ?? new SystemRandomInt();
-
-        $this->setTracer(new NullTracer());
+        $this->tracer = $tracer ?? new NullTracer();
     }
 
     /**

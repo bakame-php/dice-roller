@@ -35,42 +35,26 @@ final class FudgeDie implements Dice, SupportsTracing
         $this->tracer = $tracer ?? new NullTracer();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function notation(): string
     {
         return 'DF';
     }
 
-    /**
-     * Returns the side count.
-     *
-     */
     public function size(): int
     {
         return 3;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function minimum(): int
     {
         $roll = new Toss(-1, '-1', new TossContext($this, __METHOD__));

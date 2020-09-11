@@ -23,30 +23,21 @@ use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use function abs;
-use function intdiv;
 use function strpos;
 
 final class Arithmetic implements Modifier, SupportsTracing
 {
-    public const ADD = '+';
-    public const SUB = '-';
-    public const DIV = '/';
-    public const EXP = '^';
-    public const MUL = '*';
-
-    private const OPERATOR = [
-        self::ADD => 1,
-        self::SUB => 1,
-        self::EXP => 1,
-        self::DIV => 1,
-        self::MUL => 1,
-    ];
+    private const ADD = '+';
+    private const DIV = '/';
+    private const MUL = '*';
+    private const SUB = '-';
+    private const POW = '^';
 
     private Rollable $rollable;
 
-    private int $value;
-
     private string $operator;
+
+    private int $value;
 
     private Tracer $tracer;
 
@@ -54,87 +45,97 @@ final class Arithmetic implements Modifier, SupportsTracing
      * @throws SyntaxError if the operator is not recognized
      * @throws SyntaxError if the value is invalid for a given operator
      */
-    public function __construct(Rollable $rollable, string $operator, int $value)
+    private function __construct(Rollable $rollable, string $operator, int $value, Tracer $tracer = null)
     {
-        if (!isset(self::OPERATOR[$operator])) {
-            throw SyntaxError::dueToInvalidOperator($operator);
-        }
-
-        if (0 > $value || (0 === $value && $operator == self::DIV)) {
-            throw SyntaxError::dueToOperatorAndValueMismatched($operator, $value);
-        }
-
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->setTracer(new NullTracer());
+        $this->tracer = $tracer ?? new NullTracer();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    public static function add(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        if (0 > $value) {
+            throw SyntaxError::dueToOperatorAndValueMismatched(self::ADD, $value);
+        }
+
+        return new self($rollable, self::ADD, $value, $tracer);
+    }
+
+    public static function sub(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        if (0 > $value) {
+            throw SyntaxError::dueToOperatorAndValueMismatched(self::SUB, $value);
+        }
+
+        return new self($rollable, self::SUB, $value, $tracer);
+    }
+
+    public static function mul(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        if (0 > $value) {
+            throw SyntaxError::dueToOperatorAndValueMismatched(self::MUL, $value);
+        }
+
+        return new self($rollable, self::MUL, $value, $tracer);
+    }
+
+    public static function div(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        if (0 >= $value) {
+            throw SyntaxError::dueToOperatorAndValueMismatched(self::DIV, $value);
+        }
+
+        return new self($rollable, self::DIV, $value, $tracer);
+    }
+
+    public static function pow(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        if (0 > $value) {
+            throw SyntaxError::dueToOperatorAndValueMismatched(self::POW, $value);
+        }
+
+        return new self($rollable, self::POW, $value, $tracer);
+    }
+
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getInnerRollable(): Rollable
     {
         return $this->rollable;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function notation(): string
     {
         $str = $this->rollable->notation();
-        if (false !== strpos($str, '+')) {
+        if (false !== strpos($str, self::ADD)) {
             $str = '('.$str.')';
         }
 
         return $str.$this->operator.$this->value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function roll(): Roll
     {
-        $value = $this->rollable->roll()->value();
-
-        return $this->decorate($value, __METHOD__);
+        return $this->decorate($this->rollable->roll()->value(), __METHOD__);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function minimum(): int
     {
-        $value = $this->rollable->minimum();
-
-        return $this->decorate($value, __METHOD__)->value();
+        return $this->decorate($this->rollable->minimum(), __METHOD__)->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function maximum(): int
     {
-        $value = $this->rollable->maximum();
-
-        return $this->decorate($value, __METHOD__)->value();
+        return $this->decorate($this->rollable->maximum(), __METHOD__)->value();
     }
 
     /**
@@ -142,33 +143,32 @@ final class Arithmetic implements Modifier, SupportsTracing
      */
     private function decorate(int $value, string $method): Roll
     {
-        $result = $this->calculate($value);
-        $operation = $value.' '.$this->operator.' '.$this->value;
-        $roll = new Toss($result, $operation, new TossContext($this, $method));
+        $roll = new Toss(
+            $this->calculate($value),
+            $value.' '.$this->operator.' '.$this->value,
+            new TossContext($this, $method)
+        );
 
         $this->tracer->append($roll);
 
         return $roll;
     }
 
-    /**
-     * Computes the value to be return.
-     */
     private function calculate(int $value): int
     {
-        if ('+' === $this->operator) {
+        if (self::ADD === $this->operator) {
             return $value + $this->value;
         }
 
-        if ('-' === $this->operator) {
+        if (self::SUB === $this->operator) {
             return $value - $this->value;
         }
 
-        if ('*' === $this->operator) {
+        if (self::MUL === $this->operator) {
             return $value * $this->value;
         }
 
-        if ('/' === $this->operator) {
+        if (self::DIV === $this->operator) {
             return intdiv($value, $this->value);
         }
 

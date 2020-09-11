@@ -32,23 +32,58 @@ use function json_encode;
 final class ArithmeticTest extends TestCase
 {
     /**
-     * @covers ::__construct
+     * @covers ::add
      * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
-    public function testArithmeticConstructorThrows1(): void
+    public function testArithmeticAddThrows(): void
     {
         self::expectException(SyntaxError::class);
-        new Arithmetic(new SidedDie(6), '+', -3);
+
+        Arithmetic::add(new SidedDie(6), -3);
     }
 
     /**
-     * @covers ::__construct
+     * @covers ::sub
      * @covers \Bakame\DiceRoller\Exception\SyntaxError
      */
-    public function testArithmeticConstructorThrows2(): void
+    public function testArithmeticSubThrows(): void
     {
         self::expectException(SyntaxError::class);
-        new Arithmetic(new SidedDie(6), '**', 3);
+
+        Arithmetic::sub(new SidedDie(6), -3);
+    }
+
+    /**
+     * @covers ::mul
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     */
+    public function testArithmeticMulThrows(): void
+    {
+        self::expectException(SyntaxError::class);
+
+        Arithmetic::mul(new SidedDie(6), -3);
+    }
+
+    /**
+     * @covers ::div
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     */
+    public function testArithmeticDivThrows(): void
+    {
+        self::expectException(SyntaxError::class);
+
+        Arithmetic::div(new SidedDie(6), 0);
+    }
+
+    /**
+     * @covers ::pow
+     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     */
+    public function testArithmeticExpThrows(): void
+    {
+        self::expectException(SyntaxError::class);
+
+        Arithmetic::pow(new SidedDie(6), -3);
     }
 
     /**
@@ -58,7 +93,8 @@ final class ArithmeticTest extends TestCase
     public function testArithmeticConstructorThrows3(): void
     {
         self::expectException(SyntaxError::class);
-        new Arithmetic(new SidedDie(6), '/', 0);
+
+        Arithmetic::div(new SidedDie(6), 0);
     }
 
     /**
@@ -74,7 +110,8 @@ final class ArithmeticTest extends TestCase
             new SidedDie(4)
         );
 
-        $cup = new Arithmetic($pool, '^', 3);
+        $cup = Arithmetic::pow($pool, 3);
+
         self::assertSame('(2D3+D4)^3', $cup->notation());
         self::assertSame(json_encode('(2D3+D4)^3'), json_encode($cup));
         self::assertSame($pool, $cup->getInnerRollable());
@@ -113,7 +150,8 @@ final class ArithmeticTest extends TestCase
         };
 
         $cup = (new Cup())->withAddedRollable($dice, clone $dice);
-        $arithmetic = new Arithmetic($cup, '*', 3);
+        $arithmetic = Arithmetic::mul($cup, 3);
+
         self::assertSame(6, $arithmetic->roll()->value());
     }
 
@@ -124,9 +162,8 @@ final class ArithmeticTest extends TestCase
      */
     public function testRollWithNegativeDiceValue(): void
     {
-        $dice = CustomDie::fromNotation('d[-1, -1, -1]');
+        $cup = Arithmetic::pow(CustomDie::fromNotation('d[-1, -1, -1]'), 3);
 
-        $cup = new Arithmetic($dice, Arithmetic::EXP, 3);
         self::assertSame(-1, $cup->roll()->value());
     }
 
@@ -142,7 +179,18 @@ final class ArithmeticTest extends TestCase
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max): void
     {
-        $roll = new Arithmetic(new SidedDie($size), $operator, $value);
+        if ('+' === $operator) {
+            $roll = Arithmetic::add(new SidedDie($size), $value);
+        } elseif ('-' === $operator) {
+            $roll = Arithmetic::sub(new SidedDie($size), $value);
+        } elseif ('*' === $operator) {
+            $roll = Arithmetic::mul(new SidedDie($size), $value);
+        } elseif ('/' === $operator) {
+            $roll = Arithmetic::div(new SidedDie($size), $value);
+        } elseif ('^' === $operator) {
+            $roll = Arithmetic::pow(new SidedDie($size), $value);
+        }
+
         $test = $roll->roll()->value();
         self::assertSame($min, $roll->minimum());
         self::assertSame($max, $roll->maximum());
@@ -209,11 +257,11 @@ final class ArithmeticTest extends TestCase
             }
         };
 
-        $arithmetic = new Arithmetic(CustomDie::fromNotation('d[-1, 10, 3]', $randomIntGenerator), Arithmetic::EXP, 3);
-        $value = $arithmetic->roll()->value();
+        $arithmetic = Arithmetic::pow(CustomDie::fromNotation('d[-1, 10, 3]', $randomIntGenerator), 3);
+
         self::assertSame(-1, $arithmetic->minimum());
         self::assertSame(1000, $arithmetic->maximum());
-        self::assertSame(27, $value);
+        self::assertSame(27, $arithmetic->roll()->value());
     }
 
     /**
@@ -230,16 +278,13 @@ final class ArithmeticTest extends TestCase
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
-        $arithmetic = new Arithmetic(
-            CustomDie::fromNotation('d[-1, -1, -1]'),
-            Arithmetic::EXP,
-            3
-        );
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $arithmetic->setTracer($tracer);
+        $arithmetic = Arithmetic::pow(CustomDie::fromNotation('d[-1, -1, -1]'), 3, $tracer);
+
         $arithmetic->roll();
         $arithmetic->maximum();
         $arithmetic->minimum();
+
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
         self::assertCount(1, $logger->getLogs());
         self::assertCount(1, $logger->getLogs(null));

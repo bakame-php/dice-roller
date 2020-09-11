@@ -21,7 +21,6 @@ use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Exception\UnknownAlgorithm;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
@@ -33,22 +32,14 @@ use function implode;
 use function iterator_to_array;
 use function rsort;
 use function strpos;
-use function strtoupper;
 use function uasort;
 
 final class DropKeep implements Modifier, SupportsTracing
 {
-    public const DROP_HIGHEST = 'DH';
-    public const DROP_LOWEST = 'DL';
-    public const KEEP_HIGHEST = 'KH';
-    public const KEEP_LOWEST = 'KL';
-
-    private const OPERATOR = [
-        self::DROP_HIGHEST => 1,
-        self::DROP_LOWEST => 1,
-        self::KEEP_HIGHEST => 1,
-        self::KEEP_LOWEST => 1,
-    ];
+    private const DROP_HIGHEST = 'DH';
+    private const DROP_LOWEST = 'DL';
+    private const KEEP_HIGHEST = 'KH';
+    private const KEEP_LOWEST = 'KL';
 
     private Pool $pool;
 
@@ -63,13 +54,7 @@ final class DropKeep implements Modifier, SupportsTracing
 
     private bool $is_rollable_wrapped = false;
 
-    /**
-     * new instance.
-     *
-     *
-     * @throws UnknownAlgorithm if the algorithm is not recognized
-     */
-    public function __construct(Rollable $pool, string $algorithm, int $threshold)
+    private function __construct(Rollable $pool, string $algorithm, int $threshold, Tracer $tracer = null)
     {
         if (!$pool instanceof Pool) {
             $this->is_rollable_wrapped = true;
@@ -80,15 +65,30 @@ final class DropKeep implements Modifier, SupportsTracing
             throw SyntaxError::dueToTooManyRollableInstances($pool, $threshold);
         }
 
-        $algorithm = strtoupper($algorithm);
-        if (!isset(self::OPERATOR[$algorithm])) {
-            throw UnknownAlgorithm::dueToUnknownAlgorithm($algorithm);
-        }
-
         $this->pool = $pool;
-        $this->threshold = $threshold;
         $this->algorithm = $algorithm;
-        $this->setTracer(new NullTracer());
+        $this->threshold = $threshold;
+        $this->tracer = $tracer ?? new NullTracer();
+    }
+
+    public static function dropLowest(Rollable $pool, int $threshold, Tracer $tracer = null): self
+    {
+        return new self($pool, self::DROP_LOWEST, $threshold, $tracer);
+    }
+
+    public static function dropHighest(Rollable $pool, int $threshold, Tracer $tracer = null): self
+    {
+        return new self($pool, self::DROP_HIGHEST, $threshold, $tracer);
+    }
+
+    public static function keepLowest(Rollable $pool, int $threshold, Tracer $tracer = null): self
+    {
+        return new self($pool, self::KEEP_LOWEST, $threshold, $tracer);
+    }
+
+    public static function keepHighest(Rollable $pool, int $threshold, Tracer $tracer = null): self
+    {
+        return new self($pool, self::KEEP_HIGHEST, $threshold, $tracer);
     }
 
     /**
@@ -108,9 +108,7 @@ final class DropKeep implements Modifier, SupportsTracing
             return $this->pool;
         }
 
-        $arr = iterator_to_array($this->pool, false);
-
-        return $arr[0];
+        return iterator_to_array($this->pool, false)[0];
     }
 
     /**
@@ -139,12 +137,12 @@ final class DropKeep implements Modifier, SupportsTracing
      */
     public function roll(): Roll
     {
-        $innerRetval = [];
+        $values = [];
         foreach ($this->pool as $rollable) {
-            $innerRetval[] = $rollable->roll()->value();
+            $values[] = $rollable->roll()->value();
         }
 
-        return $this->decorate($innerRetval, __METHOD__);
+        return $this->decorate($values, __METHOD__);
     }
 
     /**
@@ -152,12 +150,12 @@ final class DropKeep implements Modifier, SupportsTracing
      */
     public function minimum(): int
     {
-        $innerRetval = [];
+        $values = [];
         foreach ($this->pool as $rollable) {
-            $innerRetval[] = $rollable->minimum();
+            $values[] = $rollable->minimum();
         }
 
-        return $this->decorate($innerRetval, __METHOD__)->value();
+        return $this->decorate($values, __METHOD__)->value();
     }
 
     /**
@@ -165,12 +163,12 @@ final class DropKeep implements Modifier, SupportsTracing
      */
     public function maximum(): int
     {
-        $innerRetval = [];
+        $values = [];
         foreach ($this->pool as $rollable) {
-            $innerRetval[] = $rollable->maximum();
+            $values[] = $rollable->maximum();
         }
 
-        return $this->decorate($innerRetval, __METHOD__)->value();
+        return $this->decorate($values, __METHOD__)->value();
     }
 
     /**
@@ -178,107 +176,33 @@ final class DropKeep implements Modifier, SupportsTracing
      */
     private function decorate(array $values, string $method): Roll
     {
-        $mapper = static function ($value) {
-            if (0 > $value) {
-                return '('.$value.')';
-            }
-
-            return $value;
-        };
-
-        $values = $this->filter($values);
-        $result = (int) array_sum($values);
-        $operation = implode(' + ', array_map($mapper, $values));
-        $roll = new Toss($result, $operation, new TossContext($this, $method));
+        $result = $this->slice($values);
+        $operation = implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $result));
+        $roll = new Toss((int) array_sum($result), $operation, new TossContext($this, $method));
 
         $this->tracer->append($roll);
 
         return $roll;
     }
 
-    /**
-     * Computes the sum to be return.
-     */
-    private function filter(array $values): array
+    private function slice(array $values): array
     {
+        uasort($values, static fn (int $data1, int $data2): int => $data1 <=> $data2);
+
         if (self::DROP_HIGHEST === $this->algorithm) {
-            return $this->dropHighest($values);
+            return array_slice($values, 0, $this->threshold);
         }
 
         if (self::DROP_LOWEST === $this->algorithm) {
-            return $this->dropLowest($values);
+            return array_slice($values, $this->threshold);
         }
+
+        rsort($values);
 
         if (self::KEEP_HIGHEST === $this->algorithm) {
-            return $this->keepHighest($values);
+            return array_slice($values, 0, $this->threshold);
         }
 
-        return $this->keepLowest($values);
-    }
-
-    /**
-     * Returns the drop highest value.
-     *
-     * @param int[] $sum
-     *
-     * @return int[]
-     */
-    private function dropHighest(array $sum): array
-    {
-        uasort($sum, [$this, 'drop']);
-
-        return array_slice($sum, $this->threshold);
-    }
-
-    /**
-     * Value comparison internal method.
-     */
-    private function drop(int $data1, int $data2): int
-    {
-        return $data1 <=> $data2;
-    }
-
-    /**
-     * Returns the drop lowest value.
-     *
-     * @param int[] $sum
-     *
-     * @return int[]
-     */
-    private function dropLowest(array $sum): array
-    {
-        uasort($sum, [$this, 'drop']);
-
-        return array_slice($sum, $this->threshold);
-    }
-
-    /**
-     * Returns the keep highest value.
-     *
-     * @param int[] $sum
-     *
-     * @return int[]
-     */
-    private function keepHighest(array $sum): array
-    {
-        uasort($sum, [$this, 'drop']);
-        rsort($sum);
-
-        return array_slice($sum, 0, $this->threshold);
-    }
-
-    /**
-     * Returns the keep lowest value.
-     *
-     * @param int[] $sum
-     *
-     * @return int[]
-     */
-    private function keepLowest(array $sum): array
-    {
-        uasort($sum, [$this, 'drop']);
-        rsort($sum);
-
-        return array_slice($sum, 0, $this->threshold);
+        return array_slice($values, $this->threshold);
     }
 }

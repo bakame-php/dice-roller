@@ -84,7 +84,7 @@ use Bakame\DiceRoller\Modifier\Arithmetic;
 $die1 = new SidedDie(6);
 $die2 = new SidedDie(6);
 $cup = new Cup($die1, $die2);
-$pool = new Arithmetic($cup, Arithmetic::ADD, 3);
+$pool = Arithmetic::add($cup, 3);
 
 echo $pool->notation();      // returns 2D6+3
 echo $pool->roll()->value(); // returns 12
@@ -273,7 +273,7 @@ $basic->size();          // returns 3
 $basicBis = SidedDie::fromNotation('d3');
 $basicBis->notation() === $basic->notation();
 
-$custom = new CustomDie(3, 2, 1, 1);
+$custom = CustomDie::fromNotation('D[3,2,1,1]');
 echo $custom->notation(); // 'D[3,2,1,1]';
 $custom->roll()->value(); // may return 1, 2 or 3
 $custom->size();          // returns 4
@@ -283,13 +283,13 @@ $custom->notation() === $customBis->notation();
 
 $fudge = new FudgeDie();
 echo $fudge->notation(); // displays 'DF'
-$fudge->roll()->value();   // may return -1, 0, or 1
-$fudge->size();            // returns 3
+$fudge->roll()->value(); // may return -1, 0, or 1
+$fudge->size();          // returns 3
 
 $percentile = new PercentileDie();
 echo $percentile->notation(); // displays 'D%'
-$percentile->roll()->value();   // returns a value between 1 and 100
-$fudge->size();                 // returns 100
+$percentile->roll()->value(); // returns a value between 1 and 100
+$fudge->size();               // returns 100
 ```
 
 ### Pool
@@ -338,7 +338,7 @@ use Bakame\DiceRoller\Dice\SidedDie;
 
 echo Cup::fromRollable(new SidedDie(5), 3)->notation();           // displays 3D5
 echo Cup::fromRollable(new PercentileDie(), 4)->notation();       // displays 4D%
-echo Cup::fromRollable(new CustomDie(1, 2, 2, 4), 2)->notation(); // displays 2D[1,2,2,4]
+echo Cup::fromRollable(CustomDie::fromNotation('d[1, 2, 2, 4]'), 2)->notation(); // displays 2D[1,2,2,4]
 echo Cup::fromRollable(new FudgeDie(), 42)->notation();           // displays 42DF
 ```
 
@@ -403,7 +403,7 @@ interface Modifier implements Rollable
 }
 ```
 
-#### The Arithmetic modifier
+#### The Arithmetic modifiers
 
 ```php
 <?php
@@ -413,28 +413,19 @@ namespace Bakame\DiceRoller\Modifier;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\Tracer;
 
 final class Arithmetic implements Modifier, SupportsTracing
 {
-    public const ADD = '+';
-    public const SUB = '-';
-    public const MUL = '*';
-    public const DIV = '/';
-    public const EXP = '^';
-
-    public function __construct(Rollable $rollable, string $operator, int $value);
+    public static function add(Rollable $rollable, int $value, Tracer $tracer = null): self;
+    public static function sub(Rollable $rollable, int $value, Tracer $tracer = null): self;
+    public static function mul(Rollable $rollable, int $value, Tracer $tracer = null): self;
+    public static function div(Rollable $rollable, int $value, Tracer $tracer = null): self;
+    public static function pow(Rollable $rollable, int $value, Tracer $tracer = null): self;
 }
 ```
 
 This modifier decorates a `Rollable` object by applying an arithmetic operation on the submitted `Rollable` object.
-
-The modifier supports the following operators:
-
-- `+` or `Arithmetic::ADD`;
-- `-` or `Arithmetic::SUB`;
-- `*` or `Arithmetic::MUL`;
-- `/` or `Arithmetic::DIV`;
-- `^` or `Arithmetic::EXP`;
 
 The value given must be a positive integer or `0`. If the value or the operator are not valid a `Bakame\DiceRoller\CanNotBeRolled` exception will be thrown.
 
@@ -444,7 +435,7 @@ The value given must be a positive integer or `0`. If the value or the operator 
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Arithmetic;
 
-$modifier = new Arithmetic(new SidedDie(6), Arithmetic::MUL, 3);
+$modifier = Arithmetic::mul(new SidedDie(6),  3);
 echo $modifier->notation();  // displays D6*3;
 ```
 
@@ -461,12 +452,10 @@ use Bakame\DiceRoller\Contract\Rollable;
 
 final class DropKeep implements Modifier, SupportsTracing
 {
-    public const DROP_HIGHEST = 'dh';
-    public const DROP_LOWEST = 'dl';
-    public const KEEP_HIGHEST = 'kh';
-    public const KEEP_LOWEST = 'kl';
-
-    public function __construct(Rollable $pool, string $algo, int $threshold);
+    public static function dropHighest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function dropLowest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function keepHighest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function keepLowest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
 }
 ```
 
@@ -478,10 +467,10 @@ This modifier decorates a `Rollable` object by applying one of the dropkeep algo
 
 The supported algorithms are:
 
-- `dh` or `DropKeep::DROP_HIGHEST` to drop the `$threshold` highest results of a given `Cup` object;
-- `dl` or `DropKeep::DROP_LOWEST` to drop the `$threshold` lowest results of a given `Cup` object;
-- `kh` or `DropKeep::KEEP_HIGHEST` to keep the `$threshold` highest results of a given `Cup` object;
-- `kl` or `DropKeep::KEEP_LOWEST` to keep the `$threshold` lowest results of a given `Cup` object;
+- `dropHighest` to drop the `$threshold` highest results of a given `Cup` object;
+- `dropLowest` to drop the `$threshold` lowest results of a given `Cup` object;
+- `keepHighest` to keep the `$threshold` highest results of a given `Cup` object;
+- `keepLowest` to keep the `$threshold` lowest results of a given `Cup` object;
 
 The `$threshold` MUST be lower or equals to the total numbers of rollable items.
 
@@ -495,7 +484,7 @@ use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\DropKeep;
 
 $cup = Cup::fromRollable(new SidedDie(6), 4);
-$modifier = new DropKeep($cup, DropKeep::DROP_HIGHEST, 3);
+$modifier = DropKeep::dropHighest($cup, 3);
 echo $modifier->notation(); // displays '4D6DH3'
 ```
 
@@ -512,11 +501,9 @@ use Bakame\DiceRoller\Contract\Rollable;
 
 final class Explode implements Modifier, SupportsTracing
 {
-    public const EQ = '=';
-    public const GT = '>';
-    public const LT = '<';
-
-    public function __construct(Rollable $pool, string $compare, int $threshold);
+    public static function eq(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function gt(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function lt(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
 }
 ```
 
@@ -528,9 +515,9 @@ This modifier decorates a `Rollable` object by applying one of the explode algor
 
 The supported comparison operator are:
 
-- `=` or `Explode::EQ` explodes if any inner rollable roll result is equal to the `$threshold`;
-- `>` or `Explode::GT` explodes if any inner rollable roll result is greater than the `$threshold`;
-- `<` or `Explode::LT` explodes if any inner rollable roll result is lesser than the `$threshold`;
+- `Explode::eq` explodes if any inner rollable roll result is equal to the `$threshold`;
+- `Explode::gt` explodes if any inner rollable roll result is greater than the `$threshold`;
+- `Explode::lt` explodes if any inner rollable roll result is lesser than the `$threshold`;
 
 If the comparison operator is not recognized a `Bakame\DiceRoller\CanNotBeRolled` exception will be thrown.
 
@@ -543,7 +530,7 @@ use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Explode;
 
 $cup = new Cup(new SidedDie(6), new FudgeDie(), new SidedDie(6), new SidedDie(6));
-$modifier = new Explode($cup, Explode::EQ, 3);
+$modifier = Explode::eq($cup, 3);
 echo $modifier->notation(); // displays (3D6+DF)!=3
 ```
 

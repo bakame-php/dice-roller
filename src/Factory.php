@@ -32,12 +32,11 @@ use Bakame\DiceRoller\Tracer\NullTracer;
 use function count;
 use function iterator_to_array;
 use function strpos;
+use function strtoupper;
 
 final class Factory
 {
     private Parser $parser;
-
-    private RandomIntGenerator $randomIntGenerator;
 
     public function __construct(Parser $parser = null)
     {
@@ -49,11 +48,11 @@ final class Factory
      */
     public function newInstance(string $notation, Tracer $tracer = null, RandomIntGenerator $randomIntGenerator = null): Rollable
     {
-        $parsed = $this->parser->parse($notation);
-        $randomIntGenerator = $randomIntGenerator ?? new SystemRandomInt();
-        $tracer = $tracer ?? new NullTracer();
-
-        return $this->create($parsed, $randomIntGenerator, $tracer);
+        return $this->create(
+            $this->parser->parse($notation),
+            $randomIntGenerator ?? new SystemRandomInt(),
+            $tracer ?? new NullTracer()
+        );
     }
 
     /**
@@ -140,14 +139,73 @@ final class Factory
     private function decorate(Rollable $rollable, array $matches): Rollable
     {
         if ('arithmetic' === $matches['modifier']) {
-            return new Arithmetic($rollable, $matches['operator'], $matches['value']);
+            return $this->createArithmeticModifier($rollable, $matches['operator'], $matches['value']);
         }
 
         if ('dropkeep' === $matches['modifier']) {
-            return new DropKeep($rollable, $matches['operator'], $matches['value']);
+            return $this->createDropKeepModifier($rollable, $matches['operator'], $matches['value']);
         }
 
-        return new Explode($rollable, $matches['operator'], $matches['value']);
+        return $this->createExplodeModifier($rollable, $matches['operator'], $matches['value']);
+    }
+
+    /**
+     * Decorates the Rollable object with modifiers objects.
+     *
+     * @throws SyntaxError
+     */
+    private function createArithmeticModifier(Rollable $rollable, string $operator, int $value): Rollable
+    {
+        static $operatorList = [
+          '+' => 'add',
+          '-' => 'sub',
+          '*' => 'mul',
+          '/' => 'div',
+          '^' => 'pow',
+        ];
+
+        if (!isset($operatorList[$operator])) {
+            throw SyntaxError::dueToInvalidOperator($operator);
+        }
+
+        return Arithmetic::{$operatorList[$operator]}($rollable, $value);
+    }
+
+    /**
+     * Decorates the Rollable object with modifiers objects.
+     *
+     * @throws SyntaxError
+     */
+    private function createDropKeepModifier(Rollable $rollable, string $operator, int $value): Rollable
+    {
+        static $operatorList = [
+            'KH' => 'keepHighest',
+            'KL' => 'keepLowest',
+            'DH' => 'dropHighest',
+            'DL' => 'dropLowest',
+        ];
+
+        $formatterOperator = strtoupper($operator);
+        if (!isset($operatorList[$formatterOperator])) {
+            throw SyntaxError::dueToInvalidOperator($operator);
+        }
+
+        return DropKeep::{$operatorList[$formatterOperator]}($rollable, $value);
+    }
+
+    private function createExplodeModifier(Rollable $rollable, string $operator, int $value): Rollable
+    {
+        static $operatorList = [
+            '=' => 'eq',
+            '>' => 'gt',
+            '<' => 'lt',
+        ];
+
+        if (!isset($operatorList[$operator])) {
+            throw SyntaxError::dueToInvalidOperator($operator);
+        }
+
+        return Explode::{$operatorList[$operator]}($rollable, $value);
     }
 
     /**
