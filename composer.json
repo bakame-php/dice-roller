@@ -43,7 +43,7 @@
     },
     "scripts": {
         "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
-        "phpstan": "phpstan analyse -l 3 -c phpstan.neon src",
+        "phpstan": "phpstan analyse -l max -c phpstan.neon src",
         "phpunit": "phpunit --coverage-text",
         "infection-linux": "infection -j$(nproc) --coverage=build --ignore-msi-with-no-mutations --min-covered-msi=70",
         "infection-osx": "infection -j$(sysctl -n hw.ncpu) --coverage=build --ignore-msi-with-no-mutations --min-covered-msi=70",

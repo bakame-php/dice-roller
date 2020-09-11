@@ -56,9 +56,6 @@ final class Cup implements Pool, SupportsTracing
         return !$rollable instanceof Pool || !$rollable->isEmpty();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
@@ -84,27 +81,16 @@ final class Cup implements Pool, SupportsTracing
         return new self(...$items);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function isEmpty(): bool
     {
         return [] === $this->items;
     }
 
-    /**
-     * Returns the number of Rollable objects.
-     */
     public function count(): int
     {
         return count($this->items);
     }
 
-    /**
-     * Returns an external Iterator to iterate on each contained Rollable object.
-     *
-     * @return Iterator<Rollable>
-     */
     public function getIterator(): Iterator
     {
         foreach ($this->items as $rollable) {
@@ -112,17 +98,11 @@ final class Cup implements Pool, SupportsTracing
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function notation(): string
     {
         if ([] === $this->items) {
@@ -140,9 +120,6 @@ final class Cup implements Pool, SupportsTracing
         return implode('+', $pool);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function roll(): Roll
     {
         $sum = [];
@@ -153,9 +130,6 @@ final class Cup implements Pool, SupportsTracing
         return $this->decorate($sum, __METHOD__);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function minimum(): int
     {
         $sum = [];
@@ -166,9 +140,6 @@ final class Cup implements Pool, SupportsTracing
         return $this->decorate($sum, __METHOD__)->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function maximum(): int
     {
         $sum = [];

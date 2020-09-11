@@ -28,33 +28,22 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
      */
     private array $collection = [];
 
-    /**
-     * {@inheritDoc}
-     */
     public function append(Roll $roll): void
     {
         $this->collection[] = $roll;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function count(): int
     {
         return count($this->collection);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function isEmpty(): bool
     {
         return [] === $this->collection;
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @return Iterator<int,Roll>
      */
     public function getIterator(): Iterator
@@ -73,9 +62,6 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
         $this->collection = [];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): array
     {
         return array_map(static fn (Roll $roll): array => $roll->info(), $this->collection);

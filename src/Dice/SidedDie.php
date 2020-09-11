@@ -36,10 +36,6 @@ final class SidedDie implements Dice, SupportsTracing
     private Tracer $tracer;
 
     /**
-     * new instance.
-     *
-     * @param int $sides side count
-     *
      * @throws SyntaxError if a SimpleDice contains less than 2 sides
      */
     public function __construct(int $sides, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null)
@@ -67,41 +63,26 @@ final class SidedDie implements Dice, SupportsTracing
         return new self((int) $matches['sides'], $randomIntGenerator);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function notation(): string
     {
         return 'D'.$this->sides;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function size(): int
     {
         return $this->sides;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function minimum(): int
     {
         $roll = new Toss(1, '1', new TossContext($this, __METHOD__));
@@ -111,9 +92,6 @@ final class SidedDie implements Dice, SupportsTracing
         return $roll->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function maximum(): int
     {
         $roll = new Toss($this->sides, (string) $this->sides, new TossContext($this, __METHOD__));
@@ -123,9 +101,6 @@ final class SidedDie implements Dice, SupportsTracing
         return $roll->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function roll(): Roll
     {
         $result = $this->randomIntGenerator->generateInt(1, $this->sides);

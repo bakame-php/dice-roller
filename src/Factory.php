@@ -43,9 +43,6 @@ final class Factory
         $this->parser = $parser ?? new NotationParser();
     }
 
-    /**
-     * Returns a new rollable object from a dice notation.
-     */
     public function newInstance(string $notation, Tracer $tracer = null, RandomIntGenerator $randomIntGenerator = null): Rollable
     {
         return $this->create(

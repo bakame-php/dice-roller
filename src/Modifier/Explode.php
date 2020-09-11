@@ -86,6 +86,7 @@ final class Explode implements Modifier, SupportsTracing
     {
         return new self($rollable, self::LT, $threshold, $tracer);
     }
+
     /**
      * Tells whether the Pool can be used.
      */
@@ -123,17 +124,11 @@ final class Explode implements Modifier, SupportsTracing
         return $min !== $max || $threshold !== $max;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getInnerRollable(): Rollable
     {
         if (!$this->is_rollable_wrapped) {
@@ -143,17 +138,11 @@ final class Explode implements Modifier, SupportsTracing
         return iterator_to_array($this->pool, false)[0];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function notation(): string
     {
         $str = $this->pool->notation();
@@ -176,9 +165,6 @@ final class Explode implements Modifier, SupportsTracing
         return $this->compare.$this->threshold;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function minimum(): int
     {
         $minimum = $this->pool->minimum();
@@ -189,9 +175,6 @@ final class Explode implements Modifier, SupportsTracing
         return $roll->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function maximum(): int
     {
         $roll = new Toss(PHP_INT_MAX, (string) PHP_INT_MAX, new TossContext($this, __METHOD__));
@@ -201,9 +184,6 @@ final class Explode implements Modifier, SupportsTracing
         return $roll->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function roll(): Roll
     {
         $values = [];

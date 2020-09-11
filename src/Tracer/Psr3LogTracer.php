@@ -31,9 +31,6 @@ final class Psr3LogTracer implements Tracer
 
     private string $logFormat;
 
-    /**
-     * New instance.
-     */
     public function __construct(LoggerInterface $logger, string $logLevel = LogLevel::DEBUG, string $logFormat = self::DEFAULT_LOG_FORMAT)
     {
         $this->logger = $logger;
@@ -49,9 +46,6 @@ final class Psr3LogTracer implements Tracer
         return new self(new NullLogger());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function append(Roll $roll): void
     {
         static $psr3logLevels = null;
@@ -66,9 +60,6 @@ final class Psr3LogTracer implements Tracer
         $this->logger->log($this->logLevel, $this->logFormat, $roll->info());
     }
 
-    /**
-     * Returns the underlying LoggerInterface object.
-     */
     public function logger(): LoggerInterface
     {
         return $this->logger;

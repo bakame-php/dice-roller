@@ -52,9 +52,6 @@ final class NotationParser implements Parser
         )?
     $,xi';
 
-    /**
-     * {@inheritDoc}
-     */
     public function parse(string $notation): array
     {
         return array_reduce($this->extractPool($notation), [$this, 'parsePool'], []);

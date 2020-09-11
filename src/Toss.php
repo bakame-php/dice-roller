@@ -31,41 +31,26 @@ final class Toss implements Roll
         $this->context = $context;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function value(): int
     {
         return $this->value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function operation(): string
     {
         return $this->operation;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function context(): ?Context
     {
         return $this->context;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function asString(): string
     {
         return (string) $this->value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function info(): array
     {
         $roll = [
@@ -80,9 +65,6 @@ final class Toss implements Roll
         return $roll + $this->context->asArray();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): int
     {
         return $this->value;

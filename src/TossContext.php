@@ -33,41 +33,26 @@ final class TossContext implements Context
         $this->extensions = $extensions;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function notation(): string
     {
         return $this->notation;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function source(): string
     {
         return $this->source;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function extensions(): array
     {
         return $this->extensions;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function asArray(): array
     {
         return ['source' => $this->source, 'notation' => $this->notation] + $this->extensions;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): array
     {
         return $this->asArray();

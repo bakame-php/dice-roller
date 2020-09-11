@@ -64,9 +64,6 @@ final class FudgeDie implements Dice, SupportsTracing
         return $roll->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function maximum(): int
     {
         $roll = new Toss(1, '1', new TossContext($this, __METHOD__));
@@ -76,9 +73,6 @@ final class FudgeDie implements Dice, SupportsTracing
         return $roll->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function roll(): Roll
     {
         $result = $this->randomIntGenerator->generateInt(-1, 1);

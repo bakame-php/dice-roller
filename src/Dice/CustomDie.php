@@ -108,17 +108,11 @@ final class CustomDie implements Dice, SupportsTracing
         return $roll;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function maximum(): int
     {
         return $this->generate(max($this->values), __METHOD__)->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function roll(): Roll
     {
         $index = $this->randomIntGenerator->generateInt(0, count($this->values) - 1);

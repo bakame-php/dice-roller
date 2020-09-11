@@ -35,41 +35,26 @@ final class PercentileDie implements Dice, SupportsTracing
         $this->tracer = $tracer ?? new NullTracer();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function jsonSerialize(): string
     {
         return $this->notation();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function notation(): string
     {
         return 'D%';
     }
 
-    /**
-     * Returns the side count.
-     */
     public function size(): int
     {
         return 100;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function minimum(): int
     {
         $roll = new Toss(1, '1', new TossContext($this, __METHOD__));
@@ -79,9 +64,6 @@ final class PercentileDie implements Dice, SupportsTracing
         return $roll->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function maximum(): int
     {
         $roll = new Toss(100, '100', new TossContext($this, __METHOD__));
@@ -91,9 +73,6 @@ final class PercentileDie implements Dice, SupportsTracing
         return $roll->value();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function roll(): Roll
     {
         $result = $this->randomIntGenerator->generateInt(1, 100);
