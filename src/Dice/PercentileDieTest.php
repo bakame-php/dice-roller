@@ -9,10 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Dice;
+namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
-use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
 use PHPUnit\Framework\TestCase;
 

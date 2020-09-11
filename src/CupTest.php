@@ -9,18 +9,15 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\NotationParser;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
@@ -32,10 +29,7 @@ use function json_encode;
  */
 final class CupTest extends TestCase
 {
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
     public function setUp(): void
     {

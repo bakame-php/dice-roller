@@ -9,14 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
-use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Factory;
 use PHPUnit\Framework\TestCase;
 use Traversable;
 
@@ -25,10 +23,7 @@ use Traversable;
  */
 final class FactoryTest extends TestCase
 {
-    /**
-     * @var Factory
-     */
-    private $factory;
+    private Factory $factory;
 
     public function setUp(): void
     {

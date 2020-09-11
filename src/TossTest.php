@@ -11,12 +11,11 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Toss;
 use PHPUnit\Framework\TestCase;
 
-class TossTest extends TestCase
+final class TossTest extends TestCase
 {
     public function testItCanBeInstantiated(): void
     {

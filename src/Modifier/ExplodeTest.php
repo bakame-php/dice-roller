@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Modifier;
+namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Cup;
@@ -17,7 +17,6 @@ use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
-use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
@@ -29,10 +28,7 @@ use function json_encode;
  */
 final class ExplodeTest extends TestCase
 {
-    /**
-     * @var Cup
-     */
-    private $cup;
+    private Cup $cup;
 
     public function setUp(): void
     {

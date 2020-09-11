@@ -11,22 +11,17 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Test;
+namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
 use PHPUnit\Framework\TestCase;
 use function get_class;
 
-class TossContextTest extends TestCase
+final class TossContextTest extends TestCase
 {
-    /**
-     * @var Tracer
-     */
-    private $tracer;
+    private Tracer $tracer;
 
     public function setUp(): void
     {

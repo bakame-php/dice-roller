@@ -9,12 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Test\Tracer;
+namespace Bakame\DiceRoller\Tracer;
 
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
@@ -23,15 +21,9 @@ use Psr\Log\LogLevel;
  */
 final class Psr3LogTracerTest extends TestCase
 {
-    /**
-     * @var Psr3Logger
-     */
-    private $logger;
+    private Psr3Logger $logger;
 
-    /**
-     * @var Psr3LogTracer
-     */
-    private $tracer;
+    private Psr3LogTracer $tracer;
 
     protected function setUp(): void
     {
