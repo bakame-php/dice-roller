@@ -2,7 +2,7 @@
 
 [![Latest Version](https://img.shields.io/github/release/bakame-php/dice-roller.svg?style=flat-square)](https://github.com/bakame-php/dice-roller/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://github.com/bakame-php/dice-roller/workflows/build/badge.svg)](https://github.com/bakame-php/dice-roller/actions)
+[![Build Status](https://github.com/bakame-php/dice-roller/workflows/run-tests/badge.svg)](https://github.com/bakame-php/dice-roller/actions)
 
 A simple Dice Roller implemented in PHP.
 
