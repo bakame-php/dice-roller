@@ -186,7 +186,7 @@ final class ArithmeticTest extends TestCase
             $roll = Arithmetic::mul(new SidedDie($size), $value);
         } elseif ('/' === $operator) {
             $roll = Arithmetic::div(new SidedDie($size), $value);
-        } elseif ('^' === $operator) {
+        } else {
             $roll = Arithmetic::pow(new SidedDie($size), $value);
         }
 

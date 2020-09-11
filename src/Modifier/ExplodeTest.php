@@ -164,7 +164,7 @@ final class ExplodeTest extends TestCase
             $explode = Explode::eq($this->cup, $threshold);
         } elseif ('>' === $algo) {
             $explode = Explode::gt($this->cup, $threshold);
-        } elseif ('<' === $algo) {
+        } else {
             $explode = Explode::lt($this->cup, $threshold);
         }
 

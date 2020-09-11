@@ -1,15 +1,17 @@
 includes:
   - vendor/phpstan/phpstan-strict-rules/rules.neon
+  - vendor/phpstan/phpstan-phpunit/rules.neon
+  - vendor/phpstan/phpstan-phpunit/extension.neon
 parameters:
   ignoreErrors:
-    - message: '#Variable method call on Psr\\Log\\LoggerInterface#'
-      path: src/Factory.php
     - message: '#Variable static method call on Bakame\\DiceRoller\\Modifier\\Arithmetic.#'
       path: src/Factory.php
     - message: '#Variable static method call on Bakame\\DiceRoller\\Modifier\\DropKeep.#'
       path: src/Factory.php
     - message: '#Variable static method call on Bakame\\DiceRoller\\Modifier\\Explode.#'
       path: src/Factory.php
+    - message: '#Variable method call on Psr\\Log\\LoggerInterface#'
+      path: src/Tracer/Psr3LogTracer.php
   reportUnmatchedIgnoredErrors: true
   checkMissingIterableValueType: false
   checkGenericClassInNonGenericObjectType: false

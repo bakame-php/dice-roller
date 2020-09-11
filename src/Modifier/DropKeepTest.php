@@ -147,7 +147,7 @@ final class DropKeepTest extends TestCase
             $cup = DropKeep::dropHighest($this->cup, $threshold);
         } elseif ('KL' === $algo) {
             $cup = DropKeep::keepLowest($this->cup, $threshold);
-        } elseif ('KH' === $algo) {
+        } else {
             $cup = DropKeep::keepHighest($this->cup, $threshold);
         }
 
