@@ -105,10 +105,7 @@ $rollOutputFormat = "$cyan Result #%d:$reset $yellow %s$reset";
 
 autoload($dependencyError);
 
-$opts = filter_var_array(array_replace(
-        ['iteration' => 1],
-        getopt("h::", ['pool::', 'iteration::', 'help', 'info', 'logs'])
-    ), [
+$opts = filter_var_array(getopt("h::", ['pool::', 'iteration::', 'help', 'info', 'logs']) + ['iteration' => 1], [
     'iteration' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'default' => 1]],
     'h' => FILTER_VALIDATE_BOOLEAN,
     'help' => FILTER_VALIDATE_BOOLEAN,
