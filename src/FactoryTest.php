@@ -33,7 +33,6 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::newInstance
-     * @covers \Bakame\DiceRoller\NotationParser
      * @covers \Bakame\DiceRoller\Exception\SyntaxError
      * @covers ::addRollable
      * @covers ::createRollable
@@ -51,26 +50,20 @@ final class FactoryTest extends TestCase
     public function invalidStringProvider(): iterable
     {
         return [
-            'missing separator D' => ['ZZZ'],
-            'missing group definition' => ['+'],
-            'invalid group' => ['10+3dF'],
-            'invalid modifier' => ['3dFZZZZ'],
             'invalid explode modifier' => ['D6!>'],
-            'invalid complex cup' => ['(3DF+2D6)*3+3F^2'],
-            'invalid complex cup 2' => ['(3DFoobar+2D6)*3+3DF^2'],
-            'invalid complex cup 3' => ['()*3'],
-            'invalid custom dice' => ['3dss'],
         ];
     }
 
     /**
      * @covers ::newInstance
-     * @covers \Bakame\DiceRoller\NotationParser
+     * @covers ::create
      * @covers ::addRollable
      * @covers ::createRollable
      * @covers ::flattenRollable
      * @covers ::decorate
      * @covers ::createArithmeticModifier
+     * @covers ::createDropKeepModifier
+     * @covers ::createExplodeModifier
      * @covers ::createDice
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::notation
@@ -115,69 +108,6 @@ final class FactoryTest extends TestCase
     }
 
     /**
-     * @covers ::create
-     * @covers ::createExplodeModifier
-     * @covers ::createArithmeticModifier
-     * @covers ::createDropKeepModifier
-     *
-     * @covers \Bakame\DiceRoller\NotationParser
-     * @dataProvider permissiveParserProvider
-     */
-    public function testPermissiveParser(string $full, string $short): void
-    {
-        $shortRoll = $this->factory->newInstance($short);
-        $fullRoll = $this->factory->newInstance($full);
-
-        self::assertEquals($shortRoll, $fullRoll);
-    }
-
-    public function permissiveParserProvider(): iterable
-    {
-        return [
-            'default dice size' => [
-                'full' => '1d6',
-                'short' => '1d',
-            ],
-            'default dice size 2' => [
-                'full' => '1d6',
-                'short' => 'd',
-            ],
-            'default fudge dice size' => [
-                'full' => '1dF',
-                'short' => 'df',
-            ],
-            'default percentile dice size' => [
-                'full' => '1d%',
-                'short' => 'd%',
-            ],
-            'default keep lowest modifier' => [
-                'full' => '2d3kl1',
-                'short' => '2d3KL',
-            ],
-            'default keep highest modifier' => [
-                'full' => '2d3KH1',
-                'short' => '2d3kh',
-            ],
-            'default drop highest modifier' => [
-                'full' => '2d3dh1',
-                'short' => '2d3DH',
-            ],
-            'default drop lowest modifier' => [
-                'full' => '2d3dl1',
-                'short' => '2D3Dl',
-            ],
-            'default explode modifier' => [
-                'full' => '1d6!',
-                'short' => 'D!',
-            ],
-            'default explode modifier with threshold' => [
-                'full' => '1d6!=3',
-                'short' => 'D!3',
-            ],
-        ];
-    }
-
-    /**
      * @covers ::newInstance
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::roll
@@ -193,6 +123,7 @@ final class FactoryTest extends TestCase
     }
 
     /**
+     * @covers ::create
      * @covers ::addRollable
      * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
