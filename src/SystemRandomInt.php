@@ -14,12 +14,17 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
+use Bakame\DiceRoller\Exception\IntGeneratorError;
 use function random_int;
 
 final class SystemRandomInt implements RandomIntGenerator
 {
     public function generateInt(int $minimum, int $maximum): int
     {
+        if ($maximum < $minimum) {
+            throw IntGeneratorError::dueToRollValue();
+        }
+
         return random_int($minimum, $maximum);
     }
 }

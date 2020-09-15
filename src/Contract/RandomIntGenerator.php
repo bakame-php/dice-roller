@@ -13,7 +13,12 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
+use Bakame\DiceRoller\Exception\IntGeneratorError;
+
 interface RandomIntGenerator
 {
+    /**
+     * @throws IntGeneratorError
+     */
     public function generateInt(int $minimum, int $maximum): int;
 }
