@@ -68,7 +68,7 @@ final class DropKeep implements Modifier, SupportsTracing
         $this->pool = $pool;
         $this->algorithm = $algorithm;
         $this->threshold = $threshold;
-        $this->tracer = $tracer ?? new NullTracer();
+        $this->setTracer($tracer ?? new NullTracer());
     }
 
     public static function dropLowest(Rollable $pool, int $threshold, Tracer $tracer = null): self

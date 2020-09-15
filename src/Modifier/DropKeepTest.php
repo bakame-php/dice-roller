@@ -196,18 +196,14 @@ final class DropKeepTest extends TestCase
      * @covers ::roll
      * @covers ::decorate
      * @covers ::setTracer
-     * @covers \Bakame\DiceRoller\Tracer\Psr3LogTracer
-     * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
      * @covers ::getInnerRollable
      */
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
-        $dropKeep = DropKeep::dropLowest(
-            Cup::fromRollable(new SidedDie(6), 3),
-            2,
-            new Psr3LogTracer($logger, LogLevel::DEBUG)
-        );
+        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
+        $dropKeep = DropKeep::dropLowest(Cup::fromRollable(new SidedDie(6), 3), 2);
+        $dropKeep->setTracer($tracer);
         $dropKeep->roll();
         $dropKeep->maximum();
         $dropKeep->minimum();

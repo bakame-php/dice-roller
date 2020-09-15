@@ -65,14 +65,6 @@ final class FactoryTest extends TestCase
      * @covers ::createDropKeepModifier
      * @covers ::createExplodeModifier
      * @covers ::createDice
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::notation
-     * @covers \Bakame\DiceRoller\Dice\SidedDie
-     * @covers \Bakame\DiceRoller\Dice\FudgeDie
-     * @covers \Bakame\DiceRoller\Dice\CustomDie
-     * @covers \Bakame\DiceRoller\Modifier\Arithmetic
-     * @covers \Bakame\DiceRoller\Modifier\DropKeep
-     * @covers \Bakame\DiceRoller\Modifier\Explode
      * @dataProvider validStringProvider
      */
     public function testValidParser(string $expected, string $toString): void
@@ -109,8 +101,6 @@ final class FactoryTest extends TestCase
 
     /**
      * @covers ::newInstance
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::roll
      */
     public function testRollWithNoDice(): void
     {
@@ -126,9 +116,6 @@ final class FactoryTest extends TestCase
      * @covers ::create
      * @covers ::addRollable
      * @covers ::createRollable
-     * @covers \Bakame\DiceRoller\Cup::count
-     * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice\SidedDie::size
      */
     public function testRollWithSingleDice(): void
     {

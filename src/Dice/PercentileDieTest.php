@@ -13,7 +13,10 @@ namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 
 /**
  * @coversDefaultClass \Bakame\DiceRoller\Dice\PercentileDie
@@ -41,5 +44,22 @@ final class PercentileDieTest extends TestCase
         self::assertSame(42, $test);
         self::assertGreaterThanOrEqual($dice->minimum(), $test);
         self::assertLessThanOrEqual($dice->maximum(), $test);
+    }
+
+    /**
+     * @covers ::setTracer
+     */
+    public function testTracer(): void
+    {
+        $logger = new Psr3Logger();
+        $rollable = new PercentileDie();
+
+        $rollable->roll();
+        $rollable->setTracer(new Psr3LogTracer($logger, LogLevel::DEBUG));
+        $rollable->roll();
+        $rollable->maximum();
+        $rollable->minimum();
+
+        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

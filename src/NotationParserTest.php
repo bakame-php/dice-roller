@@ -158,85 +158,62 @@ final class NotationParserTest extends TestCase
                 'notation' => '2d3!',
                 'parsed' => [[
                     'definition' => ['simple' => ['type' => 'D3', 'quantity' => '2']],
-                    'modifiers' => [
-                        ['modifier' => 'explode', 'operator' => '=', 'value' => 1],
-                    ],
+                    'modifiers' => [['modifier' => 'explode', 'operator' => '=', 'value' => 1]],
                 ]],
             ],
             'add keep lowest modifier' => [
                 'notation' => '2d3kl1',
                 'parsed' => [[
                     'definition' => ['simple' => ['type' => 'D3', 'quantity' => '2']],
-                    'modifiers' => [
-                        ['modifier' => 'dropkeep', 'operator' => 'KL', 'value' => 1],
-                    ],
+                    'modifiers' => [['modifier' => 'dropkeep', 'operator' => 'KL', 'value' => 1]],
                 ]],
             ],
             'add keep highest modifier' => [
                 'notation' => '2d3kh2',
                 'parsed' => [[
                     'definition' => ['simple' => ['type' => 'D3', 'quantity' => '2']],
-                    'modifiers' => [
-                        ['modifier' => 'dropkeep', 'operator' => 'KH', 'value' => 2],
-                    ],
+                    'modifiers' => [['modifier' => 'dropkeep', 'operator' => 'KH', 'value' => 2]],
                 ]],
             ],
             'add drop lowest modifier' => [
                 'notation' => '4d6dl2',
                 'parsed' => [[
                     'definition' => ['simple' => ['type' => 'D6', 'quantity' => '4']],
-                    'modifiers' => [
-                        ['modifier' => 'dropkeep', 'operator' => 'DL', 'value' => 2],
-                    ],
+                    'modifiers' => [['modifier' => 'dropkeep', 'operator' => 'DL', 'value' => 2]],
                 ]],
             ],
             'add drop highest modifier' => [
                 'notation' => '4d6dh3',
                 'parsed' => [[
                     'definition' => ['simple' => ['type' => 'D6', 'quantity' => '4']],
-                    'modifiers' => [
-                        ['modifier' => 'dropkeep', 'operator' => 'DH', 'value' => 3],
-                    ],
+                    'modifiers' => [['modifier' => 'dropkeep', 'operator' => 'DH', 'value' => 3]],
                 ]],
             ],
             'complex mixed cup' => [
                 'notation' => '(3DF+2D6)*3+3DF^2',
-                'parsed' => [[
-                    'definition' => [
-                        'composite' => [
-                           [
-                               'definition' => ['simple' => ['type' => 'DF', 'quantity' => '3']],
-                               'modifiers' => [],
-                           ],
-                           [
-                               'definition' => ['simple' => ['type' => 'D6', 'quantity' => '2']],
-                                'modifiers' => [],
-                           ],
+                'parsed' => [
+                    [
+                        'definition' => [
+                            'composite' => [
+                               ['definition' => ['simple' => ['type' => 'DF', 'quantity' => '3']], 'modifiers' => []],
+                               ['definition' => ['simple' => ['type' => 'D6', 'quantity' => '2']], 'modifiers' => []],
+                            ],
                         ],
+                        'modifiers' => [['modifier' => 'arithmetic', 'operator' => '*', 'value' => 3]],
                     ],
-                    'modifiers' => [
-                        ['modifier' => 'arithmetic', 'operator' => '*', 'value' => 3],
+                    [
+                        'definition' => ['simple' => ['type' => 'DF', 'quantity' => '3']],
+                        'modifiers' => [['modifier' => 'arithmetic', 'operator' => '^', 'value' => 2]],
                     ],
-                ],
-                [
-                    'definition' => ['simple' => ['type' => 'DF', 'quantity' => '3']],
-                    'modifiers' => [['modifier' => 'arithmetic', 'operator' => '^', 'value' => 2]],
-                ],
                 ],
             ],
             'percentile dice' => [
                 'notation' => '3d%',
-                'parsed' => [[
-                    'definition' => ['simple' => ['type' => 'D%', 'quantity' => '3']],
-                    'modifiers' => [],
-                ]],
+                'parsed' => [['definition' => ['simple' => ['type' => 'D%', 'quantity' => '3']], 'modifiers' => []]],
             ],
             'custom dice' => [
                 'notation' => '2d[1,2,34]',
-                'parsed' => [[
-                    'definition' => ['simple' => ['type' => 'D[1,2,34]', 'quantity' => '2']],
-                    'modifiers' => [],
-                ]],
+                'parsed' => [['definition' => ['simple' => ['type' => 'D[1,2,34]', 'quantity' => '2']], 'modifiers' => []]],
             ],
         ];
     }

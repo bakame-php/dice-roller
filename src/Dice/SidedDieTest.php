@@ -13,7 +13,10 @@ namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 use function json_encode;
 
 /**
@@ -63,5 +66,23 @@ final class SidedDieTest extends TestCase
     {
         self::expectException(SyntaxError::class);
         SidedDie::fromNotation('1');
+    }
+
+
+    /**
+     * @covers ::setTracer
+     */
+    public function testTracer(): void
+    {
+        $logger = new Psr3Logger();
+        $rollable = new SidedDie(5);
+
+        $rollable->roll();
+        $rollable->setTracer(new Psr3LogTracer($logger, LogLevel::DEBUG));
+        $rollable->roll();
+        $rollable->maximum();
+        $rollable->minimum();
+
+        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

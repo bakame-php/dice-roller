@@ -13,7 +13,10 @@ namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\Tracer\Psr3Logger;
+use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 
 /**
  * @coversDefaultClass \Bakame\DiceRoller\Dice\CustomDie
@@ -70,5 +73,22 @@ final class CustomDieTest extends TestCase
             'contains non numeric' => ['d[1,0,foobar]'],
             'contains empty side' => ['d[1,,1]'],
         ];
+    }
+
+    /**
+     * @covers ::setTracer
+     */
+    public function testTracer(): void
+    {
+        $logger = new Psr3Logger();
+        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
+        $rollable = CustomDie::fromNotation('d[-1, -1, -2]');
+
+        $rollable->setTracer($tracer);
+        $rollable->roll();
+        $rollable->maximum();
+        $rollable->minimum();
+
+        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

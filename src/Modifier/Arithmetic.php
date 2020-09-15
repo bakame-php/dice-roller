@@ -50,7 +50,7 @@ final class Arithmetic implements Modifier, SupportsTracing
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
-        $this->tracer = $tracer ?? new NullTracer();
+        $this->setTracer($tracer ?? new NullTracer());
     }
 
     public static function add(Rollable $rollable, int $value, Tracer $tracer = null): self

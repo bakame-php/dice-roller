@@ -209,22 +209,21 @@ final class ExplodeTest extends TestCase
      * @covers ::setTracer
      * @covers ::isValid
      * @covers ::getInnerRollable
-     * @covers \Bakame\DiceRoller\Tracer\Psr3LogTracer
-     * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
      */
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
+        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
         $explode = Explode::lt(
             CustomDie::fromNotation('d[-1, -1, -2]'),
             -2,
-            new Psr3LogTracer($logger, LogLevel::DEBUG)
+            $tracer
         );
-
+        $explode->setTracer($tracer);
         $explode->roll();
         $explode->maximum();
         $explode->minimum();
-        self::assertCount(4, $logger->getLogs(LogLevel::DEBUG));
+        self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
         self::assertInstanceOf(CustomDie::class, $explode->getInnerRollable());
     }
 }

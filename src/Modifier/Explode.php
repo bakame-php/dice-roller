@@ -56,12 +56,10 @@ final class Explode implements Modifier, SupportsTracing
     {
         $this->compare = $compare;
         $this->threshold = $threshold;
-        $tracer = $tracer ?? new NullTracer();
 
         if (!$pool instanceof Pool) {
             $this->is_rollable_wrapped = true;
             $pool = new Cup($pool);
-            $pool->setTracer($tracer);
         }
 
         if (!$this->isValidPool($pool)) {
@@ -69,7 +67,7 @@ final class Explode implements Modifier, SupportsTracing
         }
 
         $this->pool = $pool;
-        $this->tracer = $tracer;
+        $this->setTracer($tracer ?? new NullTracer());
     }
 
     public static function eq(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self

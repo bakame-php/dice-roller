@@ -174,6 +174,11 @@ final class ArithmeticTest extends TestCase
      * @covers ::calculate
      * @covers ::roll
      * @covers ::decorate
+     * @covers ::add
+     * @covers ::sub
+     * @covers ::mul
+     * @covers ::div
+     * @covers ::pow
      * @dataProvider validParametersProvider
      */
     public function testArithmetic(string $operator, int $size, int $value, int $min, int $max): void
@@ -271,8 +276,6 @@ final class ArithmeticTest extends TestCase
      * @covers ::decorate
      * @covers ::calculate
      * @covers ::setTracer
-     * @covers \Bakame\DiceRoller\Tracer\Psr3LogTracer
-     * @covers \Bakame\DiceRoller\Tracer\Psr3Logger
      */
     public function testTracer(): void
     {
