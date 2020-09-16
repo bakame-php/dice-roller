@@ -160,7 +160,7 @@ final class Explode implements Modifier, SupportsTracing
             return '';
         }
 
-        return $this->compare.$this->threshold;
+        return $this->compare.($this->threshold ?? '');
     }
 
     public function minimum(): int

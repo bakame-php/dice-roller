@@ -109,7 +109,8 @@ final class Cup implements Pool, SupportsTracing
             return '0';
         }
 
-        $walker = function (&$value, $offset): void {
+        /** @psalm-suppress MissingClosureParamType */
+        $walker = function (&$value, string $offset): void {
             $value = $value > 1 ? $value.$offset : $offset;
         };
 

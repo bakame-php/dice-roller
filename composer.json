@@ -23,10 +23,11 @@
         "friendsofphp/php-cs-fixer": "^2.16",
         "infection/infection": "^0.15.0",
         "phpstan/phpstan": "^0.12.0",
-        "phpstan/phpstan-strict-rules": "^0.12.0",
         "phpstan/phpstan-phpunit": "^0.12.0",
+        "phpstan/phpstan-strict-rules": "^0.12.0",
         "phpunit/phpunit": "^9.0",
-        "psr/log": "^1.1"
+        "psr/log": "^1.1",
+        "vimeo/psalm": "^3.16"
     },
     "suggest": {
         "psr/log": "to use the PSR-3 compatible tracer"
@@ -44,12 +45,14 @@
     "scripts": {
         "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
         "phpstan": "phpstan analyse -l max -c phpstan.neon src --memory-limit 150M",
+        "psalm": "psalm --show-info=true",
         "phpunit": "phpunit --coverage-text",
         "infection-linux": "infection -j$(nproc) --coverage=build --ignore-msi-with-no-mutations --min-covered-msi=70",
         "infection-osx": "infection -j$(sysctl -n hw.ncpu) --coverage=build --ignore-msi-with-no-mutations --min-covered-msi=70",
         "test": [
             "@phpcs",
             "@phpstan",
+            "@psalm",
             "@phpunit"
         ],
         "test-linux": [
@@ -64,8 +67,7 @@
     "scripts-descriptions": {
         "phpcs": "Runs coding style test suite",
         "phpstan": "Runs complete codebase static analysis",
-        "phpstan-src": "Runs source code static analysis",
-        "phpstan-test": "Runs test suite static analysis",
+        "psalm": "Runs complete codebase static analysis",
         "phpunit": "Runs unit and functional testing",
         "infection-linux": "Runs infection on linux based OS system",
         "infection-osx": "Runs infection on mac OS system",
