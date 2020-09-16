@@ -70,17 +70,17 @@ final class Explode implements Modifier, SupportsTracing
         $this->setTracer($tracer ?? new NullTracer());
     }
 
-    public static function eq(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
+    public static function equals(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
     {
         return new self($rollable, self::EQ, $threshold, $tracer);
     }
 
-    public static function gt(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
+    public static function greaterThan(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
     {
         return new self($rollable, self::GT, $threshold, $tracer);
     }
 
-    public static function lt(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
+    public static function lesserThan(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
     {
         return new self($rollable, self::LT, $threshold, $tracer);
     }

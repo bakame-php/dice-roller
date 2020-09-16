@@ -88,6 +88,7 @@ final class FactoryTest extends TestCase
             'mixed cup' => ['2df+3d2', '2DF+3D2'],
             'add modifier' => ['2d3-4', '2D3-4'],
             'add modifier to multiple group' => ['2d3+4+3dF!>1/4^3', '2D3+4+3DF!>1/4^3'],
+            'add explode lesser than modifier' => ['2d3!<2', '2D3!<2'],
             'add explode modifier' => ['2d3!', '2D3!'],
             'add keep lowest modifier' => ['2d3kl1', '2D3KL1'],
             'add keep highest modifier' => ['2d3kh2', '2D3KH2'],

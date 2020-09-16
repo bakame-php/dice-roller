@@ -18,8 +18,6 @@ use Bakame\DiceRoller\Contract\Tracer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
-use ReflectionClass;
-use function array_search;
 
 final class Psr3LogTracer implements Tracer
 {
@@ -48,15 +46,6 @@ final class Psr3LogTracer implements Tracer
 
     public function append(Roll $roll): void
     {
-        static $psr3logLevels = null;
-        $psr3logLevels = $psr3logLevels ?? (new ReflectionClass(LogLevel::class))->getConstants();
-
-        if (false !== array_search($this->logLevel, $psr3logLevels, true)) {
-            $this->logger->{$this->logLevel}($this->logFormat, $roll->info());
-
-            return;
-        }
-
         $this->logger->log($this->logLevel, $this->logFormat, $roll->info());
     }
 

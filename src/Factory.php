@@ -32,7 +32,6 @@ use Bakame\DiceRoller\Tracer\NullTracer;
 use function count;
 use function iterator_to_array;
 use function strpos;
-use function strtoupper;
 
 final class Factory
 {
@@ -153,19 +152,27 @@ final class Factory
      */
     private function createArithmeticModifier(Rollable $rollable, string $operator, int $value): Rollable
     {
-        static $operatorList = [
-          '+' => 'add',
-          '-' => 'sub',
-          '*' => 'mul',
-          '/' => 'div',
-          '^' => 'pow',
-        ];
-
-        if (!isset($operatorList[$operator])) {
-            throw SyntaxError::dueToInvalidOperator($operator);
+        if ('+' === $operator) {
+            return Arithmetic::add($rollable, $value);
         }
 
-        return Arithmetic::{$operatorList[$operator]}($rollable, $value);
+        if ('-' === $operator) {
+            return Arithmetic::sub($rollable, $value);
+        }
+
+        if ('*' === $operator) {
+            return Arithmetic::mul($rollable, $value);
+        }
+
+        if ('/' === $operator) {
+            return Arithmetic::div($rollable, $value);
+        }
+
+        if ('^' === $operator) {
+            return Arithmetic::pow($rollable, $value);
+        }
+
+        throw SyntaxError::dueToInvalidOperator($operator);
     }
 
     /**
@@ -175,34 +182,40 @@ final class Factory
      */
     private function createDropKeepModifier(Rollable $rollable, string $operator, int $value): Rollable
     {
-        static $operatorList = [
-            'KH' => 'keepHighest',
-            'KL' => 'keepLowest',
-            'DH' => 'dropHighest',
-            'DL' => 'dropLowest',
-        ];
-
-        $formatterOperator = strtoupper($operator);
-        if (!isset($operatorList[$formatterOperator])) {
-            throw SyntaxError::dueToInvalidOperator($operator);
+        if ('KH' === $operator) {
+            return DropKeep::keepHighest($rollable, $value);
         }
 
-        return DropKeep::{$operatorList[$formatterOperator]}($rollable, $value);
+        if ('KL' === $operator) {
+            return DropKeep::keepLowest($rollable, $value);
+        }
+
+        if ('DH' === $operator) {
+            return DropKeep::dropHighest($rollable, $value);
+        }
+
+        if ('DL' === $operator) {
+            return DropKeep::dropLowest($rollable, $value);
+        }
+
+        throw SyntaxError::dueToInvalidOperator($operator);
     }
 
     private function createExplodeModifier(Rollable $rollable, string $operator, int $value): Rollable
     {
-        static $operatorList = [
-            '=' => 'eq',
-            '>' => 'gt',
-            '<' => 'lt',
-        ];
-
-        if (!isset($operatorList[$operator])) {
-            throw SyntaxError::dueToInvalidOperator($operator);
+        if ('=' === $operator) {
+            return Explode::equals($rollable, $value);
         }
 
-        return Explode::{$operatorList[$operator]}($rollable, $value);
+        if ('>' === $operator) {
+            return Explode::greaterThan($rollable, $value);
+        }
+
+        if ('<' === $operator) {
+            return Explode::lesserThan($rollable, $value);
+        }
+
+        throw SyntaxError::dueToInvalidOperator($operator);
     }
 
     /**

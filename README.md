@@ -501,9 +501,9 @@ use Bakame\DiceRoller\Contract\Rollable;
 
 final class Explode implements Modifier, SupportsTracing
 {
-    public static function eq(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
-    public static function gt(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
-    public static function lt(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function equals(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function greaterThan(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function lesserThan(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
 }
 ```
 
@@ -515,9 +515,9 @@ This modifier decorates a `Rollable` object by applying one of the explode algor
 
 The supported comparison operator are:
 
-- `Explode::eq` explodes if any inner rollable roll result is equal to the `$threshold`;
-- `Explode::gt` explodes if any inner rollable roll result is greater than the `$threshold`;
-- `Explode::lt` explodes if any inner rollable roll result is lesser than the `$threshold`;
+- `Explode::equals` explodes if any inner rollable roll result is equal to the `$threshold`;
+- `Explode::greaterThan` explodes if any inner rollable roll result is greater than the `$threshold`;
+- `Explode::lesserThan` explodes if any inner rollable roll result is lesser than the `$threshold`;
 
 If the comparison operator is not recognized a `Bakame\DiceRoller\CanNotBeRolled` exception will be thrown.
 
@@ -530,7 +530,7 @@ use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\Explode;
 
 $cup = new Cup(new SidedDie(6), new FudgeDie(), new SidedDie(6), new SidedDie(6));
-$modifier = Explode::eq($cup, 3);
+$modifier = Explode::equals($cup, 3);
 echo $modifier->notation(); // displays (3D6+DF)!=3
 ```
 

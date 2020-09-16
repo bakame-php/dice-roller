@@ -38,9 +38,9 @@ final class ExplodeTest extends TestCase
     /**
      * @dataProvider provideInvalidProperties
      *
-     * @covers ::eq
-     * @covers ::gt
-     * @covers ::lt
+     * @covers ::equals
+     * @covers ::greaterThan
+     * @covers ::lesserThan
      * @covers ::__construct
      * @covers ::isValidPool
      * @covers ::isValidRollable
@@ -51,11 +51,11 @@ final class ExplodeTest extends TestCase
         self::expectException(SyntaxError::class);
 
         if ('=' === $compare) {
-            Explode::eq($cup, $threshold);
+            Explode::equals($cup, $threshold);
         } elseif ('>' === $compare) {
-            Explode::gt($cup, $threshold);
+            Explode::greaterThan($cup, $threshold);
         } elseif ('<' === $compare) {
-            Explode::lt($cup, $threshold);
+            Explode::lesserThan($cup, $threshold);
         }
     }
 
@@ -91,7 +91,7 @@ final class ExplodeTest extends TestCase
     {
         $rollable = new FudgeDie();
 
-        self::assertSame($rollable, Explode::eq($rollable, 1)->getInnerRollable());
+        self::assertSame($rollable, Explode::equals($rollable, 1)->getInnerRollable());
     }
 
     /**
@@ -113,7 +113,7 @@ final class ExplodeTest extends TestCase
      */
     public function testExplodeGreaterThen(): void
     {
-        $rollable = Explode::gt(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1);
+        $rollable = Explode::greaterThan(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1);
         $roll = $rollable->roll();
 
         self::assertTrue($roll->value() <= $rollable->maximum());
@@ -124,32 +124,32 @@ final class ExplodeTest extends TestCase
     {
         return [
             [
-                'roll' => Explode::eq(new Cup(new SidedDie(3), new SidedDie(3), new SidedDie(4)), 3),
+                'roll' => Explode::equals(new Cup(new SidedDie(3), new SidedDie(3), new SidedDie(4)), 3),
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => Explode::gt(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1),
+                'roll' => Explode::greaterThan(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => Explode::eq(Cup::fromRollable(new SidedDie(6), 4), 1),
+                'roll' => Explode::equals(Cup::fromRollable(new SidedDie(6), 4), 1),
                 'annotation' => '4D6!',
             ],
             [
-                'roll' => Explode::eq(new SidedDie(6), 3),
+                'roll' => Explode::equals(new SidedDie(6), 3),
                 'annotation' => 'D6!=3',
             ],
             [
-                'roll' => Explode::lt(new SidedDie(6), 3),
+                'roll' => Explode::lesserThan(new SidedDie(6), 3),
                 'annotation' => 'D6!<3',
             ],
         ];
     }
 
     /**
-     * @covers ::eq
-     * @covers ::gt
-     * @covers ::lt
+     * @covers ::equals
+     * @covers ::greaterThan
+     * @covers ::lesserThan
      * @covers ::getInnerRollable
      * @covers ::minimum
      * @covers ::maximum
@@ -161,11 +161,11 @@ final class ExplodeTest extends TestCase
     public function testModifier(string $algo, int $threshold, int $min, int $max): void
     {
         if ('=' === $algo) {
-            $explode = Explode::eq($this->cup, $threshold);
+            $explode = Explode::equals($this->cup, $threshold);
         } elseif ('>' === $algo) {
-            $explode = Explode::gt($this->cup, $threshold);
+            $explode = Explode::greaterThan($this->cup, $threshold);
         } else {
-            $explode = Explode::lt($this->cup, $threshold);
+            $explode = Explode::lesserThan($this->cup, $threshold);
         }
 
         $rollValue = $explode->roll()->value();
@@ -214,7 +214,7 @@ final class ExplodeTest extends TestCase
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $explode = Explode::lt(
+        $explode = Explode::lesserThan(
             CustomDie::fromNotation('d[-1, -1, -2]'),
             -2,
             $tracer
