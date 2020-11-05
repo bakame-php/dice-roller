@@ -196,6 +196,7 @@ final class DropKeepTest extends TestCase
      * @covers ::roll
      * @covers ::decorate
      * @covers ::setTracer
+     * @covers ::getTracer
      * @covers ::getInnerRollable
      */
     public function testTracer(): void
@@ -208,6 +209,7 @@ final class DropKeepTest extends TestCase
         $dropKeep->maximum();
         $dropKeep->minimum();
 
+        self::assertSame($tracer, $dropKeep->getTracer());
         self::assertInstanceOf(Pool::class, $dropKeep->getInnerRollable());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
 

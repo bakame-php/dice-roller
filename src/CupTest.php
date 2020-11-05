@@ -18,6 +18,7 @@ use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\Tracer\NullTracer;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
@@ -162,16 +163,19 @@ final class CupTest extends TestCase
      * @covers ::roll
      * @covers ::decorate
      * @covers ::setTracer
+     * @covers ::getTracer
      */
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
         $cup = Cup::fromRollable(CustomDie::fromNotation('d[2, -3, -5]'), 12);
+        self::assertEquals(new NullTracer(), $cup->getTracer());
         $cup->setTracer($tracer);
         $cup->roll();
         $cup->maximum();
         $cup->minimum();
+        self::assertEquals($tracer, $cup->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 

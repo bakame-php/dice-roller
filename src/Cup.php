@@ -61,6 +61,11 @@ final class Cup implements Pool, SupportsTracing
         $this->tracer = $tracer;
     }
 
+    public function getTracer(): Tracer
+    {
+        return $this->tracer;
+    }
+
     /**
      * Create a new Cup containing only one type of Rollable object.
      *

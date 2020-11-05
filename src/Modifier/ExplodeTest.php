@@ -207,6 +207,7 @@ final class ExplodeTest extends TestCase
      * @covers ::roll
      * @covers ::calculate
      * @covers ::setTracer
+     * @covers ::getTracer
      * @covers ::isValid
      * @covers ::getInnerRollable
      */
@@ -223,6 +224,7 @@ final class ExplodeTest extends TestCase
         $explode->roll();
         $explode->maximum();
         $explode->minimum();
+        self::assertSame($tracer, $explode->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
         self::assertInstanceOf(CustomDie::class, $explode->getInnerRollable());
     }

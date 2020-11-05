@@ -35,9 +35,14 @@ use const PHP_INT_MAX;
 
 final class Explode implements Modifier, SupportsTracing
 {
-    const EQ = '=';
-    const GT = '>';
-    const LT = '<';
+    private const EQ = '=';
+    private const GT = '>';
+    private const LT = '<';
+    private const ALGORITHM_LIST = [
+        self::LT,
+        self::GT,
+        self::EQ,
+    ];
 
     private Pool $pool;
 
@@ -85,21 +90,13 @@ final class Explode implements Modifier, SupportsTracing
         return new self($rollable, self::LT, $threshold, $tracer);
     }
 
-    public static function fromOperator(string $operator, Rollable $rollable, ?int $value, Tracer $tracer = null): self
+    public static function fromAlgorithm(string $compare, Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
     {
-        if (self::EQ === $operator) {
-            return Explode::equals($rollable, $value, $tracer);
+        if (!in_array($compare, self::ALGORITHM_LIST, true)) {
+            throw SyntaxError::dueToInvalidOperator($compare);
         }
 
-        if (self::GT === $operator) {
-            return Explode::greaterThan($rollable, $value, $tracer);
-        }
-
-        if (self::LT === $operator) {
-            return Explode::lesserThan($rollable, $value, $tracer);
-        }
-
-        throw SyntaxError::dueToInvalidOperator($operator);
+        return new self($rollable, $compare, $threshold, $tracer);
     }
 
     /**
@@ -142,6 +139,11 @@ final class Explode implements Modifier, SupportsTracing
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
+    }
+
+    public function getTracer(): Tracer
+    {
+        return $this->tracer;
     }
 
     public function getInnerRollable(): Rollable

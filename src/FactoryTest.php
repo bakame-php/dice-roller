@@ -61,9 +61,9 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers ::flattenRollable
      * @covers ::decorate
-     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::fromOperator
-     * @covers \Bakame\DiceRoller\Modifier\DropKeep::fromOperator
-     * @covers \Bakame\DiceRoller\Modifier\Explode::fromOperator
+     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::fromOperation
+     * @covers \Bakame\DiceRoller\Modifier\DropKeep::fromAlgorithm
+     * @covers \Bakame\DiceRoller\Modifier\Explode::fromAlgorithm
      * @covers ::createDice
      * @dataProvider validStringProvider
      */

@@ -77,6 +77,7 @@ final class CustomDieTest extends TestCase
 
     /**
      * @covers ::setTracer
+     * @covers ::getTracer
      */
     public function testTracer(): void
     {
@@ -89,6 +90,7 @@ final class CustomDieTest extends TestCase
         $rollable->maximum();
         $rollable->minimum();
 
+        self::assertSame($tracer, $rollable->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

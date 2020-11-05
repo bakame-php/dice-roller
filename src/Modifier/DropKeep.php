@@ -29,6 +29,7 @@ use function array_slice;
 use function array_sum;
 use function count;
 use function implode;
+use function in_array;
 use function iterator_to_array;
 use function rsort;
 use function strpos;
@@ -41,6 +42,13 @@ final class DropKeep implements Modifier, SupportsTracing
     private const DROP_LOWEST = 'DL';
     private const KEEP_HIGHEST = 'KH';
     private const KEEP_LOWEST = 'KL';
+
+    private const ALGORITHM_LIST = [
+        self::KEEP_HIGHEST,
+        self::KEEP_LOWEST,
+        self::DROP_HIGHEST,
+        self::DROP_LOWEST,
+    ];
 
     private Pool $pool;
 
@@ -92,32 +100,24 @@ final class DropKeep implements Modifier, SupportsTracing
         return new self($pool, self::KEEP_HIGHEST, $threshold, $tracer);
     }
 
-    public static function fromOperator(string $operator, Rollable $rollable, int $value, Tracer $tracer = null): self
+    public static function fromAlgorithm(string $algorithm, Rollable $rollable, int $threshold, Tracer $tracer = null): self
     {
-        $operator = strtoupper($operator);
-
-        if (self::KEEP_HIGHEST === $operator) {
-            return self::keepHighest($rollable, $value, $tracer);
+        $algorithm = strtoupper($algorithm);
+        if (!in_array($algorithm, self::ALGORITHM_LIST, true)) {
+            throw SyntaxError::dueToInvalidOperator($algorithm);
         }
 
-        if (self::KEEP_LOWEST === $operator) {
-            return self::keepLowest($rollable, $value, $tracer);
-        }
-
-        if (self::DROP_HIGHEST === $operator) {
-            return self::dropHighest($rollable, $value, $tracer);
-        }
-
-        if (self::DROP_LOWEST === $operator) {
-            return self::dropLowest($rollable, $value, $tracer);
-        }
-
-        throw SyntaxError::dueToInvalidOperator($operator);
+        return new self($rollable, $algorithm, $threshold, $tracer);
     }
 
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
+    }
+
+    public function getTracer(): Tracer
+    {
+        return $this->tracer;
     }
 
     public function getInnerRollable(): Rollable

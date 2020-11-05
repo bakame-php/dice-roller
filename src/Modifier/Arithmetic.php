@@ -32,6 +32,13 @@ final class Arithmetic implements Modifier, SupportsTracing
     private const MUL = '*';
     private const SUB = '-';
     private const POW = '^';
+    private const ALGORITHM_LIST = [
+        self::ADD,
+        self::SUB,
+        self::DIV,
+        self::MUL,
+        self::POW,
+    ];
 
     private Rollable $rollable;
 
@@ -98,34 +105,27 @@ final class Arithmetic implements Modifier, SupportsTracing
         return new self($rollable, self::POW, $value, $tracer);
     }
 
-    public static function fromOperator(string $operator, Rollable $rollable, int $value, Tracer $tracer = null): self
+    public static function fromOperation(Rollable $rollable, string $operator, int $value, Tracer $tracer = null): self
     {
-        if (self::ADD === $operator) {
-            return self::add($rollable, $value, $tracer);
+        if (!in_array($operator, self::ALGORITHM_LIST, true)) {
+            throw SyntaxError::dueToInvalidOperator($operator);
         }
 
-        if (self::SUB === $operator) {
-            return Arithmetic::sub($rollable, $value, $tracer);
+        if (0 > $value || (0 === $value && $operator === self::DIV)) {
+            throw SyntaxError::dueToOperatorAndValueMismatched($operator, $value);
         }
 
-        if (self::MUL === $operator) {
-            return Arithmetic::mul($rollable, $value, $tracer);
-        }
-
-        if (self::DIV === $operator) {
-            return Arithmetic::div($rollable, $value, $tracer);
-        }
-
-        if (self::POW === $operator) {
-            return Arithmetic::pow($rollable, $value, $tracer);
-        }
-
-        throw SyntaxError::dueToInvalidOperator($operator);
+        return new self($rollable, $operator, $value, $tracer);
     }
 
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
+    }
+
+    public function getTracer(): Tracer
+    {
+        return $this->tracer;
     }
 
     public function getInnerRollable(): Rollable

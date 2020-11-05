@@ -40,6 +40,11 @@ final class PercentileDie implements Dice, SupportsTracing
         $this->tracer = $tracer;
     }
 
+    public function getTracer(): Tracer
+    {
+        return $this->tracer;
+    }
+
     public function jsonSerialize(): string
     {
         return $this->notation();

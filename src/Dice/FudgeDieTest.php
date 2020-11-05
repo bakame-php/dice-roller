@@ -46,18 +46,21 @@ final class FudgeDieTest extends TestCase
 
     /**
      * @covers ::setTracer
+     * @covers ::getTracer
      */
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
         $rollable = new FudgeDie();
+        $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
 
         $rollable->roll();
-        $rollable->setTracer(new Psr3LogTracer($logger, LogLevel::DEBUG));
+        $rollable->setTracer($tracer);
         $rollable->roll();
         $rollable->maximum();
         $rollable->minimum();
 
+        self::assertSame($tracer, $rollable->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
     }
 }

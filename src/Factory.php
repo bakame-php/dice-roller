@@ -138,14 +138,14 @@ final class Factory
     private function decorate(Rollable $rollable, array $matches): Rollable
     {
         if ('arithmetic' === $matches['modifier']) {
-            return Arithmetic::fromOperator($matches['operator'], $rollable, $matches['value']);
+            return Arithmetic::fromOperation($rollable, $matches['operator'], $matches['value']);
         }
 
         if ('dropkeep' === $matches['modifier']) {
-            return DropKeep::fromOperator($matches['operator'], $rollable, $matches['value']);
+            return DropKeep::fromAlgorithm($matches['operator'], $rollable, $matches['value']);
         }
 
-        return Explode::fromOperator($matches['operator'], $rollable, $matches['value']);
+        return Explode::fromAlgorithm($matches['operator'], $rollable, $matches['value']);
     }
 
     /**

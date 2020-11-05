@@ -19,4 +19,6 @@ interface SupportsTracing
      * Inject a Roll Tracer instance.
      */
     public function setTracer(Tracer $tracer): void;
+
+    public function getTracer(): Tracer;
 }

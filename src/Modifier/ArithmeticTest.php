@@ -276,12 +276,14 @@ final class ArithmeticTest extends TestCase
      * @covers ::decorate
      * @covers ::calculate
      * @covers ::setTracer
+     * @covers ::getTracer
      */
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
         $arithmetic = Arithmetic::pow(CustomDie::fromNotation('d[-1, -1, -1]'), 3, $tracer);
+        self::assertSame($tracer, $arithmetic->getTracer());
 
         $arithmetic->roll();
         $arithmetic->maximum();
@@ -291,5 +293,12 @@ final class ArithmeticTest extends TestCase
         self::assertCount(1, $logger->getLogs());
         self::assertCount(1, $logger->getLogs(null));
         self::assertCount(0, $logger->getLogs('foobar'));
+    }
+
+    public function testCreateFromOperation(): void
+    {
+        self::expectException(SyntaxError::class);
+
+        Arithmetic::fromOperation(Cup::fromRollable(new SidedDie(6), 4), '/', 0);
     }
 }
