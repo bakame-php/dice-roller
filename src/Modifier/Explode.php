@@ -85,6 +85,23 @@ final class Explode implements Modifier, SupportsTracing
         return new self($rollable, self::LT, $threshold, $tracer);
     }
 
+    public static function fromOperator(string $operator, Rollable $rollable, ?int $value, Tracer $tracer = null): self
+    {
+        if (self::EQ === $operator) {
+            return Explode::equals($rollable, $value, $tracer);
+        }
+
+        if (self::GT === $operator) {
+            return Explode::greaterThan($rollable, $value, $tracer);
+        }
+
+        if (self::LT === $operator) {
+            return Explode::lesserThan($rollable, $value, $tracer);
+        }
+
+        throw SyntaxError::dueToInvalidOperator($operator);
+    }
+
     /**
      * Tells whether the Pool can be used.
      */

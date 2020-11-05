@@ -183,7 +183,7 @@ use Bakame\DiceRoller\Contract\Rollable;
 final class Factory
 {
     public function __construct(Parser $parser = null);
-    public function newInstance(string $notation, Tracer $tracer = null, RandomIntGenerator $randomIntGenerator = null): Rollable;
+    public function newInstance(string $notation, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null): Rollable;
 }
 ```
 

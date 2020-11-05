@@ -32,6 +32,7 @@ use function implode;
 use function iterator_to_array;
 use function rsort;
 use function strpos;
+use function strtoupper;
 use function uasort;
 
 final class DropKeep implements Modifier, SupportsTracing
@@ -89,6 +90,29 @@ final class DropKeep implements Modifier, SupportsTracing
     public static function keepHighest(Rollable $pool, int $threshold, Tracer $tracer = null): self
     {
         return new self($pool, self::KEEP_HIGHEST, $threshold, $tracer);
+    }
+
+    public static function fromOperator(string $operator, Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        $operator = strtoupper($operator);
+
+        if (self::KEEP_HIGHEST === $operator) {
+            return self::keepHighest($rollable, $value, $tracer);
+        }
+
+        if (self::KEEP_LOWEST === $operator) {
+            return self::keepLowest($rollable, $value, $tracer);
+        }
+
+        if (self::DROP_HIGHEST === $operator) {
+            return self::dropHighest($rollable, $value, $tracer);
+        }
+
+        if (self::DROP_LOWEST === $operator) {
+            return self::dropLowest($rollable, $value, $tracer);
+        }
+
+        throw SyntaxError::dueToInvalidOperator($operator);
     }
 
     public function setTracer(Tracer $tracer): void

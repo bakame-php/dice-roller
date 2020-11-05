@@ -98,6 +98,31 @@ final class Arithmetic implements Modifier, SupportsTracing
         return new self($rollable, self::POW, $value, $tracer);
     }
 
+    public static function fromOperator(string $operator, Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        if (self::ADD === $operator) {
+            return self::add($rollable, $value, $tracer);
+        }
+
+        if (self::SUB === $operator) {
+            return Arithmetic::sub($rollable, $value, $tracer);
+        }
+
+        if (self::MUL === $operator) {
+            return Arithmetic::mul($rollable, $value, $tracer);
+        }
+
+        if (self::DIV === $operator) {
+            return Arithmetic::div($rollable, $value, $tracer);
+        }
+
+        if (self::POW === $operator) {
+            return Arithmetic::pow($rollable, $value, $tracer);
+        }
+
+        throw SyntaxError::dueToInvalidOperator($operator);
+    }
+
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;

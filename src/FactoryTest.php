@@ -61,9 +61,9 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers ::flattenRollable
      * @covers ::decorate
-     * @covers ::createArithmeticModifier
-     * @covers ::createDropKeepModifier
-     * @covers ::createExplodeModifier
+     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::fromOperator
+     * @covers \Bakame\DiceRoller\Modifier\DropKeep::fromOperator
+     * @covers \Bakame\DiceRoller\Modifier\Explode::fromOperator
      * @covers ::createDice
      * @dataProvider validStringProvider
      */
@@ -127,7 +127,7 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $dice = $this->factory->newInstance('d8', null, $randomIntProvider);
+        $dice = $this->factory->newInstance('d8', $randomIntProvider, null);
         self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(8, $dice->size());
 
@@ -153,7 +153,7 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $dice = $this->factory->newInstance('d', null, $randomIntProvider);
+        $dice = $this->factory->newInstance('d', $randomIntProvider, null);
         self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(6, $dice->size());
         self::assertSame(1, $dice->minimum());
@@ -183,7 +183,7 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $cup = $this->factory->newInstance('2D6+3d4', null, $randomIntProvider);
+        $cup = $this->factory->newInstance('2D6+3d4', $randomIntProvider, null);
         self::assertInstanceOf(Traversable::class, $cup);
         self::assertCount(2, $cup);
         $res = iterator_to_array($cup, false);
