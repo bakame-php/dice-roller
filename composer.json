@@ -44,7 +44,7 @@
     },
     "scripts": {
         "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
-        "phpstan": "phpstan analyse -l max -c phpstan.neon src --memory-limit 150M",
+        "phpstan": "phpstan analyse -l max -c phpstan.neon src --memory-limit 192M",
         "psalm": "psalm --show-info=true",
         "phpunit": "phpunit --coverage-text",
         "infection-linux": "infection -j$(nproc) --coverage=build --ignore-msi-with-no-mutations --min-covered-msi=70",
