@@ -23,6 +23,7 @@ use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use function abs;
+use function in_array;
 use function strpos;
 
 final class Arithmetic implements Modifier, SupportsTracing
@@ -54,58 +55,19 @@ final class Arithmetic implements Modifier, SupportsTracing
      */
     private function __construct(Rollable $rollable, string $operator, int $value, Tracer $tracer = null)
     {
+        $this->isValidOperation($operator, $value);
+
         $this->rollable = $rollable;
         $this->operator = $operator;
         $this->value = $value;
+
         $this->setTracer($tracer ?? new NullTracer());
     }
 
-    public static function add(Rollable $rollable, int $value, Tracer $tracer = null): self
-    {
-        if (0 > $value) {
-            throw SyntaxError::dueToOperatorAndValueMismatched(self::ADD, $value);
-        }
-
-        return new self($rollable, self::ADD, $value, $tracer);
-    }
-
-    public static function sub(Rollable $rollable, int $value, Tracer $tracer = null): self
-    {
-        if (0 > $value) {
-            throw SyntaxError::dueToOperatorAndValueMismatched(self::SUB, $value);
-        }
-
-        return new self($rollable, self::SUB, $value, $tracer);
-    }
-
-    public static function mul(Rollable $rollable, int $value, Tracer $tracer = null): self
-    {
-        if (0 > $value) {
-            throw SyntaxError::dueToOperatorAndValueMismatched(self::MUL, $value);
-        }
-
-        return new self($rollable, self::MUL, $value, $tracer);
-    }
-
-    public static function div(Rollable $rollable, int $value, Tracer $tracer = null): self
-    {
-        if (0 >= $value) {
-            throw SyntaxError::dueToOperatorAndValueMismatched(self::DIV, $value);
-        }
-
-        return new self($rollable, self::DIV, $value, $tracer);
-    }
-
-    public static function pow(Rollable $rollable, int $value, Tracer $tracer = null): self
-    {
-        if (0 > $value) {
-            throw SyntaxError::dueToOperatorAndValueMismatched(self::POW, $value);
-        }
-
-        return new self($rollable, self::POW, $value, $tracer);
-    }
-
-    public static function fromOperation(Rollable $rollable, string $operator, int $value, Tracer $tracer = null): self
+    /**
+     * @throws SyntaxError if the operation is invalid
+     */
+    private function isValidOperation(string $operator, int $value): void
     {
         if (!in_array($operator, self::ALGORITHM_LIST, true)) {
             throw SyntaxError::dueToInvalidOperator($operator);
@@ -114,7 +76,35 @@ final class Arithmetic implements Modifier, SupportsTracing
         if (0 > $value || (0 === $value && $operator === self::DIV)) {
             throw SyntaxError::dueToOperatorAndValueMismatched($operator, $value);
         }
+    }
 
+    public static function add(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        return new self($rollable, self::ADD, $value, $tracer);
+    }
+
+    public static function sub(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        return new self($rollable, self::SUB, $value, $tracer);
+    }
+
+    public static function mul(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        return new self($rollable, self::MUL, $value, $tracer);
+    }
+
+    public static function div(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        return new self($rollable, self::DIV, $value, $tracer);
+    }
+
+    public static function pow(Rollable $rollable, int $value, Tracer $tracer = null): self
+    {
+        return new self($rollable, self::POW, $value, $tracer);
+    }
+
+    public static function fromOperation(Rollable $rollable, string $operator, int $value, Tracer $tracer = null): self
+    {
         return new self($rollable, $operator, $value, $tracer);
     }
 

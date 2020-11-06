@@ -55,10 +55,15 @@ final class Explode implements Modifier, SupportsTracing
     private bool $is_rollable_wrapped = false;
 
     /**
+     * @throws SyntaxError if the comparison is unknown or not supported
      * @throws SyntaxError if the Cup triggers infinite loop
      */
     private function __construct(Rollable $pool, string $compare, int $threshold = null, Tracer $tracer = null)
     {
+        if (!in_array($compare, self::ALGORITHM_LIST, true)) {
+            throw SyntaxError::dueToInvalidOperator($compare);
+        }
+
         $this->compare = $compare;
         $this->threshold = $threshold;
 
@@ -90,12 +95,8 @@ final class Explode implements Modifier, SupportsTracing
         return new self($rollable, self::LT, $threshold, $tracer);
     }
 
-    public static function fromAlgorithm(string $compare, Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
+    public static function fromAlgorithm(Rollable $rollable, string $compare, ?int $threshold, Tracer $tracer = null): self
     {
-        if (!in_array($compare, self::ALGORITHM_LIST, true)) {
-            throw SyntaxError::dueToInvalidOperator($compare);
-        }
-
         return new self($rollable, $compare, $threshold, $tracer);
     }
 

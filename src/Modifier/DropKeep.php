@@ -65,6 +65,11 @@ final class DropKeep implements Modifier, SupportsTracing
 
     private function __construct(Rollable $pool, string $algorithm, int $threshold, Tracer $tracer = null)
     {
+        $algorithm = strtoupper($algorithm);
+        if (!in_array($algorithm, self::ALGORITHM_LIST, true)) {
+            throw SyntaxError::dueToInvalidOperator($algorithm);
+        }
+
         if (!$pool instanceof Pool) {
             $this->is_rollable_wrapped = true;
             $pool = new Cup($pool);
@@ -100,13 +105,8 @@ final class DropKeep implements Modifier, SupportsTracing
         return new self($pool, self::KEEP_HIGHEST, $threshold, $tracer);
     }
 
-    public static function fromAlgorithm(string $algorithm, Rollable $rollable, int $threshold, Tracer $tracer = null): self
+    public static function fromAlgorithm(Rollable $rollable, string $algorithm, int $threshold, Tracer $tracer = null): self
     {
-        $algorithm = strtoupper($algorithm);
-        if (!in_array($algorithm, self::ALGORITHM_LIST, true)) {
-            throw SyntaxError::dueToInvalidOperator($algorithm);
-        }
-
         return new self($rollable, $algorithm, $threshold, $tracer);
     }
 

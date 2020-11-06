@@ -142,10 +142,10 @@ final class Factory
         }
 
         if ('dropkeep' === $matches['modifier']) {
-            return DropKeep::fromAlgorithm($matches['operator'], $rollable, $matches['value']);
+            return DropKeep::fromAlgorithm($rollable, $matches['operator'], $matches['value']);
         }
 
-        return Explode::fromAlgorithm($matches['operator'], $rollable, $matches['value']);
+        return Explode::fromAlgorithm($rollable, $matches['operator'], $matches['value']);
     }
 
     /**

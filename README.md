@@ -1,6 +1,5 @@
 # Dice Roller
 
-[![Latest Version](https://img.shields.io/github/release/bakame-php/dice-roller.svg?style=flat-square)](https://github.com/bakame-php/dice-roller/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Build Status](https://github.com/bakame-php/dice-roller/workflows/run-tests/badge.svg)](https://github.com/bakame-php/dice-roller/actions)
 
@@ -96,11 +95,13 @@ echo $pool->roll()->value(); // returns 12
 <?php
 
 use Bakame\DiceRoller\Factory;
+use Bakame\DiceRoller\SystemRandomInt;
 use Bakame\DiceRoller\Tracer\MemoryTracer;
 
 $tracer = new MemoryTracer();
 $factory = new Factory();
-$pool = $factory->newInstance('2D6+3', $tracer);
+$randomGenerator = new SystemRandomInt();
+$pool = $factory->newInstance('2D6+3', $randomGenerator, $tracer);
 
 echo $pool->notation();  // returns 2D6+3
 $roll = $pool->roll();
@@ -422,6 +423,7 @@ final class Arithmetic implements Modifier, SupportsTracing
     public static function mul(Rollable $rollable, int $value, Tracer $tracer = null): self;
     public static function div(Rollable $rollable, int $value, Tracer $tracer = null): self;
     public static function pow(Rollable $rollable, int $value, Tracer $tracer = null): self;
+    public static function fromOperation(Rollable $rollable, string $operator, int $value, Tracer $tracer = null): self;
 }
 ```
 
@@ -456,6 +458,7 @@ final class DropKeep implements Modifier, SupportsTracing
     public static function dropLowest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
     public static function keepHighest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
     public static function keepLowest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function fromAlgorithm(Rollable $rollable, string $algorithm, int $threshold, Tracer $tracer = null): self;
 }
 ```
 
@@ -501,9 +504,10 @@ use Bakame\DiceRoller\Contract\Rollable;
 
 final class Explode implements Modifier, SupportsTracing
 {
-    public static function equals(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
-    public static function greaterThan(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
-    public static function lesserThan(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function equals(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self;
+    public static function greaterThan(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self;
+    public static function lesserThan(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self;
+    public static function fromAlgorithm(Rollable $rollable, string $compare, ?int $threshold, Tracer $tracer = null): self;
 }
 ```
 
@@ -546,6 +550,7 @@ namespace Bakame\DiceRoller\Contract;
 interface SupportsTracing
 {
     public function setTracer(Tracer $tracer): void;
+    public function getTracer(): Tracer;
 }
 ```
  
