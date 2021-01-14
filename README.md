@@ -316,12 +316,12 @@ use Bakame\DiceRoller\Rollable;
 final class Cup implements Pool, SupportsTracing
 {
     public function __construct(Rollable ...$rollable);
-    public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
+    public static function of(Rollable $rollable, int $quantity = 1): self;
     public function withAddedRollable(Rollable ...$rollable): self;
 }
 ```
 
-The `Cup::fromRollable` named constructor enables creating uniformed `Cup` objects which contains only 1 type of rollable object.
+The `Cup::of` named constructor enables creating uniformed `Cup` objects which contains only 1 type of rollable object.
 
 ```php
 <?php
@@ -338,7 +338,7 @@ echo Cup::of(CustomDie::fromNotation('d[1, 2, 2, 4]'), 2)->notation(); // displa
 echo Cup::of(new FudgeDie(), 42)->notation();           // displays 42DF
 ```
 
-A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\SyntaxError` is thrown.
+A `Cup` created using `of` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\SyntaxError` is thrown.
 
 When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
