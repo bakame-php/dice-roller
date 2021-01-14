@@ -23,4 +23,5 @@ jobs:
       - run: composer update --no-progress ${{ matrix.composer-flags }}
       - run: vendor/bin/phpunit ${{ matrix.phpunit-flags }}
       - run: vendor/bin/phpstan analyse -l max -c phpstan.neon src --ansi
+      - run: vendor/bin/psalm --show-info=true
       - run: PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix -vvv --diff --dry-run --allow-risky=yes --ansi
