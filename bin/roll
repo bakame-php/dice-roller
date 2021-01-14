@@ -133,7 +133,7 @@ $logger = new Psr3Logger();
 $factory = new Factory(new NotationParser());
 
 try {
-    $rollable = $factory->newInstance($notation, new Psr3LogTracer($logger));
+    $rollable = $factory->newInstance($notation, null, new Psr3LogTracer($logger));
 } catch (Exception $exception) {
     fail(sprintf($parseErrorMessage, $notation, $exception->getMessage()));
 
