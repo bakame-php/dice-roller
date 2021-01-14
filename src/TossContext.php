@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\CanBeRolled;
-use Bakame\DiceRoller\Contract\Context;
-
 final class TossContext implements Context
 {
     private string $notation;
@@ -24,7 +21,7 @@ final class TossContext implements Context
 
     private array $extensions;
 
-    public function __construct(CanBeRolled $rollable, string $source, array $extensions = [])
+    public function __construct(Rollable $rollable, string $source, array $extensions = [])
     {
         unset($extensions['source'], $extensions['notation'], $extensions['value'], $extensions['operation']);
 

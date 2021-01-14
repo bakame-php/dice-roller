@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Tracer;
 
-use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\Tracer;
+use Bakame\DiceRoller\Roll;
 
 final class NullTracer implements Tracer
 {

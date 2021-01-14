@@ -11,12 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller\Tracer;
 
-interface Modifier extends CanBeRolled
+use Bakame\DiceRoller\Roll;
+
+interface Tracer
 {
     /**
-     * Returns the decorated rolling instance.
+     * Add a Roll object to the current Tracer instance.
      */
-    public function getRollingInstance(): CanBeRolled;
+    public function append(Roll $roll): void;
 }

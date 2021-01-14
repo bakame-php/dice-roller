@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller;
 
 interface Roll
 {

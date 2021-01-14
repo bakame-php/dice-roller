@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 final class SystemRandomIntTest extends TestCase
 {
-    private SystemRandomInt  $generator;
+    private SystemRandomInt $generator;
 
     public function setUp(): void
     {
@@ -28,7 +28,6 @@ final class SystemRandomIntTest extends TestCase
     {
         $minimum = 4;
         $maximum = 10;
-
         $result = $this->generator->generateInt($minimum, $maximum);
 
         self::assertTrue($result >= $minimum);
@@ -37,7 +36,7 @@ final class SystemRandomIntTest extends TestCase
 
     public function testItThrowsIfMaximumIsLesserThanMinimum(): void
     {
-        self::expectException(CanNotGenerateInt::class);
+        self::expectException(IntGenerationFailed::class);
 
         $this->generator->generateInt(5, 3);
     }

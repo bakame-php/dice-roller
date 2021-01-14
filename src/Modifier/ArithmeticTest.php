@@ -11,12 +11,12 @@
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\CanBeRolled;
-use Bakame\DiceRoller\Contract\RandomIntGenerator;
-use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\RandomIntGenerator;
+use Bakame\DiceRoller\Roll;
+use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
@@ -121,7 +121,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testGetTrace(): void
     {
-        $dice = new class() implements CanBeRolled {
+        $dice = new class() implements Rollable {
             public function minimum(): int
             {
                 return 1;
@@ -299,6 +299,6 @@ final class ArithmeticTest extends TestCase
     {
         self::expectException(SyntaxError::class);
 
-        Arithmetic::fromOperation(Cup::ofType(new SidedDie(6), 4), '/', 0);
+        Arithmetic::fromOperation(Cup::of(new SidedDie(6), 4), '/', 0);
     }
 }

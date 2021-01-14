@@ -13,15 +13,14 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\CanBeRolled;
-use Bakame\DiceRoller\Contract\Modifier;
-use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\SupportsTracing;
-use Bakame\DiceRoller\Contract\Tracer;
+use Bakame\DiceRoller\Roll;
+use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
+use Bakame\DiceRoller\Tracer\SupportsTracing;
+use Bakame\DiceRoller\Tracer\Tracer;
 use function abs;
 use function in_array;
 use function strpos;
@@ -41,7 +40,7 @@ final class Arithmetic implements \JsonSerializable, Modifier, SupportsTracing
         self::POW,
     ];
 
-    private CanBeRolled $rollable;
+    private Rollable $rollable;
 
     private string $operator;
 
@@ -53,7 +52,7 @@ final class Arithmetic implements \JsonSerializable, Modifier, SupportsTracing
      * @throws SyntaxError if the operator is not recognized
      * @throws SyntaxError if the value is invalid for a given operator
      */
-    private function __construct(CanBeRolled $rollable, string $operator, int $value, Tracer $tracer = null)
+    private function __construct(Rollable $rollable, string $operator, int $value, Tracer $tracer = null)
     {
         $this->isValidOperation($operator, $value);
 
@@ -78,32 +77,32 @@ final class Arithmetic implements \JsonSerializable, Modifier, SupportsTracing
         }
     }
 
-    public static function add(CanBeRolled $rollable, int $value, Tracer $tracer = null): self
+    public static function add(Rollable $rollable, int $value, Tracer $tracer = null): self
     {
         return new self($rollable, self::ADD, $value, $tracer);
     }
 
-    public static function sub(CanBeRolled $rollable, int $value, Tracer $tracer = null): self
+    public static function sub(Rollable $rollable, int $value, Tracer $tracer = null): self
     {
         return new self($rollable, self::SUB, $value, $tracer);
     }
 
-    public static function mul(CanBeRolled $rollable, int $value, Tracer $tracer = null): self
+    public static function mul(Rollable $rollable, int $value, Tracer $tracer = null): self
     {
         return new self($rollable, self::MUL, $value, $tracer);
     }
 
-    public static function div(CanBeRolled $rollable, int $value, Tracer $tracer = null): self
+    public static function div(Rollable $rollable, int $value, Tracer $tracer = null): self
     {
         return new self($rollable, self::DIV, $value, $tracer);
     }
 
-    public static function pow(CanBeRolled $rollable, int $value, Tracer $tracer = null): self
+    public static function pow(Rollable $rollable, int $value, Tracer $tracer = null): self
     {
         return new self($rollable, self::POW, $value, $tracer);
     }
 
-    public static function fromOperation(CanBeRolled $rollable, string $operator, int $value, Tracer $tracer = null): self
+    public static function fromOperation(Rollable $rollable, string $operator, int $value, Tracer $tracer = null): self
     {
         return new self($rollable, $operator, $value, $tracer);
     }
@@ -118,7 +117,7 @@ final class Arithmetic implements \JsonSerializable, Modifier, SupportsTracing
         return $this->tracer;
     }
 
-    public function getRollingInstance(): CanBeRolled
+    public function getRollingInstance(): Rollable
     {
         return $this->rollable;
     }

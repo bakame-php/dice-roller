@@ -13,16 +13,15 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Dice;
 
-use Bakame\DiceRoller\Contract\Dice;
-use Bakame\DiceRoller\Contract\RandomIntGenerator;
-use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\SupportsTracing;
-use Bakame\DiceRoller\Contract\Tracer;
+use Bakame\DiceRoller\RandomIntGenerator;
+use Bakame\DiceRoller\Roll;
 use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\SystemRandomInt;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
+use Bakame\DiceRoller\Tracer\SupportsTracing;
+use Bakame\DiceRoller\Tracer\Tracer;
 use function array_map;
 use function count;
 use function explode;

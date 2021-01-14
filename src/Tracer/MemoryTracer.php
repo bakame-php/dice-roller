@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Tracer;
 
-use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\Tracer;
+use Bakame\DiceRoller\Roll;
 use Countable;
 use Iterator;
 use IteratorAggregate;

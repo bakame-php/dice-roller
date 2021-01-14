@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use function random_int;
 
 final class SystemRandomInt implements RandomIntGenerator
@@ -21,7 +20,7 @@ final class SystemRandomInt implements RandomIntGenerator
     public function generateInt(int $minimum, int $maximum): int
     {
         if ($maximum < $minimum) {
-            throw CanNotGenerateInt::dueToMismatchedValue();
+            throw IntGenerationFailed::dueToMismatchedValue();
         }
 
         return random_int($minimum, $maximum);

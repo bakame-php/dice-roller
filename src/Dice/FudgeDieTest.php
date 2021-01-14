@@ -11,7 +11,7 @@
 
 namespace Bakame\DiceRoller\Dice;
 
-use Bakame\DiceRoller\Contract\RandomIntGenerator;
+use Bakame\DiceRoller\RandomIntGenerator;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;

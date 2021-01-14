@@ -13,12 +13,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\CanBeRolled;
-use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\SupportsTracing;
-use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Tracer\NullTracer;
+use Bakame\DiceRoller\Tracer\SupportsTracing;
+use Bakame\DiceRoller\Tracer\Tracer;
 use Iterator;
 use function array_count_values;
 use function array_filter;
@@ -31,26 +28,21 @@ use function implode;
 
 final class Cup implements \JsonSerializable, Pool, SupportsTracing
 {
-    /**
-     * @var CanBeRolled[]
-     */
+    /** @var Rollable[] */
     private array $items;
 
     private Tracer $tracer;
 
-    /**
-     * @param CanBeRolled ...$items
-     */
-    public function __construct(CanBeRolled ...$items)
+    public function __construct(Rollable ...$items)
     {
         $this->tracer = new NullTracer();
         $this->items = array_filter($items, [$this, 'isValid']);
     }
 
     /**
-     * Tell whether the submitted Rollable can be added to the collection.
+     * Tell whether the submitted object that can be rolled can be added to the collection.
      */
-    private function isValid(CanBeRolled $rollable): bool
+    private function isValid(Rollable $rollable): bool
     {
         return !$rollable instanceof Pool || !$rollable->isEmpty();
     }
@@ -70,7 +62,7 @@ final class Cup implements \JsonSerializable, Pool, SupportsTracing
      *
      * @throws SyntaxError
      */
-    public static function ofType(CanBeRolled $rollable, int $quantity = 1): self
+    public static function of(Rollable $rollable, int $quantity = 1): self
     {
         if ($quantity < 1) {
             throw SyntaxError::dueToTooFewInstancesToRoll($quantity);
@@ -118,7 +110,7 @@ final class Cup implements \JsonSerializable, Pool, SupportsTracing
             $value = $value > 1 ? $value.$offset : $offset;
         };
 
-        $parts = array_map(fn (CanBeRolled $rollable): string => $rollable->notation(), $this->items);
+        $parts = array_map(fn (Rollable $rollable): string => $rollable->notation(), $this->items);
         $pool = array_count_values($parts);
         array_walk($pool, $walker);
 
@@ -175,9 +167,9 @@ final class Cup implements \JsonSerializable, Pool, SupportsTracing
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified Rollable object.
      *
-     * @param CanBeRolled ...$items
+     * @param Rollable ...$items
      */
-    public function withAddedRollable(CanBeRolled ...$items): self
+    public function withAddedRollable(Rollable ...$items): self
     {
         $items = array_filter($items, [$this, 'isValid']);
         if ([] === $items) {

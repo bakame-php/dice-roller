@@ -11,8 +11,6 @@
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\Parser;
-use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Dice\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Traversable;

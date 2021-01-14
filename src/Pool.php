@@ -11,14 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller;
 
-interface RandomIntGenerator
+interface Pool extends \Countable, \IteratorAggregate, Rollable
 {
     /**
-     * Returns a random integer in the range min to max, inclusive.
-     *
-     * @throws \Bakame\DiceRoller\CanNotGenerateInt
+     * Tells whether the pool is empty.
      */
-    public function generateInt(int $minimum, int $maximum): int;
+    public function isEmpty(): bool;
 }

@@ -13,17 +13,16 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\CanBeRolled;
-use Bakame\DiceRoller\Contract\Modifier;
-use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\SupportsTracing;
-use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
+use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Roll;
+use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
+use Bakame\DiceRoller\Tracer\SupportsTracing;
+use Bakame\DiceRoller\Tracer\Tracer;
 use function array_map;
 use function array_sum;
 use function count;
@@ -58,7 +57,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
      * @throws \Bakame\DiceRoller\SyntaxError if the comparison is unknown or not supported
      * @throws \Bakame\DiceRoller\SyntaxError if the Cup triggers infinite loop
      */
-    private function __construct(CanBeRolled $pool, string $compare, int $threshold = null, Tracer $tracer = null)
+    private function __construct(Rollable $pool, string $compare, int $threshold = null, Tracer $tracer = null)
     {
         if (!in_array($compare, self::ALGORITHM_LIST, true)) {
             throw SyntaxError::dueToInvalidOperator($compare);
@@ -80,22 +79,22 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
         $this->setTracer($tracer ?? new NullTracer());
     }
 
-    public static function equals(CanBeRolled $rollable, ?int $threshold, Tracer $tracer = null): self
+    public static function equals(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
     {
         return new self($rollable, self::EQ, $threshold, $tracer);
     }
 
-    public static function greaterThan(CanBeRolled $rollable, ?int $threshold, Tracer $tracer = null): self
+    public static function greaterThan(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
     {
         return new self($rollable, self::GT, $threshold, $tracer);
     }
 
-    public static function lesserThan(CanBeRolled $rollable, ?int $threshold, Tracer $tracer = null): self
+    public static function lesserThan(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self
     {
         return new self($rollable, self::LT, $threshold, $tracer);
     }
 
-    public static function fromAlgorithm(CanBeRolled $rollable, string $compare, ?int $threshold, Tracer $tracer = null): self
+    public static function fromAlgorithm(Rollable $rollable, string $compare, ?int $threshold, Tracer $tracer = null): self
     {
         return new self($rollable, $compare, $threshold, $tracer);
     }
@@ -119,7 +118,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
     /**
      * Tells whether a Rollable object is in valid state.
      */
-    private function isValidRollable(CanBeRolled $rollable): bool
+    private function isValidRollable(Rollable $rollable): bool
     {
         $min = $rollable->minimum();
         $max = $rollable->maximum();
@@ -147,7 +146,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
         return $this->tracer;
     }
 
-    public function getRollingInstance(): CanBeRolled
+    public function getRollingInstance(): Rollable
     {
         if (!$this->is_rollable_wrapped) {
             return $this->pool;
@@ -223,7 +222,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
     /**
      * Add the result of the Rollable::roll method to the submitted sum.
      */
-    private function calculate(array $sum, CanBeRolled $rollable): array
+    private function calculate(array $sum, Rollable $rollable): array
     {
         $threshold = $this->threshold ?? $rollable->maximum();
         do {

@@ -11,12 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller;
 
-interface Tracer
+interface Parser
 {
     /**
-     * Add a Roll object to the current Tracer instance.
+     * Extract dice definitions from a dice notation.
+     *
+     * @throws SyntaxError If the dice notation can not be parsed
      */
-    public function append(Roll $roll): void;
+    public function parse(string $notation): array;
 }

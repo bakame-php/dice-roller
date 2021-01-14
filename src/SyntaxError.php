@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\CanNotBeRolled;
-use Bakame\DiceRoller\Contract\Pool;
-
 final class SyntaxError extends \InvalidArgumentException implements CanNotBeRolled
 {
     private function __construct(string $message)

@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\CanNotBeRolled;
-
-final class CanNotGenerateInt extends \LogicException implements CanNotBeRolled
+final class IntGenerationFailed extends \LogicException implements CanNotBeRolled
 {
     private function __construct(string $message = '')
     {

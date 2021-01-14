@@ -57,7 +57,7 @@ final class Psr3LogTracerTest extends TestCase
         $this->logger->log($logLevel, 'hello {world}', ['world' => 'monde']);
 
         $tracer = new Psr3LogTracer($this->logger, $logLevel);
-        $rollable = Cup::ofType(new SidedDie(6), 3);
+        $rollable = Cup::of(new SidedDie(6), 3);
         $rollable->setTracer($tracer);
         $rollable->roll();
 

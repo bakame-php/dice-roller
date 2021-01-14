@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\Parser;
 use function array_reduce;
 use function count;
 use function explode;

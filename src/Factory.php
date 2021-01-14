@@ -13,14 +13,8 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\CanBeRolled;
-use Bakame\DiceRoller\Contract\Dice;
-use Bakame\DiceRoller\Contract\Parser;
-use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\RandomIntGenerator;
-use Bakame\DiceRoller\Contract\SupportsTracing;
-use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Dice\CustomDie;
+use Bakame\DiceRoller\Dice\Dice;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
@@ -28,6 +22,8 @@ use Bakame\DiceRoller\Modifier\Arithmetic;
 use Bakame\DiceRoller\Modifier\DropKeep;
 use Bakame\DiceRoller\Modifier\Explode;
 use Bakame\DiceRoller\Tracer\NullTracer;
+use Bakame\DiceRoller\Tracer\SupportsTracing;
+use Bakame\DiceRoller\Tracer\Tracer;
 use function count;
 use function iterator_to_array;
 use function strpos;
@@ -48,7 +44,7 @@ final class Factory
         string $notation,
         RandomIntGenerator $randomIntGenerator = null,
         Tracer $tracer = null
-    ): CanBeRolled {
+    ): Rollable {
         return $this->create(
             $this->parser->parse($notation),
             $randomIntGenerator ?? new SystemRandomInt(),
@@ -59,7 +55,7 @@ final class Factory
     /**
      * Returns a new object that can be rolled from a parsed dice notation.
      */
-    private function create(array $parsed, RandomIntGenerator $randomIntGenerator, Tracer $tracer): CanBeRolled
+    private function create(array $parsed, RandomIntGenerator $randomIntGenerator, Tracer $tracer): Rollable
     {
         $rollable = new Cup();
         $rollable->setTracer($tracer);
@@ -93,7 +89,7 @@ final class Factory
      *
      * @throws SyntaxError
      */
-    private function createRollable(array $parts, RandomIntGenerator $randomIntGenerator, Tracer $tracer): CanBeRolled
+    private function createRollable(array $parts, RandomIntGenerator $randomIntGenerator, Tracer $tracer): Rollable
     {
         if (isset($parts['composite'])) {
             return $this->create($parts['composite'], $randomIntGenerator, $tracer);
@@ -104,7 +100,7 @@ final class Factory
             $die->setTracer($tracer);
         }
 
-        $cup = Cup::ofType($die, (int) $parts['simple']['quantity']);
+        $cup = Cup::of($die, (int) $parts['simple']['quantity']);
         $cup->setTracer($tracer);
 
         return $cup;
@@ -137,7 +133,7 @@ final class Factory
      *
      * @throws SyntaxError
      */
-    private function decorate(CanBeRolled $rollable, array $matches): CanBeRolled
+    private function decorate(Rollable $rollable, array $matches): Rollable
     {
         if ('arithmetic' === $matches['modifier']) {
             return Arithmetic::fromOperation($rollable, $matches['operator'], $matches['value']);
@@ -153,7 +149,7 @@ final class Factory
     /**
      * Extracts the Rollable object from a Pool with only one item.
      */
-    private function flattenRollable(CanBeRolled $rollable): CanBeRolled
+    private function flattenRollable(Rollable $rollable): Rollable
     {
         if (!$rollable instanceof Pool) {
             return $rollable;

@@ -11,16 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller\Tracer;
 
-use Bakame\DiceRoller\SyntaxError;
-
-interface Parser
+interface SupportsTracing
 {
     /**
-     * Extract dice definitions from a dice notation.
-     *
-     * @throws SyntaxError If the dice notation can not be parsed
+     * Inject a Roll Tracer instance.
      */
-    public function parse(string $notation): array;
+    public function setTracer(Tracer $tracer): void;
+
+    public function getTracer(): Tracer;
 }

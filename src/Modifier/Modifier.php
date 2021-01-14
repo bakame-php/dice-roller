@@ -11,14 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller\Modifier;
 
-interface SupportsTracing
+use Bakame\DiceRoller\Rollable;
+
+interface Modifier extends Rollable
 {
     /**
-     * Inject a Roll Tracer instance.
+     * Returns the decorated rolling instance.
      */
-    public function setTracer(Tracer $tracer): void;
-
-    public function getTracer(): Tracer;
+    public function getRollingInstance(): Rollable;
 }

@@ -11,12 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller;
 
-interface Dice extends CanBeRolled
+interface RandomIntGenerator
 {
     /**
-     * Returns the die side count.
+     * Returns a random integer in the range min to max, inclusive.
+     *
+     * @throws \Bakame\DiceRoller\IntGenerationFailed
      */
-    public function size(): int;
+    public function generateInt(int $minimum, int $maximum): int;
 }

@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\Context;
-use Bakame\DiceRoller\Contract\Roll;
-
 final class Toss implements \JsonSerializable, Roll
 {
     public function __construct(

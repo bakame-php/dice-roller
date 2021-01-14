@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Tracer;
 
-use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\Tracer;
+use Bakame\DiceRoller\Roll;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;

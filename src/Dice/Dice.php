@@ -11,8 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller\Dice;
 
-interface CanNotBeRolled extends \Throwable
+use Bakame\DiceRoller\Rollable;
+
+interface Dice extends Rollable
 {
+    /**
+     * Returns the die side count.
+     */
+    public function size(): int;
 }

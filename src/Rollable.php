@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller;
 
-interface CanBeRolled
+interface Rollable
 {
     /**
      * Returns the minimum result.

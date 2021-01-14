@@ -11,11 +11,11 @@
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
@@ -32,7 +32,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::ofType(new SidedDie(6), 4);
+        $this->cup = Cup::of(new SidedDie(6), 4);
     }
 
     /**
@@ -61,7 +61,7 @@ final class ExplodeTest extends TestCase
 
     public function provideInvalidProperties(): iterable
     {
-        $cup = Cup::ofType(new SidedDie(6), 4);
+        $cup = Cup::of(new SidedDie(6), 4);
 
         return [
             'greater than invalid threshold' => [
@@ -113,7 +113,7 @@ final class ExplodeTest extends TestCase
      */
     public function testExplodeGreaterThen(): void
     {
-        $rollable = Explode::greaterThan(Cup::ofType(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1);
+        $rollable = Explode::greaterThan(Cup::of(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1);
         $roll = $rollable->roll();
 
         self::assertTrue($roll->value() <= $rollable->maximum());
@@ -128,11 +128,11 @@ final class ExplodeTest extends TestCase
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => Explode::greaterThan(Cup::ofType(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1),
+                'roll' => Explode::greaterThan(Cup::of(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => Explode::equals(Cup::ofType(new SidedDie(6), 4), 1),
+                'roll' => Explode::equals(Cup::of(new SidedDie(6), 4), 1),
                 'annotation' => '4D6!',
             ],
             [

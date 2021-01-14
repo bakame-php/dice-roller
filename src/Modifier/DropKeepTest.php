@@ -11,12 +11,12 @@
 
 namespace Bakame\DiceRoller\Modifier;
 
-use Bakame\DiceRoller\Contract\CanBeRolled;
-use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\Pool;
+use Bakame\DiceRoller\Roll;
+use Bakame\DiceRoller\Rollable;
 use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
@@ -34,7 +34,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::ofType(new SidedDie(6), 4);
+        $this->cup = Cup::of(new SidedDie(6), 4);
     }
 
     /**
@@ -58,7 +58,7 @@ final class DropKeepTest extends TestCase
     {
         self::expectException(SyntaxError::class);
 
-        DropKeep::dropHighest(Cup::ofType(new SidedDie(6), 23), 56);
+        DropKeep::dropHighest(Cup::of(new SidedDie(6), 23), 56);
     }
 
     /**
@@ -67,7 +67,7 @@ final class DropKeepTest extends TestCase
      */
     public function testGetTrace(): void
     {
-        $dice1 = new class() implements CanBeRolled {
+        $dice1 = new class() implements Rollable {
             public function minimum(): int
             {
                 return 1;
@@ -94,7 +94,7 @@ final class DropKeepTest extends TestCase
             }
         };
 
-        $dice2 = new class() implements CanBeRolled {
+        $dice2 = new class() implements Rollable {
             public function minimum(): int
             {
                 return 2;
@@ -203,7 +203,7 @@ final class DropKeepTest extends TestCase
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $dropKeep = DropKeep::dropLowest(Cup::ofType(new SidedDie(6), 3), 2);
+        $dropKeep = DropKeep::dropLowest(Cup::of(new SidedDie(6), 3), 2);
         $dropKeep->setTracer($tracer);
         $dropKeep->roll();
         $dropKeep->maximum();
