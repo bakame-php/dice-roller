@@ -1,7 +1,7 @@
 # Dice Roller
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://github.com/bakame-php/dice-roller/workflows/run-tests/badge.svg)](https://github.com/bakame-php/dice-roller/actions)
+[![Build Status](https://github.com/bakame-php/dice-roller/workflows/run-tests/badge.svg)](https://github.com/bakame-php/dice-roller/actions?query=workflow%3A%22build%22)
 
 A simple Dice Roller implemented in PHP.
 
@@ -25,7 +25,7 @@ This is a fork of [Ethtezahl/Dice-Roller](https://github.com/Ethtezahl/dice-roll
 
 ## System Requirements
 
-You need **PHP >= 7.4.0** but the latest stable version of PHP is recommended.
+You need **PHP >= 8.0** but the latest stable version of PHP is recommended.
 
 ## Installation
 
