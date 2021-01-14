@@ -44,11 +44,7 @@ final class Toss implements \JsonSerializable, Roll
 
     public function info(): array
     {
-        $roll = [
-            'value' => $this->value,
-            'operation' => $this->operation,
-        ];
-
+        $roll = ['value' => $this->value, 'operation' => $this->operation];
         if (null === $this->context) {
             return $roll;
         }
