@@ -11,7 +11,6 @@
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Exception\SyntaxError;
 use PHPUnit\Framework\TestCase;
 
 /**

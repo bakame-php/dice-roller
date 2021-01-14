@@ -11,13 +11,13 @@
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\CanBeRolled;
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
@@ -32,7 +32,7 @@ final class ArithmeticTest extends TestCase
 {
     /**
      * @covers ::add
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testArithmeticAddThrows(): void
     {
@@ -43,7 +43,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::sub
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testArithmeticSubThrows(): void
     {
@@ -54,7 +54,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::mul
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testArithmeticMulThrows(): void
     {
@@ -65,7 +65,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::div
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testArithmeticDivThrows(): void
     {
@@ -76,7 +76,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::pow
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testArithmeticExpThrows(): void
     {
@@ -87,7 +87,7 @@ final class ArithmeticTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testArithmeticConstructorThrows3(): void
     {
@@ -99,7 +99,7 @@ final class ArithmeticTest extends TestCase
     /**
      * @covers ::notation
      * @covers ::jsonSerialize
-     * @covers ::getInnerRollable
+     * @covers ::getRollingInstance
      */
     public function testToString(): void
     {
@@ -113,7 +113,7 @@ final class ArithmeticTest extends TestCase
 
         self::assertSame('(2D3+D4)^3', $cup->notation());
         self::assertSame(json_encode('(2D3+D4)^3'), json_encode($cup));
-        self::assertSame($pool, $cup->getInnerRollable());
+        self::assertSame($pool, $cup->getRollingInstance());
     }
 
     /**
@@ -121,7 +121,7 @@ final class ArithmeticTest extends TestCase
      */
     public function testGetTrace(): void
     {
-        $dice = new class() implements Rollable {
+        $dice = new class() implements CanBeRolled {
             public function minimum(): int
             {
                 return 1;
@@ -299,6 +299,6 @@ final class ArithmeticTest extends TestCase
     {
         self::expectException(SyntaxError::class);
 
-        Arithmetic::fromOperation(Cup::fromRollable(new SidedDie(6), 4), '/', 0);
+        Arithmetic::fromOperation(Cup::ofType(new SidedDie(6), 4), '/', 0);
     }
 }

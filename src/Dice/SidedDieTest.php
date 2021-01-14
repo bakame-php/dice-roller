@@ -12,7 +12,7 @@
 namespace Bakame\DiceRoller\Dice;
 
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
-use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
@@ -50,7 +50,7 @@ final class SidedDieTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testConstructorWithWrongValue(): void
     {
@@ -60,7 +60,7 @@ final class SidedDieTest extends TestCase
 
     /**
      * @covers ::fromNotation
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testFromStringWithWrongValue(): void
     {

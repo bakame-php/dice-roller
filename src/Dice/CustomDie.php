@@ -18,7 +18,7 @@ use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Contract\Roll;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\SystemRandomInt;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
@@ -31,10 +31,11 @@ use function max;
 use function min;
 use function preg_match;
 
-final class CustomDie implements Dice, SupportsTracing
+final class CustomDie implements Dice, \JsonSerializable, SupportsTracing
 {
     private const REGEXP_NOTATION = '/^d\[(?<definition>(\s?(-?\d+)\s?,)*(\s?-?\d+)\s?)\]$/i';
 
+    /** @var array<int> */
     private array $values = [];
 
     private RandomIntGenerator $randomIntGenerator;
@@ -101,7 +102,10 @@ final class CustomDie implements Dice, SupportsTracing
 
     public function minimum(): int
     {
-        return $this->generate(min($this->values), __METHOD__)->value();
+        /** @var int $min */
+        $min = min(...$this->values);
+
+        return $this->generate($min, __METHOD__)->value();
     }
 
     private function generate(int $value, string $method): Roll
@@ -115,7 +119,10 @@ final class CustomDie implements Dice, SupportsTracing
 
     public function maximum(): int
     {
-        return $this->generate(max($this->values), __METHOD__)->value();
+        /** @var int $max */
+        $max = max(...$this->values);
+
+        return $this->generate($max, __METHOD__)->value();
     }
 
     public function roll(): Roll

@@ -11,13 +11,12 @@
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\CanBeRolled;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
@@ -80,7 +79,7 @@ final class CupTest extends TestCase
         self::assertSame(48, $cup->maximum());
         self::assertSame('4D10+2D4', $cup->notation());
         self::assertCount(2, $cup);
-        self::assertContainsOnlyInstancesOf(Rollable::class, $cup);
+        self::assertContainsOnlyInstancesOf(CanBeRolled::class, $cup);
         for ($i = 0; $i < 5; $i++) {
             $result = $cup->roll()->value();
             self::assertGreaterThanOrEqual($cup->minimum(), $result);
@@ -90,12 +89,12 @@ final class CupTest extends TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::fromRollable
+     * @covers ::ofType
      * @dataProvider validNamedConstructor
      */
-    public function testCreateFromRollable(int $quantity, Rollable $template): void
+    public function testCreateFromRollable(int $quantity, CanBeRolled $template): void
     {
-        $cup = Cup::fromRollable($template, $quantity);
+        $cup = Cup::ofType($template, $quantity);
         self::assertCount($quantity, $cup);
         self::assertContainsOnlyInstancesOf(get_class($template), $cup);
     }
@@ -126,18 +125,18 @@ final class CupTest extends TestCase
     public function testCreateFromRollableThrowsException(): void
     {
         self::expectException(SyntaxError::class);
-        Cup::fromRollable(new FudgeDie(), 0);
+        Cup::ofType(new FudgeDie(), 0);
     }
 
     /**
      * @covers ::__construct
-     * @covers ::fromRollable
+     * @covers ::ofType
      * @covers ::withAddedRollable
      * @covers ::isValid
      */
     public function testCreateFromRollableReturnsEmptyCollection(): void
     {
-        $cup = Cup::fromRollable(new Cup(), 12);
+        $cup = Cup::ofType(new Cup(), 12);
         $alt_cup = $cup->withAddedRollable(new Cup());
         self::assertCount(0, $cup);
         self::assertSame($cup, $alt_cup);
@@ -169,7 +168,7 @@ final class CupTest extends TestCase
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $cup = Cup::fromRollable(CustomDie::fromNotation('d[2, -3, -5]'), 12);
+        $cup = Cup::ofType(CustomDie::fromNotation('d[2, -3, -5]'), 12);
         self::assertEquals(new NullTracer(), $cup->getTracer());
         $cup->setTracer($tracer);
         $cup->roll();
@@ -188,7 +187,7 @@ final class CupTest extends TestCase
      */
     public function testFiveFourSidedDice(): void
     {
-        $cup = Cup::fromRollable(new SidedDie(4), 5);
+        $cup = Cup::ofType(new SidedDie(4), 5);
         self::assertSame(json_encode('5D4'), json_encode($cup));
         self::assertCount(5, $cup);
         self::assertContainsOnlyInstancesOf(SidedDie::class, $cup);

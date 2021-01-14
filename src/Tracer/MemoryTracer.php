@@ -19,7 +19,6 @@ use Countable;
 use Iterator;
 use IteratorAggregate;
 use JsonSerializable;
-use function sprintf;
 
 final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializable, Tracer
 {
@@ -64,7 +63,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
 
     public function jsonSerialize(): array
     {
-        return array_map(static fn (Roll $roll): array => $roll->info(), $this->collection);
+        return array_map(fn (Roll $roll): array => $roll->info(), $this->collection);
     }
 
     /**
@@ -75,11 +74,11 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
     public function get(int $offset): Roll
     {
         $index = $this->filterOffset($offset);
-        if (null !== $index) {
-            return $this->collection[$index];
+        if (null === $index) {
+            throw new \OutOfBoundsException($offset.' is an invalid offset in the current instance.');
         }
 
-        throw new \OutOfBoundsException(sprintf('%s is an invalid offset in the current instance', $offset));
+        return $this->collection[$index];
     }
 
     /**

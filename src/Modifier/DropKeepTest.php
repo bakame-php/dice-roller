@@ -11,13 +11,13 @@
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\CanBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
@@ -34,7 +34,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::fromRollable(new SidedDie(6), 4);
+        $this->cup = Cup::ofType(new SidedDie(6), 4);
     }
 
     /**
@@ -58,7 +58,7 @@ final class DropKeepTest extends TestCase
     {
         self::expectException(SyntaxError::class);
 
-        DropKeep::dropHighest(Cup::fromRollable(new SidedDie(6), 23), 56);
+        DropKeep::dropHighest(Cup::ofType(new SidedDie(6), 23), 56);
     }
 
     /**
@@ -67,7 +67,7 @@ final class DropKeepTest extends TestCase
      */
     public function testGetTrace(): void
     {
-        $dice1 = new class() implements Rollable {
+        $dice1 = new class() implements CanBeRolled {
             public function minimum(): int
             {
                 return 1;
@@ -94,7 +94,7 @@ final class DropKeepTest extends TestCase
             }
         };
 
-        $dice2 = new class() implements Rollable {
+        $dice2 = new class() implements CanBeRolled {
             public function minimum(): int
             {
                 return 2;
@@ -197,20 +197,20 @@ final class DropKeepTest extends TestCase
      * @covers ::decorate
      * @covers ::setTracer
      * @covers ::getTracer
-     * @covers ::getInnerRollable
+     * @covers ::getRollingInstance
      */
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $dropKeep = DropKeep::dropLowest(Cup::fromRollable(new SidedDie(6), 3), 2);
+        $dropKeep = DropKeep::dropLowest(Cup::ofType(new SidedDie(6), 3), 2);
         $dropKeep->setTracer($tracer);
         $dropKeep->roll();
         $dropKeep->maximum();
         $dropKeep->minimum();
 
         self::assertSame($tracer, $dropKeep->getTracer());
-        self::assertInstanceOf(Pool::class, $dropKeep->getInnerRollable());
+        self::assertInstanceOf(Pool::class, $dropKeep->getRollingInstance());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
 
         $pool = CustomDie::fromNotation('d[-1, -2, -3]');
@@ -220,13 +220,13 @@ final class DropKeepTest extends TestCase
     }
 
     /**
-     * @covers ::getInnerRollable
+     * @covers ::getRollingInstance
      */
     public function testGetInnerRollableMethod(): void
     {
         $custom = CustomDie::fromNotation('d[1,2,3]');
         $rollable = DropKeep::dropLowest($custom, 1);
 
-        self::assertSame($custom, $rollable->getInnerRollable());
+        self::assertSame($custom, $rollable->getRollingInstance());
     }
 }

@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Pool extends \Countable, \IteratorAggregate, Rollable
+interface Pool extends \Countable, \IteratorAggregate, CanBeRolled
 {
     /**
-     * Tells whether the Pool of Rollable objects is empty.
+     * Tells whether the pool is empty.
      */
     public function isEmpty(): bool;
 }

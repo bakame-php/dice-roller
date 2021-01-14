@@ -156,7 +156,7 @@ Here's the list of supported roll rules by `Bakame\DiceRoller\NotationParser`.
 |  `NDF`     |  `3DF` |  create a dice pool where `N` represents the number of fudge dices. If `N` is omitted this means that you are requestion a single fugde dice. |
 |  `ND%`     |  `3D%` |  create a dice pool where `N` represents the number of percentile dices. If `N` is omitted this means that you are requestion a single percentile dice. |
 |  `ND[x,x,x,x,...]`     |  `2D[1,2,2,5]` |  create a dice pool where `N` represents the number of custom dices and `x` the value of a specific dice side. The number of `x` represents the side count. If `N` is omitted this means that you are requestion a single custome dice. a Custom dice must contain at least 2 sides. |
-| `oc`       | `^3`| where `o` represents the supported operators (`+`, `-`, `*`, `/`, `^`) and `c` a positive integer |
+|  `oc`      | `^3`| where `o` represents the supported operators (`+`, `-`, `*`, `/`, `^`) and `c` a positive integer |
 |  `!oc`     | `!>3` | an explode modifier where `o` represents one of the supported comparision operator (`>`, `<`, `=`)  and `c` a positive integer |
 |  `[dh,dl,kh,kl]z` | `dh4` | keeping or dropping the lowest or highest z dice |
 
@@ -179,12 +179,12 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\CanBeRolled;
 
 final class Factory
 {
     public function __construct(Parser $parser = null);
-    public function newInstance(string $notation, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null): Rollable;
+    public function newInstance(string $notation, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null): CanBeRolled;
 }
 ```
 
@@ -231,14 +231,14 @@ interface Rollable
 
 ### Dices Type
 
-In addition to the `Rollable` interface, all dices objects implement the `Dice` interface. The `size` method returns the die sides count.  
+In addition to the `Rollable` interface, all dices objects implement the `Dice` interface. The `size` method returns the die sides count.
 
 ```php
 <?php
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Dice extends Rollable
+interface Dice extends CanBeRolled
 {
     public function size(): int;
 }
@@ -253,7 +253,7 @@ The following die type are bundled in the library:
 | `PercentileDie` | 100 sided die with values between `1` and `100`.      |
 | `CustomDie`     | die with custom side values                           |
 
-- A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\Exception\SyntaxError` exception is thrown on instantiation.  
+- A die object must have at least 2 sides otherwise a `Bakame\DiceRoller\SyntaxError` exception is thrown on instantiation.  
 - If a named constructor does not recognize the string notation a `Bakame\DiceRoller\Exception\UnknownNotation`exception is thrown.
 
 ##### Examples
@@ -316,13 +316,13 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface.
 
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Pool;
-use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\CanBeRolled;
 
 final class Cup implements Pool, SupportsTracing
 {
-    public function __construct(Rollable ...$rollable);
-    public static function fromRollable(Rollable $rollable, int $quantity = 1): self;
-    public function withAddedRollable(Rollable ...$rollable): self
+    public function __construct(CanBeRolled ...$rollable);
+    public static function fromRollable(CanBeRolled $rollable, int $quantity = 1): self;
+    public function withAddedRollable(CanBeRolled ...$rollable): self
 }
 ```
 
@@ -337,13 +337,13 @@ use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\PercentileDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 
-echo Cup::fromRollable(new SidedDie(5), 3)->notation();           // displays 3D5
-echo Cup::fromRollable(new PercentileDie(), 4)->notation();       // displays 4D%
-echo Cup::fromRollable(CustomDie::fromNotation('d[1, 2, 2, 4]'), 2)->notation(); // displays 2D[1,2,2,4]
-echo Cup::fromRollable(new FudgeDie(), 42)->notation();           // displays 42DF
+echo Cup::ofType(new SidedDie(5), 3)->notation();           // displays 3D5
+echo Cup::ofType(new PercentileDie(), 4)->notation();       // displays 4D%
+echo Cup::ofType(CustomDie::fromNotation('d[1, 2, 2, 4]'), 2)->notation(); // displays 2D[1,2,2,4]
+echo Cup::ofType(new FudgeDie(), 42)->notation();           // displays 42DF
 ```
 
-A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\Exception\SyntaxError` is thrown.
+A `Cup` created using `fromRollable` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\SyntaxError` is thrown.
 
 When iterating over a `Cup` object you will get access to all its inner `Rollable` objects.
 
@@ -353,7 +353,7 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 
-foreach (Cup::fromRollable(new SidedDie(5), 3) as $rollable) {
+foreach (Cup::ofType(new SidedDie(5), 3) as $rollable) {
     echo $rollable->notation(); // will always return D5
 }
 ```
@@ -367,7 +367,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\SidedDie;
 
-$cup = Cup::fromRollable(new SidedDie(5), 3);
+$cup = Cup::ofType(new SidedDie(5), 3);
 count($cup);             //returns 3 the number of dices
 echo $cup->notation(); //returns 3D5
 
@@ -391,7 +391,7 @@ count($cup); // returns 1
 ### Modifiers
 
 Sometimes you may want to modify the outcome of a roll. The library comes bundle with three (3) objects implementing the `Modifier` interface.  
-The `Modifier` interface extends the `Rollable` interface by giving access to the rollable object being decorated through the `Modifier::getInnerRollable` method.  
+The `Modifier` interface extends the `Rollable` interface by giving access to the rollable object being decorated through the `Modifier::getInnerRollable` method.
 
 ```php
 <?php
@@ -400,7 +400,7 @@ namespace Bakame\DiceRoller\Contract;
 
 interface Modifier implements Rollable
 {
-    public function getInnerRollable(): Rollable;
+    public function getInnerRollable(): CanBeRolled;
 }
 ```
 
@@ -413,17 +413,17 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Modifier;
-use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\CanBeRolled;
 use Bakame\DiceRoller\Contract\Tracer;
 
 final class Arithmetic implements Modifier, SupportsTracing
 {
-    public static function add(Rollable $rollable, int $value, Tracer $tracer = null): self;
-    public static function sub(Rollable $rollable, int $value, Tracer $tracer = null): self;
-    public static function mul(Rollable $rollable, int $value, Tracer $tracer = null): self;
-    public static function div(Rollable $rollable, int $value, Tracer $tracer = null): self;
-    public static function pow(Rollable $rollable, int $value, Tracer $tracer = null): self;
-    public static function fromOperation(Rollable $rollable, string $operator, int $value, Tracer $tracer = null): self;
+    public static function add(CanBeRolled $rollable, int $value, Tracer $tracer = null): self;
+    public static function sub(CanBeRolled $rollable, int $value, Tracer $tracer = null): self;
+    public static function mul(CanBeRolled $rollable, int $value, Tracer $tracer = null): self;
+    public static function div(CanBeRolled $rollable, int $value, Tracer $tracer = null): self;
+    public static function pow(CanBeRolled $rollable, int $value, Tracer $tracer = null): self;
+    public static function fromOperation(CanBeRolled $rollable, string $operator, int $value, Tracer $tracer = null): self;
 }
 ```
 
@@ -450,15 +450,15 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Modifier;
-use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\CanBeRolled;
 
 final class DropKeep implements Modifier, SupportsTracing
 {
-    public static function dropHighest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
-    public static function dropLowest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
-    public static function keepHighest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
-    public static function keepLowest(Rollable $rollable, int $threshold, Tracer $tracer = null): self;
-    public static function fromAlgorithm(Rollable $rollable, string $algorithm, int $threshold, Tracer $tracer = null): self;
+    public static function dropHighest(CanBeRolled $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function dropLowest(CanBeRolled $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function keepHighest(CanBeRolled $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function keepLowest(CanBeRolled $rollable, int $threshold, Tracer $tracer = null): self;
+    public static function fromAlgorithm(CanBeRolled $rollable, string $algorithm, int $threshold, Tracer $tracer = null): self;
 }
 ```
 
@@ -486,7 +486,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\SidedDie;
 use Bakame\DiceRoller\Modifier\DropKeep;
 
-$cup = Cup::fromRollable(new SidedDie(6), 4);
+$cup = Cup::ofType(new SidedDie(6), 4);
 $modifier = DropKeep::dropHighest($cup, 3);
 echo $modifier->notation(); // displays '4D6DH3'
 ```
@@ -500,14 +500,14 @@ namespace Bakame\DiceRoller\Modifier;
 
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Modifier;
-use Bakame\DiceRoller\Contract\Rollable;
+use Bakame\DiceRoller\Contract\CanBeRolled;
 
 final class Explode implements Modifier, SupportsTracing
 {
-    public static function equals(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self;
-    public static function greaterThan(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self;
-    public static function lesserThan(Rollable $rollable, ?int $threshold, Tracer $tracer = null): self;
-    public static function fromAlgorithm(Rollable $rollable, string $compare, ?int $threshold, Tracer $tracer = null): self;
+    public static function equals(CanBeRolled $rollable, ?int $threshold, Tracer $tracer = null): self;
+    public static function greaterThan(CanBeRolled $rollable, ?int $threshold, Tracer $tracer = null): self;
+    public static function lesserThan(CanBeRolled $rollable, ?int $threshold, Tracer $tracer = null): self;
+    public static function fromAlgorithm(CanBeRolled $rollable, string $compare, ?int $threshold, Tracer $tracer = null): self;
 }
 ```
 
@@ -586,7 +586,7 @@ use Bakame\DiceRoller\Dice\SidedDie;
 
 $tracer = new MemoryTracer();
 $tracer->isEmpty(); //returns true
-$cup = Cup::fromRollable(new SidedDie(6), 3);
+$cup = Cup::ofType(new SidedDie(6), 3);
 $cup->setTracer($tracer);
 $cup->roll();
 $tracer->isEmpty(); //returns false

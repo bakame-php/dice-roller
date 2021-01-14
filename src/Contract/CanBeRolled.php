@@ -11,17 +11,17 @@
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Rollable extends \JsonSerializable
+interface CanBeRolled
 {
     /**
-     * Returns the rollable minimum result.
+     * Returns the minimum result.
      *
      * MUST be lesser than or equal to the maximum value
      */
     public function minimum(): int;
 
     /**
-     * Returns the rollable maximum result.
+     * Returns the maximum result.
      *
      * MUST be greater than or equal to the minimum value
      */
@@ -33,7 +33,7 @@ interface Rollable extends \JsonSerializable
     public function roll(): Roll;
 
     /**
-     * Returns the Rollable dice annotation as a string.
+     * Returns the subject dice annotation as a string.
      */
     public function notation(): string;
 }

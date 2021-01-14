@@ -16,18 +16,18 @@
         }
     ],
     "require": {
-        "php": "^7.4",
+        "php": "^8.0",
         "ext-json": "*"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.16",
-        "infection/infection": "^0.15.0",
+        "infection/infection": "^0.20.0",
         "phpstan/phpstan": "^0.12.0",
         "phpstan/phpstan-phpunit": "^0.12.0",
         "phpstan/phpstan-strict-rules": "^0.12.0",
         "phpunit/phpunit": "^9.0",
         "psr/log": "^1.1",
-        "vimeo/psalm": "^3.16"
+        "vimeo/psalm": "^4.0"
     },
     "suggest": {
         "psr/log": "to use the PSR-3 compatible tracer"
@@ -43,17 +43,17 @@
         }
     },
     "scripts": {
-        "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
+        "phpcs": "PHP_CS_FIXER_IGNORE_ENV=1 php-cs-fixer fix -v --diff --dry-run --allow-risky=yes;",
         "phpstan": "phpstan analyse -l max -c phpstan.neon src --memory-limit 192M",
         "psalm": "psalm --show-info=true",
         "phpunit": "phpunit --coverage-text",
         "infection-linux": "infection -j$(nproc) --coverage=build --ignore-msi-with-no-mutations --min-covered-msi=70",
         "infection-osx": "infection -j$(sysctl -n hw.ncpu) --coverage=build --ignore-msi-with-no-mutations --min-covered-msi=70",
         "test": [
-            "@phpcs",
+            "@phpunit",
             "@phpstan",
             "@psalm",
-            "@phpunit"
+            "@phpcs"
         ],
         "test-linux": [
             "@test",

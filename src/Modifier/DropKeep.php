@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Modifier;
 
+use Bakame\DiceRoller\Contract\CanBeRolled;
 use Bakame\DiceRoller\Contract\Modifier;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
@@ -36,7 +36,7 @@ use function strpos;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements Modifier, SupportsTracing
+final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
 {
     private const DROP_HIGHEST = 'DH';
     private const DROP_LOWEST = 'DL';
@@ -63,7 +63,7 @@ final class DropKeep implements Modifier, SupportsTracing
 
     private bool $is_rollable_wrapped = false;
 
-    private function __construct(Rollable $pool, string $algorithm, int $threshold, Tracer $tracer = null)
+    private function __construct(CanBeRolled $pool, string $algorithm, int $threshold, Tracer $tracer = null)
     {
         $algorithm = strtoupper($algorithm);
         if (!in_array($algorithm, self::ALGORITHM_LIST, true)) {
@@ -76,7 +76,7 @@ final class DropKeep implements Modifier, SupportsTracing
         }
 
         if (count($pool) < $threshold) {
-            throw SyntaxError::dueToTooManyRollableInstances($pool, $threshold);
+            throw SyntaxError::dueToTooManyInstancesToRoll(count($pool), $threshold);
         }
 
         $this->pool = $pool;
@@ -85,27 +85,27 @@ final class DropKeep implements Modifier, SupportsTracing
         $this->setTracer($tracer ?? new NullTracer());
     }
 
-    public static function dropLowest(Rollable $pool, int $threshold, Tracer $tracer = null): self
+    public static function dropLowest(CanBeRolled $pool, int $threshold, Tracer $tracer = null): self
     {
         return new self($pool, self::DROP_LOWEST, $threshold, $tracer);
     }
 
-    public static function dropHighest(Rollable $pool, int $threshold, Tracer $tracer = null): self
+    public static function dropHighest(CanBeRolled $pool, int $threshold, Tracer $tracer = null): self
     {
         return new self($pool, self::DROP_HIGHEST, $threshold, $tracer);
     }
 
-    public static function keepLowest(Rollable $pool, int $threshold, Tracer $tracer = null): self
+    public static function keepLowest(CanBeRolled $pool, int $threshold, Tracer $tracer = null): self
     {
         return new self($pool, self::KEEP_LOWEST, $threshold, $tracer);
     }
 
-    public static function keepHighest(Rollable $pool, int $threshold, Tracer $tracer = null): self
+    public static function keepHighest(CanBeRolled $pool, int $threshold, Tracer $tracer = null): self
     {
         return new self($pool, self::KEEP_HIGHEST, $threshold, $tracer);
     }
 
-    public static function fromAlgorithm(Rollable $rollable, string $algorithm, int $threshold, Tracer $tracer = null): self
+    public static function fromAlgorithm(CanBeRolled $rollable, string $algorithm, int $threshold, Tracer $tracer = null): self
     {
         return new self($rollable, $algorithm, $threshold, $tracer);
     }
@@ -120,7 +120,7 @@ final class DropKeep implements Modifier, SupportsTracing
         return $this->tracer;
     }
 
-    public function getInnerRollable(): Rollable
+    public function getRollingInstance(): CanBeRolled
     {
         if (!$this->is_rollable_wrapped) {
             return $this->pool;

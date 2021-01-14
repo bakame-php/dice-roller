@@ -14,7 +14,6 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Contract\Parser;
 use Bakame\DiceRoller\Contract\RandomIntGenerator;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Exception\SyntaxError;
 use PHPUnit\Framework\TestCase;
 use Traversable;
 
@@ -33,7 +32,7 @@ final class FactoryTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::newInstance
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      * @covers ::addRollable
      * @covers ::createRollable
      * @covers ::decorate

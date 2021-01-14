@@ -23,7 +23,7 @@ use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
 
-final class FudgeDie implements Dice, SupportsTracing
+final class FudgeDie implements Dice, \JsonSerializable, SupportsTracing
 {
     private RandomIntGenerator $randomIntGenerator;
 

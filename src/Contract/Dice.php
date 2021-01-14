@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Dice extends Rollable
+interface Dice extends CanBeRolled
 {
     /**
      * Returns the die side count.

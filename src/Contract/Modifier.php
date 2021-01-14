@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller\Contract;
 
-interface Modifier extends Rollable
+interface Modifier extends CanBeRolled
 {
     /**
-     * Returns the decorated Rollable object.
+     * Returns the decorated rolling instance.
      */
-    public function getInnerRollable(): Rollable;
+    public function getRollingInstance(): CanBeRolled;
 }

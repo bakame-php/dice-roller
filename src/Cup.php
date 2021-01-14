@@ -13,12 +13,11 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use Bakame\DiceRoller\Contract\CanBeRolled;
 use Bakame\DiceRoller\Contract\Pool;
 use Bakame\DiceRoller\Contract\Roll;
-use Bakame\DiceRoller\Contract\Rollable;
 use Bakame\DiceRoller\Contract\SupportsTracing;
 use Bakame\DiceRoller\Contract\Tracer;
-use Bakame\DiceRoller\Exception\SyntaxError;
 use Bakame\DiceRoller\Tracer\NullTracer;
 use Iterator;
 use function array_count_values;
@@ -30,19 +29,19 @@ use function array_walk;
 use function count;
 use function implode;
 
-final class Cup implements Pool, SupportsTracing
+final class Cup implements \JsonSerializable, Pool, SupportsTracing
 {
     /**
-     * @var Rollable[]
+     * @var CanBeRolled[]
      */
-    private array $items = [];
+    private array $items;
 
     private Tracer $tracer;
 
     /**
-     * @param Rollable ...$items
+     * @param CanBeRolled ...$items
      */
-    public function __construct(Rollable ...$items)
+    public function __construct(CanBeRolled ...$items)
     {
         $this->tracer = new NullTracer();
         $this->items = array_filter($items, [$this, 'isValid']);
@@ -51,7 +50,7 @@ final class Cup implements Pool, SupportsTracing
     /**
      * Tell whether the submitted Rollable can be added to the collection.
      */
-    private function isValid(Rollable $rollable): bool
+    private function isValid(CanBeRolled $rollable): bool
     {
         return !$rollable instanceof Pool || !$rollable->isEmpty();
     }
@@ -67,14 +66,14 @@ final class Cup implements Pool, SupportsTracing
     }
 
     /**
-     * Create a new Cup containing only one type of Rollable object.
+     * Create a new Cup containing only one type of object that can be rolled.
      *
      * @throws SyntaxError
      */
-    public static function fromRollable(Rollable $rollable, int $quantity = 1): self
+    public static function ofType(CanBeRolled $rollable, int $quantity = 1): self
     {
         if ($quantity < 1) {
-            throw SyntaxError::dueToTooFewRollableInstances($quantity);
+            throw SyntaxError::dueToTooFewInstancesToRoll($quantity);
         }
         --$quantity;
 
@@ -119,7 +118,7 @@ final class Cup implements Pool, SupportsTracing
             $value = $value > 1 ? $value.$offset : $offset;
         };
 
-        $parts = array_map(fn (Rollable $rollable): string => $rollable->notation(), $this->items);
+        $parts = array_map(fn (CanBeRolled $rollable): string => $rollable->notation(), $this->items);
         $pool = array_count_values($parts);
         array_walk($pool, $walker);
 
@@ -176,9 +175,9 @@ final class Cup implements Pool, SupportsTracing
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified Rollable object.
      *
-     * @param Rollable ...$items
+     * @param CanBeRolled ...$items
      */
-    public function withAddedRollable(Rollable ...$items): self
+    public function withAddedRollable(CanBeRolled ...$items): self
     {
         $items = array_filter($items, [$this, 'isValid']);
         if ([] === $items) {

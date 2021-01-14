@@ -16,7 +16,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\Dice\CustomDie;
 use Bakame\DiceRoller\Dice\FudgeDie;
 use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Exception\SyntaxError;
+use Bakame\DiceRoller\SyntaxError;
 use Bakame\DiceRoller\Tracer\Psr3Logger;
 use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +32,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::fromRollable(new SidedDie(6), 4);
+        $this->cup = Cup::ofType(new SidedDie(6), 4);
     }
 
     /**
@@ -44,7 +44,7 @@ final class ExplodeTest extends TestCase
      * @covers ::__construct
      * @covers ::isValidPool
      * @covers ::isValidRollable
-     * @covers \Bakame\DiceRoller\Exception\SyntaxError
+     * @covers \Bakame\DiceRoller\SyntaxError
      */
     public function testConstructorThrows(Pool $cup, string $compare, int $threshold): void
     {
@@ -61,7 +61,7 @@ final class ExplodeTest extends TestCase
 
     public function provideInvalidProperties(): iterable
     {
-        $cup = Cup::fromRollable(new SidedDie(6), 4);
+        $cup = Cup::ofType(new SidedDie(6), 4);
 
         return [
             'greater than invalid threshold' => [
@@ -91,7 +91,7 @@ final class ExplodeTest extends TestCase
     {
         $rollable = new FudgeDie();
 
-        self::assertSame($rollable, Explode::equals($rollable, 1)->getInnerRollable());
+        self::assertSame($rollable, Explode::equals($rollable, 1)->getRollingInstance());
     }
 
     /**
@@ -113,7 +113,7 @@ final class ExplodeTest extends TestCase
      */
     public function testExplodeGreaterThen(): void
     {
-        $rollable = Explode::greaterThan(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1);
+        $rollable = Explode::greaterThan(Cup::ofType(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1);
         $roll = $rollable->roll();
 
         self::assertTrue($roll->value() <= $rollable->maximum());
@@ -128,11 +128,11 @@ final class ExplodeTest extends TestCase
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => Explode::greaterThan(Cup::fromRollable(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1),
+                'roll' => Explode::greaterThan(Cup::ofType(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => Explode::equals(Cup::fromRollable(new SidedDie(6), 4), 1),
+                'roll' => Explode::equals(Cup::ofType(new SidedDie(6), 4), 1),
                 'annotation' => '4D6!',
             ],
             [
@@ -150,7 +150,7 @@ final class ExplodeTest extends TestCase
      * @covers ::equals
      * @covers ::greaterThan
      * @covers ::lesserThan
-     * @covers ::getInnerRollable
+     * @covers ::getRollingInstance
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::calculate
@@ -169,7 +169,7 @@ final class ExplodeTest extends TestCase
         }
 
         $rollValue = $explode->roll()->value();
-        self::assertSame($this->cup, $explode->getInnerRollable());
+        self::assertSame($this->cup, $explode->getRollingInstance());
         self::assertSame($min, $explode->minimum());
         self::assertSame($max, $explode->maximum());
         self::assertGreaterThanOrEqual($min, $rollValue);
@@ -209,7 +209,7 @@ final class ExplodeTest extends TestCase
      * @covers ::setTracer
      * @covers ::getTracer
      * @covers ::isValid
-     * @covers ::getInnerRollable
+     * @covers ::getRollingInstance
      */
     public function testTracer(): void
     {
@@ -226,6 +226,6 @@ final class ExplodeTest extends TestCase
         $explode->minimum();
         self::assertSame($tracer, $explode->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
-        self::assertInstanceOf(CustomDie::class, $explode->getInnerRollable());
+        self::assertInstanceOf(CustomDie::class, $explode->getRollingInstance());
     }
 }

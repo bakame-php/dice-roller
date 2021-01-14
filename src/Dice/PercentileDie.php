@@ -23,7 +23,7 @@ use Bakame\DiceRoller\Toss;
 use Bakame\DiceRoller\TossContext;
 use Bakame\DiceRoller\Tracer\NullTracer;
 
-final class PercentileDie implements Dice, SupportsTracing
+final class PercentileDie implements Dice, SupportsTracing, \JsonSerializable
 {
     private RandomIntGenerator $randomIntGenerator;
 

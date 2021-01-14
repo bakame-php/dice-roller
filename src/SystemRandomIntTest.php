@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Exception\IntGeneratorError;
 use PHPUnit\Framework\TestCase;
 
 final class SystemRandomIntTest extends TestCase
@@ -38,7 +37,7 @@ final class SystemRandomIntTest extends TestCase
 
     public function testItThrowsIfMaximumIsLesserThanMinimum(): void
     {
-        self::expectException(IntGeneratorError::class);
+        self::expectException(CanNotGenerateInt::class);
 
         $this->generator->generateInt(5, 3);
     }

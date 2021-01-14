@@ -16,19 +16,13 @@ namespace Bakame\DiceRoller;
 use Bakame\DiceRoller\Contract\Context;
 use Bakame\DiceRoller\Contract\Roll;
 
-final class Toss implements Roll
+final class Toss implements \JsonSerializable, Roll
 {
-    private int $value;
-
-    private string $operation;
-
-    private ?Context $context;
-
-    public function __construct(int $value, string $operation, ?Context $context = null)
-    {
-        $this->value = $value;
-        $this->operation = $operation;
-        $this->context = $context;
+    public function __construct(
+        private int $value,
+        private string $operation,
+        private ?Context $context = null
+    ) {
     }
 
     public function value(): int
