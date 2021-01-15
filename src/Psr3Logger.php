@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
 use Psr\Log\AbstractLogger;
 use function strtr;

@@ -11,16 +11,8 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Modifier;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Roll;
-use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\SyntaxError;
-use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\TossContext;
-use Bakame\DiceRoller\Tracer\NullTracer;
-use Bakame\DiceRoller\Tracer\SupportsTracing;
-use Bakame\DiceRoller\Tracer\Tracer;
 use function abs;
 use function in_array;
 use function strpos;

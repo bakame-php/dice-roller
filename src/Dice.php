@@ -11,14 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
-interface SupportsTracing
+interface Dice extends Rollable
 {
     /**
-     * Inject a Roll Tracer instance.
+     * Returns the die side count.
      */
-    public function setTracer(Tracer $tracer): void;
-
-    public function getTracer(): Tracer;
+    public function size(): int;
 }

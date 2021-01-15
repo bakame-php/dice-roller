@@ -11,18 +11,8 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Modifier;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Pool;
-use Bakame\DiceRoller\Roll;
-use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\SyntaxError;
-use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\TossContext;
-use Bakame\DiceRoller\Tracer\NullTracer;
-use Bakame\DiceRoller\Tracer\SupportsTracing;
-use Bakame\DiceRoller\Tracer\Tracer;
 use function array_map;
 use function array_slice;
 use function array_sum;

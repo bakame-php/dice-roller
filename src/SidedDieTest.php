@@ -9,42 +9,61 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Dice;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\RandomIntGenerator;
-use Bakame\DiceRoller\Tracer\MemoryTracer;
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use function json_encode;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Dice\PercentileDie
+ * @coversDefaultClass \Bakame\DiceRoller\SidedDie
  */
-final class PercentileDieTest extends TestCase
+final class SidedDieTest extends TestCase
 {
-    public function testFudgeDice(): void
+    public function testSixSidedValues(): void
     {
         $randomIntProvider = new class() implements RandomIntGenerator {
             public function generateInt(int $minimum, int $maximum): int
             {
-                return 42;
+                return 3;
             }
         };
 
-        $dice = new PercentileDie($randomIntProvider);
-        $dice->setTracer(new MemoryTracer());
-        self::assertSame(100, $dice->size());
-        self::assertSame(100, $dice->maximum());
+        $expected = 6;
+        $dice = new SidedDie($expected, $randomIntProvider);
+        self::assertSame($expected, $dice->size());
+        self::assertSame('D6', $dice->notation());
+        self::assertEquals($dice, SidedDie::fromNotation($dice->notation(), $randomIntProvider));
+        self::assertSame($expected, $dice->maximum());
         self::assertSame(1, $dice->minimum());
-        self::assertSame('D%', $dice->notation());
-        self::assertSame(json_encode('D%'), json_encode($dice));
+        self::assertSame(json_encode('D6'), json_encode($dice));
 
         $test = $dice->roll()->value();
-        self::assertSame(42, $test);
+        self::assertSame(3, $test);
         self::assertGreaterThanOrEqual($dice->minimum(), $test);
         self::assertLessThanOrEqual($dice->maximum(), $test);
     }
+
+    /**
+     * @covers ::__construct
+     * @covers \Bakame\DiceRoller\SyntaxError
+     */
+    public function testConstructorWithWrongValue(): void
+    {
+        self::expectException(SyntaxError::class);
+        new SidedDie(1);
+    }
+
+    /**
+     * @covers ::fromNotation
+     * @covers \Bakame\DiceRoller\SyntaxError
+     */
+    public function testFromStringWithWrongValue(): void
+    {
+        self::expectException(SyntaxError::class);
+        SidedDie::fromNotation('1');
+    }
+
 
     /**
      * @covers ::setTracer
@@ -53,8 +72,9 @@ final class PercentileDieTest extends TestCase
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
-        $rollable = new PercentileDie();
+        $rollable = new SidedDie(5);
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
+
         $rollable->roll();
         $rollable->setTracer($tracer);
         $rollable->roll();

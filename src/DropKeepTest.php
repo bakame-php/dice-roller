@@ -9,24 +9,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Modifier;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\CustomDie;
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Pool;
-use Bakame\DiceRoller\Roll;
-use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\SyntaxError;
-use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use function json_encode;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Modifier\DropKeep
+ * @coversDefaultClass \Bakame\DiceRoller\DropKeep
  */
 final class DropKeepTest extends TestCase
 {

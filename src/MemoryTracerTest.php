@@ -11,10 +11,8 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\SidedDie;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use function get_class;
@@ -22,7 +20,7 @@ use function iterator_to_array;
 use function json_encode;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Tracer\MemoryTracer
+ * @coversDefaultClass \Bakame\DiceRoller\MemoryTracer
  */
 class MemoryTracerTest extends TestCase
 {

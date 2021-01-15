@@ -11,13 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Roll;
-
-final class NullTracer implements Tracer
+interface Tracer
 {
-    public function append(Roll $roll): void
-    {
-    }
+    /**
+     * Add a Roll object to the current Tracer instance.
+     */
+    public function append(Roll $roll): void;
 }

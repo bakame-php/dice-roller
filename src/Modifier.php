@@ -11,14 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Dice;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Rollable;
-
-interface Dice extends Rollable
+interface Modifier extends Rollable
 {
     /**
-     * Returns the die side count.
+     * Returns the decorated rolling instance.
      */
-    public function size(): int;
+    public function getRollingInstance(): Rollable;
 }

@@ -11,9 +11,8 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Roll;
 use Countable;
 use Iterator;
 use IteratorAggregate;

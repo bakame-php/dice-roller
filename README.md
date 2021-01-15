@@ -46,11 +46,11 @@ $ bin/roll --iteration=3 --logs 2D3+5
 
  ====== ROLL TRACE ======= 
  [Bakame\DiceRoller\Cup::roll] - 2D3 : 1 + 2 = 3   
- [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 3 + 5 = 8   
+ [Bakame\DiceRoller\Arithmetic::roll] - 2D3+5 : 3 + 5 = 8   
  [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
- [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10   
+ [Bakame\DiceRoller\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10   
  [Bakame\DiceRoller\Cup::roll] - 2D3 : 3 + 2 = 5   
- [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10  
+ [Bakame\DiceRoller\Arithmetic::roll] - 2D3+5 : 5 + 5 = 10  
 ```
 
 ## Basic usage
@@ -77,8 +77,8 @@ Use the library bundled rollable objects to build a dice pool to roll.
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\Arithmetic;
 
 $die1 = new SidedDie(6);
 $die2 = new SidedDie(6);
@@ -96,7 +96,7 @@ echo $pool->roll()->value(); // returns 12
 
 use Bakame\DiceRoller\Factory;
 use Bakame\DiceRoller\SystemRandomInt;
-use Bakame\DiceRoller\Tracer\MemoryTracer;
+use Bakame\DiceRoller\MemoryTracer;
 
 $tracer = new MemoryTracer();
 $factory = new Factory();
@@ -119,7 +119,7 @@ foreach ($tracer as $trace) {
 }
 
 // [Bakame\DiceRoller\Cup::roll] - 2D6 : 5 + 4 = 9
-// [Bakame\DiceRoller\Modifier\Arithmetic::roll] - 2D6+3 : 9 + 3 = 12
+// [Bakame\DiceRoller\Arithmetic::roll] - 2D6+3 : 9 + 3 = 12
 ```
 
 ## Documentation
@@ -174,7 +174,7 @@ The `Factory` class uses a `Parser` implementation to return a `Rollable` object
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Tracer\Tracer;
+use Bakame\DiceRoller\Tracer;
 
 final class Factory
 {
@@ -256,10 +256,10 @@ The following die type are bundled in the library:
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\CustomDie;
-use Bakame\DiceRoller\Dice\FudgeDie;
-use Bakame\DiceRoller\Dice\PercentileDie;
-use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\CustomDie;
+use Bakame\DiceRoller\FudgeDie;
+use Bakame\DiceRoller\PercentileDie;
+use Bakame\DiceRoller\SidedDie;
 
 $basic = new SidedDie(3);
 echo $basic->notation(); // 'D3';
@@ -309,7 +309,7 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface.
 ```php
 <?php
 
-use Bakame\DiceRoller\Tracer\SupportsTracing;
+use Bakame\DiceRoller\SupportsTracing;
 use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\Rollable;
 
@@ -327,10 +327,10 @@ The `Cup::of` named constructor enables creating uniformed `Cup` objects which c
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\CustomDie;
-use Bakame\DiceRoller\Dice\FudgeDie;
-use Bakame\DiceRoller\Dice\PercentileDie;
-use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\CustomDie;
+use Bakame\DiceRoller\FudgeDie;
+use Bakame\DiceRoller\PercentileDie;
+use Bakame\DiceRoller\SidedDie;
 
 echo Cup::of(new SidedDie(5), 3)->notation();           // displays 3D5
 echo Cup::of(new PercentileDie(), 4)->notation();       // displays 4D%
@@ -346,7 +346,7 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\SidedDie;
 
 foreach (Cup::of(new SidedDie(5), 3) as $rollable) {
     echo $rollable->notation(); // will always return D5
@@ -359,8 +359,8 @@ Once a `Cup` is instantiated there are no method to alter its properties. Howeve
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\FudgeDie;
-use Bakame\DiceRoller\Dice\SidedDie;
+use Bakame\DiceRoller\FudgeDie;
+use Bakame\DiceRoller\SidedDie;
 
 $cup = Cup::of(new SidedDie(5), 3);
 count($cup);             //returns 3 the number of dices
@@ -377,7 +377,7 @@ echo $altCup->notation(); //returns 3D5+DF
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\FudgeDie;
+use Bakame\DiceRoller\FudgeDie;
 
 $cup = new Cup(new Cup(), new FudgeDie());
 count($cup); // returns 1
@@ -404,10 +404,10 @@ interface Modifier implements Rollable
 ```php
 <?php
 
-use Bakame\DiceRoller\Modifier\Modifier;
+use Bakame\DiceRoller\Modifier;
 use Bakame\DiceRoller\Rollable;
-use Bakame\DiceRoller\Tracer\Tracer;
-use Bakame\DiceRoller\Tracer\SupportsTracing;
+use Bakame\DiceRoller\Tracer;
+use Bakame\DiceRoller\SupportsTracing;
 
 final class Arithmetic implements Modifier, SupportsTracing
 {
@@ -427,8 +427,8 @@ The value given must be a positive integer or `0`. If the value or the operator 
 ```php
 <?php
 
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Modifier\Arithmetic;
+use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\Arithmetic;
 
 $modifier = Arithmetic::mul(new SidedDie(6),  3);
 echo $modifier->notation();  // displays D6*3;
@@ -439,8 +439,8 @@ echo $modifier->notation();  // displays D6*3;
 ```php
 <?php
 
-use Bakame\DiceRoller\Tracer\SupportsTracing;
-use Bakame\DiceRoller\Modifier\Modifier;
+use Bakame\DiceRoller\SupportsTracing;
+use Bakame\DiceRoller\Modifier;
 use Bakame\DiceRoller\Rollable;
 
 final class DropKeep implements Modifier, SupportsTracing
@@ -474,8 +474,8 @@ If the algorithm or the threshold are not valid a `Bakame\DiceRoller\CanNotBeRol
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Modifier\DropKeep;
+use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\DropKeep;
 
 $cup = Cup::of(new SidedDie(6), 4);
 $modifier = DropKeep::dropHighest($cup, 3);
@@ -487,8 +487,8 @@ echo $modifier->notation(); // displays '4D6DH3'
 ```php
 <?php
 
-use Bakame\DiceRoller\Tracer\SupportsTracing;
-use Bakame\DiceRoller\Modifier\Modifier;
+use Bakame\DiceRoller\SupportsTracing;
+use Bakame\DiceRoller\Modifier;
 use Bakame\DiceRoller\Rollable;
 
 final class Explode implements Modifier, SupportsTracing
@@ -518,9 +518,9 @@ If the comparison operator is not recognized a `Bakame\DiceRoller\CanNotBeRolled
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\FudgeDie;
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Modifier\Explode;
+use Bakame\DiceRoller\FudgeDie;
+use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\Explode;
 
 $cup = new Cup(new SidedDie(6), new FudgeDie(), new SidedDie(6), new SidedDie(6));
 $modifier = Explode::equals($cup, 3);
@@ -536,14 +536,14 @@ If you want to know how internally your roll result is calculated your `Rollable
 
 namespace Bakame\DiceRoller\Tracer;
 
-interface SupportsTracing
+use Bakame\DiceRoller\Tracer;interface SupportsTracing
 {
     public function setTracer(Tracer $tracer): void;
     public function getTracer(): Tracer;
 }
 ```
  
-The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Tracer\Tracer` implementing object.
+The interface enables getting the trace from the last operation as well as profiling the total execution of the operation using a `Bakame\DiceRoller\Tracer` implementing object.
 
 ```php
 <?php
@@ -560,9 +560,9 @@ interface Tracer
 
 The package comes bundle with:
  
-- the `Bakame\DiceRoller\Tracer\NullTracer` which keeps no info about tracing.
-- the `Bakame\DiceRoller\Tracer\MemoryTracer` which keeps the trace in a in-memory collection.
-- the `Bakame\DiceRoller\Tracer\Psr3LogTracer` which sends the traces to a PSR-3 compliant logger.
+- the `Bakame\DiceRoller\NullTracer` which keeps no info about tracing.
+- the `Bakame\DiceRoller\MemoryTracer` which keeps the trace in a in-memory collection.
+- the `Bakame\DiceRoller\Psr3LogTracer` which sends the traces to a PSR-3 compliant logger.
 
 ### Tracing using the MemoryTracer
 
@@ -572,8 +572,8 @@ No configuration is needed you just need to give your object an instantiated `Me
 <?php
 
 use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Tracer\MemoryTracer;
+use Bakame\DiceRoller\SidedDie;
+use Bakame\DiceRoller\MemoryTracer;
 
 $tracer = new MemoryTracer();
 $tracer->isEmpty(); //returns true
@@ -599,7 +599,7 @@ $tracer->isEmpty(); //returns true
 
 namespace Bakame\DiceRoller\Tracer;
 
-use Psr\Log\LoggerInterface;
+use Bakame\DiceRoller\Tracer;use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 final class Psr3LogTracer implements Tracer
@@ -632,8 +632,8 @@ Configuring the logger is done on instantiation.
 ```php
 <?php
 
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
+use Bakame\DiceRoller\Psr3Logger;
+use Bakame\DiceRoller\Psr3LogTracer;
 use Psr\Log\LogLevel;
 
 $logger = new Psr3Logger();

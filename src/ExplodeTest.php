@@ -9,22 +9,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Modifier;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\CustomDie;
-use Bakame\DiceRoller\Dice\FudgeDie;
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Pool;
-use Bakame\DiceRoller\SyntaxError;
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use function json_encode;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Modifier\Explode
+ * @coversDefaultClass \Bakame\DiceRoller\Explode
  */
 final class ExplodeTest extends TestCase
 {

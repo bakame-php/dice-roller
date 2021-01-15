@@ -11,7 +11,6 @@
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Dice\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Traversable;
 
@@ -58,9 +57,9 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers ::flattenRollable
      * @covers ::decorate
-     * @covers \Bakame\DiceRoller\Modifier\Arithmetic::fromOperation
-     * @covers \Bakame\DiceRoller\Modifier\DropKeep::fromAlgorithm
-     * @covers \Bakame\DiceRoller\Modifier\Explode::fromAlgorithm
+     * @covers \Bakame\DiceRoller\Arithmetic::fromOperation
+     * @covers \Bakame\DiceRoller\DropKeep::fromAlgorithm
+     * @covers \Bakame\DiceRoller\Explode::fromAlgorithm
      * @covers ::createDice
      * @dataProvider validStringProvider
      */
@@ -139,7 +138,7 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice\SidedDie::size
+     * @covers \Bakame\DiceRoller\SidedDie::size
      */
     public function testRollWithDefaultDice(): void
     {
@@ -169,7 +168,7 @@ final class FactoryTest extends TestCase
      * @covers ::createRollable
      * @covers \Bakame\DiceRoller\Cup::count
      * @covers \Bakame\DiceRoller\Cup::getIterator
-     * @covers \Bakame\DiceRoller\Dice\SidedDie::size
+     * @covers \Bakame\DiceRoller\SidedDie::size
      */
     public function testRollWithMultipleDice(): void
     {

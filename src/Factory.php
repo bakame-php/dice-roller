@@ -13,17 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Dice\CustomDie;
-use Bakame\DiceRoller\Dice\Dice;
-use Bakame\DiceRoller\Dice\FudgeDie;
-use Bakame\DiceRoller\Dice\PercentileDie;
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Modifier\Arithmetic;
-use Bakame\DiceRoller\Modifier\DropKeep;
-use Bakame\DiceRoller\Modifier\Explode;
-use Bakame\DiceRoller\Tracer\NullTracer;
-use Bakame\DiceRoller\Tracer\SupportsTracing;
-use Bakame\DiceRoller\Tracer\Tracer;
 use function count;
 use function iterator_to_array;
 use function strpos;

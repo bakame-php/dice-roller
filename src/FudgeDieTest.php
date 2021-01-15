@@ -9,17 +9,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Dice;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\RandomIntGenerator;
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use function json_encode;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Dice\FudgeDie
+ * @coversDefaultClass \Bakame\DiceRoller\FudgeDie
  */
 final class FudgeDieTest extends TestCase
 {

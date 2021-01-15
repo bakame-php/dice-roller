@@ -11,16 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Dice;
-
-use Bakame\DiceRoller\RandomIntGenerator;
-use Bakame\DiceRoller\Roll;
-use Bakame\DiceRoller\SystemRandomInt;
-use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\TossContext;
-use Bakame\DiceRoller\Tracer\NullTracer;
-use Bakame\DiceRoller\Tracer\SupportsTracing;
-use Bakame\DiceRoller\Tracer\Tracer;
+namespace Bakame\DiceRoller;
 
 final class FudgeDie implements Dice, \JsonSerializable, SupportsTracing
 {

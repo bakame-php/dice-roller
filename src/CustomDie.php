@@ -11,17 +11,8 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Dice;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\RandomIntGenerator;
-use Bakame\DiceRoller\Roll;
-use Bakame\DiceRoller\SyntaxError;
-use Bakame\DiceRoller\SystemRandomInt;
-use Bakame\DiceRoller\Toss;
-use Bakame\DiceRoller\TossContext;
-use Bakame\DiceRoller\Tracer\NullTracer;
-use Bakame\DiceRoller\Tracer\SupportsTracing;
-use Bakame\DiceRoller\Tracer\Tracer;
 use function array_map;
 use function count;
 use function explode;

@@ -9,13 +9,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Tracer\Psr3Logger
+ * @coversDefaultClass \Bakame\DiceRoller\Psr3Logger
  */
 final class Psr3LoggerTest extends TestCase
 {

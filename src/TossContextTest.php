@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Tracer\MemoryTracer;
-use Bakame\DiceRoller\Tracer\Tracer;
 use PHPUnit\Framework\TestCase;
 use function get_class;
 

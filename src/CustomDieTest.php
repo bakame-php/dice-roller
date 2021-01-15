@@ -9,22 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Dice;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\RandomIntGenerator;
-use Bakame\DiceRoller\SyntaxError;
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
-use function json_encode;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Dice\SidedDie
+ * @coversDefaultClass \Bakame\DiceRoller\CustomDie
  */
-final class SidedDieTest extends TestCase
+final class CustomDieTest extends TestCase
 {
-    public function testSixSidedValues(): void
+    public function testDice(): void
     {
         $randomIntProvider = new class() implements RandomIntGenerator {
             public function generateInt(int $minimum, int $maximum): int
@@ -32,18 +27,16 @@ final class SidedDieTest extends TestCase
                 return 3;
             }
         };
-
-        $expected = 6;
-        $dice = new SidedDie($expected, $randomIntProvider);
-        self::assertSame($expected, $dice->size());
-        self::assertSame('D6', $dice->notation());
-        self::assertEquals($dice, SidedDie::fromNotation($dice->notation(), $randomIntProvider));
-        self::assertSame($expected, $dice->maximum());
+        $dice = CustomDie::fromNotation('d[1,2,2,4,4]', $randomIntProvider);
+        self::assertSame(5, $dice->size());
+        self::assertSame(4, $dice->maximum());
         self::assertSame(1, $dice->minimum());
-        self::assertSame(json_encode('D6'), json_encode($dice));
+        self::assertSame('D[1,2,2,4,4]', $dice->notation());
+        self::assertSame(json_encode('D[1,2,2,4,4]'), json_encode($dice));
+        self::assertEquals($dice, CustomDie::fromNotation($dice->notation(), $randomIntProvider));
 
         $test = $dice->roll()->value();
-        self::assertSame(3, $test);
+        self::assertSame(4, $test);
         self::assertGreaterThanOrEqual($dice->minimum(), $test);
         self::assertLessThanOrEqual($dice->maximum(), $test);
     }
@@ -55,19 +48,28 @@ final class SidedDieTest extends TestCase
     public function testConstructorWithWrongValue(): void
     {
         self::expectException(SyntaxError::class);
-        new SidedDie(1);
+        CustomDie::fromNotation('d[1]');
     }
 
     /**
+     * @dataProvider invalidNotation
      * @covers ::fromNotation
      * @covers \Bakame\DiceRoller\SyntaxError
      */
-    public function testFromStringWithWrongValue(): void
+    public function testFromStringWithWrongValue(string $notation): void
     {
         self::expectException(SyntaxError::class);
-        SidedDie::fromNotation('1');
+        CustomDie::fromNotation($notation);
     }
 
+    public function invalidNotation(): iterable
+    {
+        return [
+            'invalid format' => ['1'],
+            'contains non numeric' => ['d[1,0,foobar]'],
+            'contains empty side' => ['d[1,,1]'],
+        ];
+    }
 
     /**
      * @covers ::setTracer
@@ -76,10 +78,9 @@ final class SidedDieTest extends TestCase
     public function testTracer(): void
     {
         $logger = new Psr3Logger();
-        $rollable = new SidedDie(5);
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
+        $rollable = CustomDie::fromNotation('d[-1, -1, -2]');
 
-        $rollable->roll();
         $rollable->setTracer($tracer);
         $rollable->roll();
         $rollable->maximum();

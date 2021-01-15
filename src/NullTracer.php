@@ -11,14 +11,11 @@
 
 declare(strict_types=1);
 
-namespace Bakame\DiceRoller\Modifier;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Rollable;
-
-interface Modifier extends Rollable
+final class NullTracer implements Tracer
 {
-    /**
-     * Returns the decorated rolling instance.
-     */
-    public function getRollingInstance(): Rollable;
+    public function append(Roll $roll): void
+    {
+    }
 }

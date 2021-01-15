@@ -11,14 +11,6 @@
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Dice\CustomDie;
-use Bakame\DiceRoller\Dice\FudgeDie;
-use Bakame\DiceRoller\Dice\PercentileDie;
-use Bakame\DiceRoller\Dice\SidedDie;
-use Bakame\DiceRoller\Tracer\NullTracer;
-use Bakame\DiceRoller\Tracer\Psr3Logger;
-use Bakame\DiceRoller\Tracer\Psr3LogTracer;
-use Bakame\DiceRoller\Tracer\Tracer;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use function json_encode;
@@ -182,7 +174,7 @@ final class CupTest extends TestCase
      * @covers ::getIterator
      * @covers ::jsonSerialize
      * @covers \Bakame\DiceRoller\Toss
-     * @covers \Bakame\DiceRoller\Tracer\NullTracer
+     * @covers \Bakame\DiceRoller\NullTracer
      */
     public function testFiveFourSidedDice(): void
     {

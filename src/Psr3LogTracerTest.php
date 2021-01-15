@@ -9,15 +9,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Cup;
-use Bakame\DiceRoller\Dice\SidedDie;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 /**
- * @coversDefaultClass \Bakame\DiceRoller\Tracer\Psr3LogTracer
+ * @coversDefaultClass \Bakame\DiceRoller\Psr3LogTracer
  */
 final class Psr3LogTracerTest extends TestCase
 {
