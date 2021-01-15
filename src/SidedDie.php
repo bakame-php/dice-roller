@@ -80,7 +80,7 @@ final class SidedDie implements Dice, \JsonSerializable, SupportsTracing
 
     public function minimum(): int
     {
-        $roll = new Toss(1, '1', new TossContext($this, __METHOD__));
+        $roll = new Toss(1, '1', TossContext::fromRolling($this, __METHOD__));
 
         $this->tracer->append($roll);
 
@@ -89,7 +89,7 @@ final class SidedDie implements Dice, \JsonSerializable, SupportsTracing
 
     public function maximum(): int
     {
-        $roll = new Toss($this->sides, (string) $this->sides, new TossContext($this, __METHOD__));
+        $roll = new Toss($this->sides, (string) $this->sides, TossContext::fromRolling($this, __METHOD__));
 
         $this->tracer->append($roll);
 
@@ -100,7 +100,7 @@ final class SidedDie implements Dice, \JsonSerializable, SupportsTracing
     {
         $result = $this->randomIntGenerator->generateInt(1, $this->sides);
 
-        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
+        $roll = new Toss($result, (string) $result, TossContext::fromRolling($this, __METHOD__));
 
         $this->tracer->append($roll);
 

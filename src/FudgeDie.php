@@ -52,7 +52,7 @@ final class FudgeDie implements Dice, \JsonSerializable, SupportsTracing
 
     public function minimum(): int
     {
-        $roll = new Toss(-1, '-1', new TossContext($this, __METHOD__));
+        $roll = new Toss(-1, '-1', TossContext::fromRolling($this, __METHOD__));
 
         $this->tracer->append($roll);
 
@@ -61,7 +61,7 @@ final class FudgeDie implements Dice, \JsonSerializable, SupportsTracing
 
     public function maximum(): int
     {
-        $roll = new Toss(1, '1', new TossContext($this, __METHOD__));
+        $roll = new Toss(1, '1', TossContext::fromRolling($this, __METHOD__));
 
         $this->tracer->append($roll);
 
@@ -71,7 +71,7 @@ final class FudgeDie implements Dice, \JsonSerializable, SupportsTracing
     public function roll(): Roll
     {
         $result = $this->randomIntGenerator->generateInt(-1, 1);
-        $roll = new Toss($result, (string) $result, new TossContext($this, __METHOD__));
+        $roll = new Toss($result, (string) $result, TossContext::fromRolling($this, __METHOD__));
 
         $this->tracer->append($roll);
 

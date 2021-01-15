@@ -151,7 +151,7 @@ final class Cup implements \JsonSerializable, Pool, SupportsTracing
     {
         $result = (int) array_sum($sum);
         $operation = implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $sum));
-        $roll = new Toss($result, $operation, new TossContext($this, $method));
+        $roll = new Toss($result, $operation, TossContext::fromRolling($this, $method));
 
         $this->tracer->append($roll);
 

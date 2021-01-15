@@ -100,7 +100,7 @@ final class CustomDie implements Dice, \JsonSerializable, SupportsTracing
 
     private function generate(int $value, string $method): Roll
     {
-        $roll = new Toss($value, (string) $value, new TossContext($this, $method));
+        $roll = new Toss($value, (string) $value, TossContext::fromRolling($this, $method));
 
         $this->tracer->append($roll);
 

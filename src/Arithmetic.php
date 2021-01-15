@@ -152,7 +152,7 @@ final class Arithmetic implements \JsonSerializable, Modifier, SupportsTracing
         $roll = new Toss(
             $this->calculate($value),
             $value.' '.$this->operator.' '.$this->value,
-            new TossContext($this, $method)
+            TossContext::fromRolling($this, $method)
         );
 
         $this->tracer->append($roll);

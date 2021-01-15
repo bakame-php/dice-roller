@@ -174,8 +174,6 @@ The `Factory` class uses a `Parser` implementation to return a `Rollable` object
 
 namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Tracer;
-
 final class Factory
 {
     public function __construct(Parser $parser = null);
@@ -391,7 +389,7 @@ The `Modifier` interface extends the `Rollable` interface by giving access to th
 ```php
 <?php
 
-use Bakame\DiceRoller\Rollable;
+namespace Bakame\DiceRoller;
 
 interface Modifier implements Rollable
 {

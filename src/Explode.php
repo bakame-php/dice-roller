@@ -175,7 +175,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
     public function minimum(): int
     {
         $minimum = $this->pool->minimum();
-        $roll = new Toss($minimum, (string) $minimum, new TossContext($this, __METHOD__));
+        $roll = new Toss($minimum, (string) $minimum, TossContext::fromRolling($this, __METHOD__));
 
         $this->tracer->append($roll);
 
@@ -184,7 +184,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
 
     public function maximum(): int
     {
-        $roll = new Toss(PHP_INT_MAX, (string) PHP_INT_MAX, new TossContext($this, __METHOD__));
+        $roll = new Toss(PHP_INT_MAX, (string) PHP_INT_MAX, TossContext::fromRolling($this, __METHOD__));
 
         $this->tracer->append($roll);
 
@@ -201,7 +201,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
         $roll = new Toss(
             (int) array_sum($values),
             implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $values)),
-            new TossContext($this, __METHOD__, ['totalRollsCount' => count($values)])
+            TossContext::fromRolling($this, __METHOD__, ['totalRollsCount' => count($values)])
         );
 
         $this->tracer->append($roll);

@@ -31,7 +31,7 @@ final class TossContextTest extends TestCase
         $cup = Cup::of(new SidedDie(6), 3);
         $source = get_class($cup).'::roll';
 
-        $context = new TossContext($cup, $source);
+        $context = TossContext::fromRolling($cup, $source);
         self::assertSame($source, $context->source());
         self::assertSame($cup->notation(), $context->notation());
         self::assertEmpty($context->extensions());
@@ -45,7 +45,7 @@ final class TossContextTest extends TestCase
         $cup = Cup::of(new SidedDie(6), 3);
         $source = get_class($cup).'::roll';
 
-        $context = new TossContext($cup, $source, ['bar' => 'baz', 'result' => 23]);
+        $context = TossContext::fromRolling($cup, $source, ['bar' => 'baz', 'result' => 23]);
         $arrExpected = ['source' => $source, 'notation' => $cup->notation(), 'bar' => 'baz', 'result' => 23];
         self::assertArrayHasKey('bar', $context->asArray());
         self::assertArrayHasKey('result', $context->asArray());
@@ -59,7 +59,7 @@ final class TossContextTest extends TestCase
         $cup = Cup::of(new SidedDie(6), 3);
         $source = get_class($cup).'::roll';
 
-        $context = new TossContext($cup, $source, ['bar' => 'baz', 'value' => 23, 'operation' => 'swordfish']);
+        $context = TossContext::fromRolling($cup, $source, ['bar' => 'baz', 'value' => 23, 'operation' => 'swordfish']);
         $arrExpected = ['source' => $source, 'notation' => $cup->notation(), 'bar' => 'baz'];
         self::assertArrayHasKey('bar', $context->asArray());
         self::assertArrayNotHasKey('value', $context->asArray());

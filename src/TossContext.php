@@ -15,19 +15,23 @@ namespace Bakame\DiceRoller;
 
 final class TossContext implements Context
 {
-    private string $notation;
+    private function __construct(
+        private string $notation,
+        private string $source,
+        private array $extensions
+    ) {
+    }
 
-    private string $source;
-
-    private array $extensions;
-
-    public function __construct(Rollable $rollable, string $source, array $extensions = [])
+    public static function fromRolling(Rollable $rollable, string $source, array $extensions = []): self
     {
-        unset($extensions['source'], $extensions['notation'], $extensions['value'], $extensions['operation']);
+        unset(
+            $extensions['notation'],
+            $extensions['source'],
+            $extensions['operation'],
+            $extensions['value'],
+        );
 
-        $this->notation = $rollable->notation();
-        $this->source = $source;
-        $this->extensions = $extensions;
+        return new self($rollable->notation(), $source, $extensions);
     }
 
     public function notation(): string

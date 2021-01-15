@@ -170,7 +170,7 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
     {
         $result = $this->slice($values);
         $operation = implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $result));
-        $roll = new Toss((int) array_sum($result), $operation, new TossContext($this, $method));
+        $roll = new Toss((int) array_sum($result), $operation, TossContext::fromRolling($this, $method));
 
         $this->tracer->append($roll);
 
