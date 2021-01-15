@@ -13,12 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-use Countable;
-use Iterator;
-use IteratorAggregate;
-use JsonSerializable;
-
-final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializable, Tracer
+final class MemoryTracer implements \Countable, \IteratorAggregate, \JsonSerializable, Tracer
 {
     /**
      * @var Roll[]
@@ -40,10 +35,8 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
         return [] === $this->collection;
     }
 
-    /**
-     * @return Iterator<int,Roll>
-     */
-    public function getIterator(): Iterator
+    /** @return \Traversable<int,Roll> */
+    public function getIterator(): \Traversable
     {
         foreach ($this->collection as $trace) {
             yield $trace;

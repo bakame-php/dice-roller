@@ -15,7 +15,6 @@ namespace Bakame\DiceRoller;
 
 use function count;
 use function iterator_to_array;
-use function strpos;
 
 final class Factory
 {
@@ -110,7 +109,7 @@ final class Factory
             return new PercentileDie($randomIntGenerator);
         }
 
-        if (false !== strpos($notation, '[')) {
+        if (str_contains($notation, '[')) {
             return CustomDie::fromNotation($notation, $randomIntGenerator);
         }
 

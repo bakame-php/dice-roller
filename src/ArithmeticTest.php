@@ -89,7 +89,7 @@ final class ArithmeticTest extends TestCase
     /**
      * @covers ::notation
      * @covers ::jsonSerialize
-     * @covers ::getRollingInstance
+     * @covers ::getInnerRollable
      */
     public function testToString(): void
     {
@@ -103,7 +103,7 @@ final class ArithmeticTest extends TestCase
 
         self::assertSame('(2D3+D4)^3', $cup->notation());
         self::assertSame(json_encode('(2D3+D4)^3'), json_encode($cup));
-        self::assertSame($pool, $cup->getRollingInstance());
+        self::assertSame($pool, $cup->getInnerRollable());
     }
 
     /**

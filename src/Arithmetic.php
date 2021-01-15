@@ -15,7 +15,6 @@ namespace Bakame\DiceRoller;
 
 use function abs;
 use function in_array;
-use function strpos;
 
 final class Arithmetic implements \JsonSerializable, Modifier, SupportsTracing
 {
@@ -109,7 +108,7 @@ final class Arithmetic implements \JsonSerializable, Modifier, SupportsTracing
         return $this->tracer;
     }
 
-    public function getRollingInstance(): Rollable
+    public function getInnerRollable(): Rollable
     {
         return $this->rollable;
     }
@@ -122,7 +121,7 @@ final class Arithmetic implements \JsonSerializable, Modifier, SupportsTracing
     public function notation(): string
     {
         $str = $this->rollable->notation();
-        if (false !== strpos($str, self::ADD)) {
+        if (str_contains($str, self::ADD)) {
             $str = '('.$str.')';
         }
 

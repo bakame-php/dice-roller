@@ -19,4 +19,7 @@ interface Pool extends \Countable, \IteratorAggregate, Rollable
      * Tells whether the pool is empty.
      */
     public function isEmpty(): bool;
+
+    /** @return \Traversable<Rollable> */
+    public function getIterator(): \Traversable;
 }

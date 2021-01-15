@@ -187,7 +187,7 @@ final class DropKeepTest extends TestCase
      * @covers ::decorate
      * @covers ::setTracer
      * @covers ::getTracer
-     * @covers ::getRollingInstance
+     * @covers ::getInnerRollable
      */
     public function testTracer(): void
     {
@@ -200,7 +200,7 @@ final class DropKeepTest extends TestCase
         $dropKeep->minimum();
 
         self::assertSame($tracer, $dropKeep->getTracer());
-        self::assertInstanceOf(Pool::class, $dropKeep->getRollingInstance());
+        self::assertInstanceOf(Pool::class, $dropKeep->getInnerRollable());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
 
         $pool = CustomDie::fromNotation('d[-1, -2, -3]');
@@ -210,13 +210,13 @@ final class DropKeepTest extends TestCase
     }
 
     /**
-     * @covers ::getRollingInstance
+     * @covers ::getInnerRollable
      */
     public function testGetInnerRollableMethod(): void
     {
         $custom = CustomDie::fromNotation('d[1,2,3]');
         $rollable = DropKeep::dropLowest($custom, 1);
 
-        self::assertSame($custom, $rollable->getRollingInstance());
+        self::assertSame($custom, $rollable->getInnerRollable());
     }
 }

@@ -83,7 +83,7 @@ final class ExplodeTest extends TestCase
     {
         $rollable = new FudgeDie();
 
-        self::assertSame($rollable, Explode::equals($rollable, 1)->getRollingInstance());
+        self::assertSame($rollable, Explode::equals($rollable, 1)->getInnerRollable());
     }
 
     /**
@@ -142,7 +142,7 @@ final class ExplodeTest extends TestCase
      * @covers ::equals
      * @covers ::greaterThan
      * @covers ::lesserThan
-     * @covers ::getRollingInstance
+     * @covers ::getInnerRollable
      * @covers ::minimum
      * @covers ::maximum
      * @covers ::calculate
@@ -161,7 +161,7 @@ final class ExplodeTest extends TestCase
         }
 
         $rollValue = $explode->roll()->value();
-        self::assertSame($this->cup, $explode->getRollingInstance());
+        self::assertSame($this->cup, $explode->getInnerRollable());
         self::assertSame($min, $explode->minimum());
         self::assertSame($max, $explode->maximum());
         self::assertGreaterThanOrEqual($min, $rollValue);
@@ -201,7 +201,7 @@ final class ExplodeTest extends TestCase
      * @covers ::setTracer
      * @covers ::getTracer
      * @covers ::isValid
-     * @covers ::getRollingInstance
+     * @covers ::getInnerRollable
      */
     public function testTracer(): void
     {
@@ -218,6 +218,6 @@ final class ExplodeTest extends TestCase
         $explode->minimum();
         self::assertSame($tracer, $explode->getTracer());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
-        self::assertInstanceOf(CustomDie::class, $explode->getRollingInstance());
+        self::assertInstanceOf(CustomDie::class, $explode->getInnerRollable());
     }
 }

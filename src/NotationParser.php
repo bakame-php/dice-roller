@@ -17,8 +17,7 @@ use function array_reduce;
 use function count;
 use function explode;
 use function preg_match;
-use function stripos;
-use function strpos;
+use function strtolower;
 use function strtoupper;
 use function substr;
 
@@ -71,12 +70,12 @@ final class NotationParser implements Parser
             }
 
             $previous_offset = count($res) - 1;
-            if (false === stripos($value, 'd')) {
+            if (!str_contains(strtolower($value), 'd')) {
                 $res[$previous_offset] .= '+'.$value;
                 continue;
             }
 
-            if (false !== strpos($value, ')') && false !== strpos($res[$previous_offset], '(')) {
+            if (str_contains($value, ')') && str_contains($res[$previous_offset], '(')) {
                 $res[$previous_offset] .= '+'.$value;
                 continue;
             }
@@ -96,6 +95,8 @@ final class NotationParser implements Parser
      *         - the pool modifiers
      *
      * @throws SyntaxError
+     *
+     * @return array<array{definition:array, modifiers:array}>
      */
     private function parsePool(array $retval, string $notation): array
     {
@@ -103,17 +104,17 @@ final class NotationParser implements Parser
             return $retval;
         }
 
-        if (1 !== preg_match(self::POOL_PATTERN, $notation, $matches)) {
+        if (1 !== preg_match(self::POOL_PATTERN, $notation, $poolDefinition)) {
             throw SyntaxError::dueToInvalidNotation($notation);
         }
 
-        if (1 !== preg_match(self::MODIFIER_PATTERN, $matches['modifier'], $modifier_matches)) {
-            throw SyntaxError::dueToInvalidModifier($matches['modifier']);
+        if (1 !== preg_match(self::MODIFIER_PATTERN, $poolDefinition['modifier'], $modifierDefinition)) {
+            throw SyntaxError::dueToInvalidModifier($poolDefinition['modifier']);
         }
 
         $retval[] = [
-            'definition' => $this->getPoolDefinition($matches),
-            'modifiers' => $this->getPoolModifiersDefinition($modifier_matches),
+            'definition' => $this->getPoolDefinition($poolDefinition),
+            'modifiers' => $this->getPoolModifiersDefinition($modifierDefinition),
         ];
 
         return $retval;
@@ -182,7 +183,7 @@ final class NotationParser implements Parser
         $operator = strtoupper($operator);
         $value = $value ?? 1;
         $value = (int) $value;
-        if (0 !== strpos($algo, '!')) {
+        if ('!' !== $algo[0]) {
             return ['modifier' => 'dropkeep', 'operator' => $operator, 'value' => $value];
         }
 

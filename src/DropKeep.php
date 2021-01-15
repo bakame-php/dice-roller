@@ -21,7 +21,6 @@ use function implode;
 use function in_array;
 use function iterator_to_array;
 use function rsort;
-use function strpos;
 use function strtoupper;
 use function uasort;
 
@@ -50,7 +49,7 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
 
     private Tracer $tracer;
 
-    private bool $is_rollable_wrapped = false;
+    private bool $isDecoratedRollable = false;
 
     private function __construct(Rollable $pool, string $algorithm, int $threshold, Tracer $tracer = null)
     {
@@ -60,7 +59,7 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
         }
 
         if (!$pool instanceof Pool) {
-            $this->is_rollable_wrapped = true;
+            $this->isDecoratedRollable = true;
             $pool = new Cup($pool);
         }
 
@@ -109,13 +108,16 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
         return $this->tracer;
     }
 
-    public function getRollingInstance(): Rollable
+    public function getInnerRollable(): Rollable
     {
-        if (!$this->is_rollable_wrapped) {
+        if (!$this->isDecoratedRollable) {
             return $this->pool;
         }
 
-        return iterator_to_array($this->pool, false)[0];
+        /** @var array<Rollable> $arr */
+        $arr = iterator_to_array($this->pool);
+
+        return $arr[0];
     }
 
     public function jsonSerialize(): string
@@ -126,7 +128,7 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
     public function notation(): string
     {
         $str = $this->pool->notation();
-        if (false !== strpos($str, '+')) {
+        if (str_contains($str, '+')) {
             $str = '('.$str.')';
         }
 
@@ -165,11 +167,13 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
 
     /**
      * Decorates the operation returned value.
+     *
+     * @param array<int> $values
      */
     private function decorate(array $values, string $method): Roll
     {
         $result = $this->slice($values);
-        $operation = implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $result));
+        $operation = implode(' + ', array_map(fn (int $value): string => (0 > $value) ? '('.$value.')' : ''.$value, $result));
         $roll = new Toss((int) array_sum($result), $operation, TossContext::fromRolling($this, $method));
 
         $this->tracer->append($roll);
@@ -177,9 +181,10 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
         return $roll;
     }
 
+    /** @param array<int> $values  */
     private function slice(array $values): array
     {
-        uasort($values, static fn (int $data1, int $data2): int => $data1 <=> $data2);
+        uasort($values, fn (int $data1, int $data2): int => $data1 <=> $data2);
 
         if (self::DROP_HIGHEST === $this->algorithm) {
             return array_slice($values, 0, $this->threshold);

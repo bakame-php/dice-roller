@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-final class TossContext implements Context
+final class TossContext implements Context, \JsonSerializable
 {
     private function __construct(
         private string $notation,

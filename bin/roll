@@ -9,6 +9,10 @@ use Bakame\DiceRoller\Psr3LogTracer;
 use Bakame\DiceRoller\Psr3Logger;
 use Psr\Log\LogLevel;
 
+const EX_OK = 0;
+const EX_FAILURE = 1;
+const EX_USAGE = 64;
+
 function writeln(array $messages, $output): int
 {
     return fwrite($output, implode(PHP_EOL, $messages). PHP_EOL);
@@ -36,7 +40,7 @@ function autoload(string $errorMessage): void
 
     fail($errorMessage);
 
-    die(1);
+    die(EX_FAILURE);
 }
 
 /**
@@ -117,16 +121,16 @@ $opts = filter_var_array(getopt("h::", ['pool::', 'iteration::', 'help', 'info',
 if (2 > count($argv) || isset($opts['help']) || isset($opts['h'])) {
     success($helpText);
 
-    die(0);
+    die(EX_OK);
 }
 
 $notation = array_pop($argv);
 $notation = trim($notation);
 
-if (0 === strpos($notation, '-')) {
+if (str_starts_with($notation, '-')) {
     fail("$redbg Make sure your dice annotation is the last argument of your call! $reset");
 
-    die(65);
+    die(EX_USAGE);
 }
 
 $logger = new Psr3Logger();
@@ -137,7 +141,7 @@ try {
 } catch (Exception $exception) {
     fail(sprintf($parseErrorMessage, $notation, $exception->getMessage()));
 
-    die(65);
+    die(EX_USAGE);
 }
 
 if (isset($opts['info'])) {
@@ -155,4 +159,4 @@ for ($i = 0; $i < $opts['iteration']; ++$i) {
         $logger->clear();
     }
 }
-die(0);
+die(EX_OK);

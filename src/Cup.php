@@ -103,8 +103,8 @@ final class Cup implements \JsonSerializable, Pool, SupportsTracing
         }
 
         /** @psalm-suppress MissingClosureParamType */
-        $walker = function (&$value, string $offset): void {
-            $value = $value > 1 ? $value.$offset : $offset;
+        $walker = function (string|int &$value, string $offset): void {
+            $value = $value > 1 ? ''.$value.$offset : $offset;
         };
 
         $parts = array_map(fn (Rollable $rollable): string => $rollable->notation(), $this->items);
@@ -150,7 +150,7 @@ final class Cup implements \JsonSerializable, Pool, SupportsTracing
     private function decorate(array $sum, string $method): Roll
     {
         $result = (int) array_sum($sum);
-        $operation = implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $sum));
+        $operation = implode(' + ', array_map(fn (int $value): string => (0 > $value) ? '('.$value.')' : ''.$value, $sum));
         $roll = new Toss($result, $operation, TossContext::fromRolling($this, $method));
 
         $this->tracer->append($roll);

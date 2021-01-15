@@ -19,7 +19,6 @@ use function count;
 use function implode;
 use function in_array;
 use function iterator_to_array;
-use function strpos;
 use const PHP_INT_MAX;
 
 final class Explode implements \JsonSerializable, Modifier, SupportsTracing
@@ -136,7 +135,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
         return $this->tracer;
     }
 
-    public function getRollingInstance(): Rollable
+    public function getInnerRollable(): Rollable
     {
         if (!$this->is_rollable_wrapped) {
             return $this->pool;
@@ -153,7 +152,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
     public function notation(): string
     {
         $str = $this->pool->notation();
-        if (false !== strpos($str, '+')) {
+        if (str_contains($str, '+')) {
             $str = '('.$str.')';
         }
 
@@ -200,7 +199,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
 
         $roll = new Toss(
             (int) array_sum($values),
-            implode(' + ', array_map(fn ($value) => (0 > $value) ? '('.$value.')' : $value, $values)),
+            implode(' + ', array_map(fn (int $value): string => (0 > $value) ? '('.$value.')' : ''.$value, $values)),
             TossContext::fromRolling($this, __METHOD__, ['totalRollsCount' => count($values)])
         );
 

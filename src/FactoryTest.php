@@ -190,6 +190,7 @@ final class FactoryTest extends TestCase
             self::assertSame(6, $dice->size());
         }
 
+        self::assertInstanceOf(Cup::class, $res[1]);
         self::assertCount(3, $res[1]);
         foreach ($res[1] as $dice) {
             self::assertInstanceOf(SidedDie::class, $dice);

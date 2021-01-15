@@ -18,5 +18,5 @@ interface Modifier extends Rollable
     /**
      * Returns the decorated rolling instance.
      */
-    public function getRollingInstance(): Rollable;
+    public function getInnerRollable(): Rollable;
 }
