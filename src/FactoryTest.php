@@ -272,4 +272,31 @@ final class FactoryTest extends TestCase
         $factory = new Factory($parser, new SystemRandomInt());
         $factory->newInstance('test');
     }
+
+    public function testNewInstanceAddRecursivelyTheTracer(): void
+    {
+        $tracer = new MemoryTracer();
+        $pool = $this->factory->newInstance('2D6+D%+3', $tracer);
+        if ($pool instanceof SupportsTracing) {
+            self::assertSame($tracer, $pool->getTracer());
+        }
+
+        if ($pool instanceof SupportsRecursiveTracing && $pool instanceof Pool) {
+            foreach ($pool as $item) {
+                if ($item instanceof SupportsTracing) {
+                    self::assertSame($tracer, $item->getTracer());
+                }
+            }
+        }
+    }
+
+    public function testNewInstanceAddTheTracer(): void
+    {
+        $tracer = new MemoryTracer();
+        $pool = $this->factory->newInstance('D6', $tracer);
+
+        if ($pool instanceof SupportsTracing) {
+            self::assertSame($tracer, $pool->getTracer());
+        }
+    }
 }

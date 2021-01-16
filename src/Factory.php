@@ -32,24 +32,30 @@ final class Factory
     /**
      * @throws SyntaxError if the object can not be created due to some syntax error
      */
-    public function newInstance(
-        string $notation,
-        Tracer $tracer = null
-    ): Rollable {
-        $tracer = $tracer ?? new NullTracer();
+    public function newInstance(string $notation, Tracer $tracer = null): Rollable
+    {
+        $rollable = $this->create($this->parser->parse($notation));
+        if (null === $tracer) {
+            return $rollable;
+        }
 
-        return $this->create($this->parser->parse($notation), $tracer);
+        if ($rollable instanceof SupportsRecursiveTracing) {
+            $rollable->setRecursiveTracer($tracer);
+        } elseif ($rollable instanceof SupportsTracing) {
+            $rollable->setTracer($tracer);
+        }
+
+        return $rollable;
     }
 
     /**
      * Returns a new object that can be rolled from a parsed dice notation.
      */
-    private function create(array $parsed, Tracer $tracer): Rollable
+    private function create(array $parsed): Rollable
     {
         $rollable = new Cup();
-        $rollable->setTracer($tracer);
         foreach ($parsed as $parts) {
-            $rollable = $this->addRollable($rollable, $parts, $tracer);
+            $rollable = $this->addRollable($rollable, $parts);
         }
 
         return $this->flattenRollable($rollable);
@@ -58,19 +64,14 @@ final class Factory
     /**
      * Adds a Rollable item to a pool.
      */
-    private function addRollable(Cup $pool, array $parts, Tracer $tracer): Cup
+    private function addRollable(Cup $pool, array $parts): Cup
     {
-        $rollable = $this->createRollable($parts['definition'], $tracer);
+        $rollable = $this->createRollable($parts['definition']);
         foreach ($parts['modifiers'] as $matches) {
             $rollable = $this->decorate($rollable, $matches);
-            if ($rollable instanceof SupportsTracing) {
-                $rollable->setTracer($tracer);
-            }
         }
 
-        $rollable = $this->flattenRollable($rollable);
-
-        return $pool->withAddedRollable($rollable);
+        return $pool->withAddedRollable($this->flattenRollable($rollable));
     }
 
     /**
@@ -78,21 +79,16 @@ final class Factory
      *
      * @throws SyntaxError
      */
-    private function createRollable(array $parts, Tracer $tracer): Rollable
+    private function createRollable(array $parts): Rollable
     {
         if (isset($parts['composite'])) {
-            return $this->create($parts['composite'], $tracer);
+            return $this->create($parts['composite']);
         }
 
-        $die = $this->createDice($parts['simple']['type']);
-        if ($die instanceof SupportsTracing) {
-            $die->setTracer($tracer);
-        }
-
-        $cup = Cup::of((int)$parts['simple']['quantity'], $die);
-        $cup->setTracer($tracer);
-
-        return $cup;
+        return Cup::of(
+            (int) $parts['simple']['quantity'],
+            $this->createDice($parts['simple']['type'])
+        );
     }
 
     /**
