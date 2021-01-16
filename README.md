@@ -95,13 +95,11 @@ echo $pool->roll()->value(); // returns 12
 <?php
 
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\NotationParser;use Bakame\DiceRoller\SystemRandomInt;
 use Bakame\DiceRoller\MemoryTracer;
 
 $tracer = new MemoryTracer();
-$randomGenerator = new SystemRandomInt();
-$factory = new Factory(new NotationParser(), $randomGenerator, $tracer);
-$pool = $factory->newInstance('2D6+3');
+$factory = Factory::fromSystem();
+$pool = $factory->newInstance('2D6+3', $tracer);
 
 echo $pool->notation();  // returns 2D6+3
 $roll = $pool->roll();
@@ -532,9 +530,11 @@ If you want to know how internally your roll result is calculated your `Rollable
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Tracer;interface SupportsTracing
+use Bakame\DiceRoller\Tracer;
+
+interface SupportsTracing
 {
     public function setTracer(Tracer $tracer): void;
     public function getTracer(): Tracer;
@@ -546,9 +546,7 @@ The interface enables getting the trace from the last operation as well as profi
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Tracer;
-
-use Bakame\DiceRoller\Roll;
+namespace Bakame\DiceRoller;
 
 interface Tracer
 {
@@ -595,9 +593,9 @@ $tracer->isEmpty(); //returns true
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Tracer;
+namespace Bakame\DiceRoller;
 
-use Bakame\DiceRoller\Tracer;use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 final class Psr3LogTracer implements Tracer
