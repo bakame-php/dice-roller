@@ -23,7 +23,7 @@ use function array_walk;
 use function count;
 use function implode;
 
-final class Cup implements \JsonSerializable, Pool, SupportsTracing
+final class Cup implements \JsonSerializable, Pool, SupportsRecursiveTracing
 {
     /** @var Rollable[] */
     private array $items;
@@ -49,6 +49,19 @@ final class Cup implements \JsonSerializable, Pool, SupportsTracing
         $this->tracer = $tracer;
     }
 
+    public function setRecursiveTracer(Tracer $tracer): void
+    {
+        $this->setTracer($tracer);
+
+        foreach ($this->items as $rollable) {
+            if ($rollable instanceof SupportsRecursiveTracing) {
+                $rollable->setRecursiveTracer($this->tracer);
+            } elseif ($rollable instanceof SupportsTracing) {
+                $rollable->setTracer($this->tracer);
+            }
+        }
+    }
+
     public function getTracer(): Tracer
     {
         return $this->tracer;
@@ -59,7 +72,7 @@ final class Cup implements \JsonSerializable, Pool, SupportsTracing
      *
      * @throws SyntaxError
      */
-    public static function of(Rollable $rollable, int $quantity = 1): self
+    public static function of(int $quantity, Rollable $rollable): self
     {
         if ($quantity < 1) {
             throw SyntaxError::dueToTooFewInstancesToRoll($quantity);

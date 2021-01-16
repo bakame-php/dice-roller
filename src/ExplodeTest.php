@@ -24,7 +24,7 @@ final class ExplodeTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::of(new SidedDie(6), 4);
+        $this->cup = Cup::of(4, new SidedDie(6));
     }
 
     /**
@@ -53,7 +53,7 @@ final class ExplodeTest extends TestCase
 
     public function provideInvalidProperties(): iterable
     {
-        $cup = Cup::of(new SidedDie(6), 4);
+        $cup = Cup::of(4, new SidedDie(6));
 
         return [
             'greater than invalid threshold' => [
@@ -105,7 +105,7 @@ final class ExplodeTest extends TestCase
      */
     public function testExplodeGreaterThen(): void
     {
-        $rollable = Explode::greaterThan(Cup::of(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1);
+        $rollable = Explode::greaterThan(Cup::of(4, CustomDie::fromNotation('d[-1, -1, -1]')), 1);
         $roll = $rollable->roll();
 
         self::assertTrue($roll->value() <= $rollable->maximum());
@@ -120,11 +120,11 @@ final class ExplodeTest extends TestCase
                 'annotation' => '(2D3+D4)!=3',
             ],
             [
-                'roll' => Explode::greaterThan(Cup::of(CustomDie::fromNotation('d[-1, -1, -1]'), 4), 1),
+                'roll' => Explode::greaterThan(Cup::of(4, CustomDie::fromNotation('d[-1, -1, -1]')), 1),
                 'annotation' => '4D[-1,-1,-1]!>1',
             ],
             [
-                'roll' => Explode::equals(Cup::of(new SidedDie(6), 4), 1),
+                'roll' => Explode::equals(Cup::of(4, new SidedDie(6)), 1),
                 'annotation' => '4D6!',
             ],
             [

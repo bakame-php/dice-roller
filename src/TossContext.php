@@ -24,13 +24,6 @@ final class TossContext implements Context, \JsonSerializable
 
     public static function fromRolling(Rollable $rollable, string $source, array $extensions = []): self
     {
-        unset(
-            $extensions['notation'],
-            $extensions['source'],
-            $extensions['operation'],
-            $extensions['value'],
-        );
-
         return new self($rollable->notation(), $source, $extensions);
     }
 
@@ -51,7 +44,11 @@ final class TossContext implements Context, \JsonSerializable
 
     public function asArray(): array
     {
-        return ['source' => $this->source, 'notation' => $this->notation] + $this->extensions;
+        $extensions = $this->extensions;
+
+        unset($extensions['operation'], $extensions['value']);
+
+        return ['source' => $this->source, 'notation' => $this->notation] + $extensions;
     }
 
     public function jsonSerialize(): array

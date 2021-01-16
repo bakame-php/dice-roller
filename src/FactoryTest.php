@@ -23,7 +23,7 @@ final class FactoryTest extends TestCase
 
     public function setUp(): void
     {
-        $this->factory = new Factory();
+        $this->factory = Factory::fromSystem();
     }
 
     /**
@@ -123,7 +123,9 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $dice = $this->factory->newInstance('d8', $randomIntProvider, null);
+        $factory = new Factory(new NotationParser(), $randomIntProvider);
+
+        $dice = $factory->newInstance('d8');
         self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(8, $dice->size());
 
@@ -149,7 +151,8 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $dice = $this->factory->newInstance('d', $randomIntProvider, null);
+        $factory = new Factory(new NotationParser(), $randomIntProvider);
+        $dice = $factory->newInstance('d');
         self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(6, $dice->size());
         self::assertSame(1, $dice->minimum());
@@ -179,7 +182,8 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $cup = $this->factory->newInstance('2D6+3d4', $randomIntProvider, null);
+        $factory = new Factory(new NotationParser(), $randomIntProvider);
+        $cup = $factory->newInstance('2D6+3d4');
         self::assertInstanceOf(Traversable::class, $cup);
         self::assertCount(2, $cup);
         $res = iterator_to_array($cup, false);
@@ -221,7 +225,8 @@ final class FactoryTest extends TestCase
 
         self::expectException(SyntaxError::class);
 
-        (new Factory($parser))->newInstance('test');
+        $factory = new Factory($parser, new SystemRandomInt());
+        $factory->newInstance('test');
     }
 
     public function testInvalidDropKeepOperator(): void
@@ -242,7 +247,8 @@ final class FactoryTest extends TestCase
 
         self::expectException(SyntaxError::class);
 
-        (new Factory($parser))->newInstance('test');
+        $factory = new Factory($parser, new SystemRandomInt());
+        $factory->newInstance('test');
     }
 
     public function testInvalidExplodeOperator(): void
@@ -263,6 +269,7 @@ final class FactoryTest extends TestCase
 
         self::expectException(SyntaxError::class);
 
-        (new Factory($parser))->newInstance('test');
+        $factory = new Factory($parser, new SystemRandomInt());
+        $factory->newInstance('test');
     }
 }

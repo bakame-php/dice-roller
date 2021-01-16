@@ -35,7 +35,7 @@ class MemoryTracerTest extends TestCase
         $tracer = new MemoryTracer();
         self::assertCount(0, $tracer);
         self::assertTrue($tracer->isEmpty());
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $cup->setTracer($tracer);
         $cup->roll();
         self::assertCount(1, $tracer);
@@ -51,7 +51,7 @@ class MemoryTracerTest extends TestCase
     public function testTracerIteration(): void
     {
         $tracer = new MemoryTracer();
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $cup->setTracer($tracer);
         $roll = $cup->roll();
         $rolls = iterator_to_array($tracer);
@@ -63,7 +63,7 @@ class MemoryTracerTest extends TestCase
     public function testJsonRepresentation(): void
     {
         $tracer = new MemoryTracer();
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $cup->setTracer($tracer);
 
         /** @var string $expectedJson */
@@ -82,7 +82,7 @@ class MemoryTracerTest extends TestCase
     public function testOffsetAccessValid(): void
     {
         $tracer = new MemoryTracer();
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $cup->setTracer($tracer);
         $minRoll = $cup->minimum();
         $regularRoll = $cup->roll();
@@ -97,7 +97,7 @@ class MemoryTracerTest extends TestCase
     {
         self::expectException(OutOfBoundsException::class);
         $tracer = new MemoryTracer();
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $cup->setTracer($tracer);
         $tracer->get(3);
     }
@@ -106,7 +106,7 @@ class MemoryTracerTest extends TestCase
     {
         self::expectException(OutOfBoundsException::class);
         $tracer = new MemoryTracer();
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $cup->setTracer($tracer);
         $cup->minimum();
         $tracer->get(3);
@@ -116,7 +116,7 @@ class MemoryTracerTest extends TestCase
     {
         self::expectException(OutOfBoundsException::class);
         $tracer = new MemoryTracer();
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $cup->setTracer($tracer);
         $cup->minimum();
         $tracer->get(-3);

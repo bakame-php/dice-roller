@@ -28,7 +28,7 @@ final class TossContextTest extends TestCase
 
     public function testItCanBeInstantiated(): void
     {
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $source = get_class($cup).'::roll';
 
         $context = TossContext::fromRolling($cup, $source);
@@ -42,7 +42,7 @@ final class TossContextTest extends TestCase
 
     public function testTraceCanHaveOptionalsValue(): void
     {
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $source = get_class($cup).'::roll';
 
         $context = TossContext::fromRolling($cup, $source, ['bar' => 'baz', 'result' => 23]);
@@ -56,7 +56,7 @@ final class TossContextTest extends TestCase
 
     public function testContextWillFilterOutRollKeysFromOptionalValues(): void
     {
-        $cup = Cup::of(new SidedDie(6), 3);
+        $cup = Cup::of(3, new SidedDie(6));
         $source = get_class($cup).'::roll';
 
         $context = TossContext::fromRolling($cup, $source, ['bar' => 'baz', 'value' => 23, 'operation' => 'swordfish']);

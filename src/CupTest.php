@@ -63,7 +63,7 @@ final class CupTest extends TestCase
      */
     public function testRoll(): void
     {
-        $factory = new Factory(new NotationParser());
+        $factory = Factory::fromSystem();
         $cup = new Cup($factory->newInstance('4D10'), $factory->newInstance('2d4'));
         self::assertFalse($cup->isEmpty());
         self::assertSame(6, $cup->minimum());
@@ -85,7 +85,7 @@ final class CupTest extends TestCase
      */
     public function testCreateFromRollable(int $quantity, Rollable $template): void
     {
-        $cup = Cup::of($template, $quantity);
+        $cup = Cup::of($quantity, $template);
         self::assertCount($quantity, $cup);
         self::assertContainsOnlyInstancesOf(get_class($template), $cup);
     }
@@ -116,7 +116,7 @@ final class CupTest extends TestCase
     public function testCreateFromRollableThrowsException(): void
     {
         self::expectException(SyntaxError::class);
-        Cup::of(new FudgeDie(), 0);
+        Cup::of(0, new FudgeDie());
     }
 
     /**
@@ -127,7 +127,7 @@ final class CupTest extends TestCase
      */
     public function testCreateFromRollableReturnsEmptyCollection(): void
     {
-        $cup = Cup::of(new Cup(), 12);
+        $cup = Cup::of(12, new Cup());
         $alt_cup = $cup->withAddedRollable(new Cup());
         self::assertCount(0, $cup);
         self::assertSame($cup, $alt_cup);
@@ -159,7 +159,7 @@ final class CupTest extends TestCase
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $cup = Cup::of(CustomDie::fromNotation('d[2, -3, -5]'), 12);
+        $cup = Cup::of(12, CustomDie::fromNotation('d[2, -3, -5]'));
         self::assertEquals(new NullTracer(), $cup->getTracer());
         $cup->setTracer($tracer);
         $cup->roll();
@@ -178,7 +178,7 @@ final class CupTest extends TestCase
      */
     public function testFiveFourSidedDice(): void
     {
-        $cup = Cup::of(new SidedDie(4), 5);
+        $cup = Cup::of(5, new SidedDie(4));
         self::assertSame(json_encode('5D4'), json_encode($cup));
         self::assertCount(5, $cup);
         self::assertContainsOnlyInstancesOf(SidedDie::class, $cup);
@@ -192,5 +192,29 @@ final class CupTest extends TestCase
             self::assertGreaterThanOrEqual($cup->minimum(), $result);
             self::assertLessThanOrEqual($cup->maximum(), $result);
         }
+    }
+
+    public function testResurciveTracerSetter(): void
+    {
+        $tracer = Psr3LogTracer::fromNullLogger();
+
+        $die1 = SidedDie::fromNotation('D5');
+        $die1->setTracer(new MemoryTracer());
+
+        $die2 = Cup::of(3, new FudgeDie());
+        $die2->setTracer(new NullTracer());
+
+        $cup = new Cup($die1, $die2);
+        $cup->setTracer(Psr3LogTracer::fromNullLogger());
+
+        self::assertNotEquals($cup->getTracer(), $die1->getTracer());
+        self::assertNotEquals($cup->getTracer(), $die2->getTracer());
+        self::assertNotSame($tracer, $cup->getTracer());
+
+        $cup->setRecursiveTracer($tracer);
+
+        self::assertSame($cup->getTracer(), $die1->getTracer());
+        self::assertSame($cup->getTracer(), $die2->getTracer());
+        self::assertSame($tracer, $cup->getTracer());
     }
 }

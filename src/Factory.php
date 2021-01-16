@@ -18,11 +18,15 @@ use function iterator_to_array;
 
 final class Factory
 {
-    private Parser $parser;
+    public function __construct(
+        private Parser $parser,
+        private RandomIntGenerator $randomIntGenerator
+    ) {
+    }
 
-    public function __construct(Parser $parser = null)
+    public static function fromSystem(): self
     {
-        $this->parser = $parser ?? new NotationParser();
+        return new self(new NotationParser(), new SystemRandomInt());
     }
 
     /**
@@ -30,25 +34,22 @@ final class Factory
      */
     public function newInstance(
         string $notation,
-        RandomIntGenerator $randomIntGenerator = null,
         Tracer $tracer = null
     ): Rollable {
-        return $this->create(
-            $this->parser->parse($notation),
-            $randomIntGenerator ?? new SystemRandomInt(),
-            $tracer ?? new NullTracer()
-        );
+        $tracer = $tracer ?? new NullTracer();
+
+        return $this->create($this->parser->parse($notation), $tracer);
     }
 
     /**
      * Returns a new object that can be rolled from a parsed dice notation.
      */
-    private function create(array $parsed, RandomIntGenerator $randomIntGenerator, Tracer $tracer): Rollable
+    private function create(array $parsed, Tracer $tracer): Rollable
     {
         $rollable = new Cup();
         $rollable->setTracer($tracer);
         foreach ($parsed as $parts) {
-            $rollable = $this->addRollable($rollable, $parts, $randomIntGenerator, $tracer);
+            $rollable = $this->addRollable($rollable, $parts, $tracer);
         }
 
         return $this->flattenRollable($rollable);
@@ -57,9 +58,9 @@ final class Factory
     /**
      * Adds a Rollable item to a pool.
      */
-    private function addRollable(Cup $pool, array $parts, RandomIntGenerator $randomIntGenerator, Tracer $tracer): Cup
+    private function addRollable(Cup $pool, array $parts, Tracer $tracer): Cup
     {
-        $rollable = $this->createRollable($parts['definition'], $randomIntGenerator, $tracer);
+        $rollable = $this->createRollable($parts['definition'], $tracer);
         foreach ($parts['modifiers'] as $matches) {
             $rollable = $this->decorate($rollable, $matches);
             if ($rollable instanceof SupportsTracing) {
@@ -77,18 +78,18 @@ final class Factory
      *
      * @throws SyntaxError
      */
-    private function createRollable(array $parts, RandomIntGenerator $randomIntGenerator, Tracer $tracer): Rollable
+    private function createRollable(array $parts, Tracer $tracer): Rollable
     {
         if (isset($parts['composite'])) {
-            return $this->create($parts['composite'], $randomIntGenerator, $tracer);
+            return $this->create($parts['composite'], $tracer);
         }
 
-        $die = $this->createDice($parts['simple']['type'], $randomIntGenerator);
+        $die = $this->createDice($parts['simple']['type']);
         if ($die instanceof SupportsTracing) {
             $die->setTracer($tracer);
         }
 
-        $cup = Cup::of($die, (int) $parts['simple']['quantity']);
+        $cup = Cup::of((int)$parts['simple']['quantity'], $die);
         $cup->setTracer($tracer);
 
         return $cup;
@@ -99,21 +100,21 @@ final class Factory
      *
      * @throws SyntaxError
      */
-    private function createDice(string $notation, RandomIntGenerator $randomIntGenerator): Dice
+    private function createDice(string $notation): Dice
     {
         if ('DF' === $notation) {
-            return new FudgeDie($randomIntGenerator);
+            return new FudgeDie($this->randomIntGenerator);
         }
 
         if ('D%' === $notation) {
-            return new PercentileDie($randomIntGenerator);
+            return new PercentileDie($this->randomIntGenerator);
         }
 
         if (str_contains($notation, '[')) {
-            return CustomDie::fromNotation($notation, $randomIntGenerator);
+            return CustomDie::fromNotation($notation, $this->randomIntGenerator);
         }
 
-        return SidedDie::fromNotation($notation, $randomIntGenerator);
+        return SidedDie::fromNotation($notation, $this->randomIntGenerator);
     }
 
     /**

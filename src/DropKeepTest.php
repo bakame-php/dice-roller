@@ -24,7 +24,7 @@ final class DropKeepTest extends TestCase
 
     public function setUp(): void
     {
-        $this->cup = Cup::of(new SidedDie(6), 4);
+        $this->cup = Cup::of(4, new SidedDie(6));
     }
 
     /**
@@ -48,7 +48,7 @@ final class DropKeepTest extends TestCase
     {
         self::expectException(SyntaxError::class);
 
-        DropKeep::dropHighest(Cup::of(new SidedDie(6), 23), 56);
+        DropKeep::dropHighest(Cup::of(23, new SidedDie(6)), 56);
     }
 
     /**
@@ -193,7 +193,7 @@ final class DropKeepTest extends TestCase
     {
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $dropKeep = DropKeep::dropLowest(Cup::of(new SidedDie(6), 3), 2);
+        $dropKeep = DropKeep::dropLowest(Cup::of(3, new SidedDie(6)), 2);
         $dropKeep->setTracer($tracer);
         $dropKeep->roll();
         $dropKeep->maximum();

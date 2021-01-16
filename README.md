@@ -12,7 +12,7 @@ A simple Dice Roller implemented in PHP.
 use Bakame\DiceRoller\Factory;
 
 // Factory allow us to create dice cup.
-$factory = new Factory();
+$factory = Factory::fromSystem();
 
 // We create the cup that will contain the two die:
 $cup = $factory->newInstance('2D6');
@@ -62,7 +62,7 @@ Use the library factory to simulate the roll of two six-sided die
 
 use Bakame\DiceRoller\Factory;
 
-$factory = new Factory();
+$factory = Factory::fromSystem();
 $pool = $factory->newInstance('2D6+3');
 
 echo $pool->notation();    // returns 2D6+3
@@ -95,13 +95,13 @@ echo $pool->roll()->value(); // returns 12
 <?php
 
 use Bakame\DiceRoller\Factory;
-use Bakame\DiceRoller\SystemRandomInt;
+use Bakame\DiceRoller\NotationParser;use Bakame\DiceRoller\SystemRandomInt;
 use Bakame\DiceRoller\MemoryTracer;
 
 $tracer = new MemoryTracer();
-$factory = new Factory();
 $randomGenerator = new SystemRandomInt();
-$pool = $factory->newInstance('2D6+3', $randomGenerator, $tracer);
+$factory = new Factory(new NotationParser(), $randomGenerator, $tracer);
+$pool = $factory->newInstance('2D6+3');
 
 echo $pool->notation();  // returns 2D6+3
 $roll = $pool->roll();
@@ -199,7 +199,7 @@ If the `Parser` or the `Factory` are not able to parse or create a `Rollable` ob
 
 ### Rollable
 
-The `Factory::newInstance` method always returns objects implementing the `Bakame\DiceRoller\Contract\Rollable` interface.
+The `Factory::newInstance` method always returns objects implementing the `Bakame\DiceRoller\Rollable` interface.
 
 ```php
 <?php
@@ -293,7 +293,7 @@ If you need to roll multiple dice at the same time, you need to implement the `B
 ```php
 <?php
 
-namespace Bakame\DiceRoller\Contract;
+namespace Bakame\DiceRoller;
 
 interface Pool implements \Countable, \IteratorAggregate, Rollable
 {
@@ -307,11 +307,11 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface.
 ```php
 <?php
 
-use Bakame\DiceRoller\SupportsTracing;
+use Bakame\DiceRoller\SupportsRecursiveTracing;
 use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\Rollable;
 
-final class Cup implements Pool, SupportsTracing
+final class Cup implements Pool, SupportsRecursiveTracing
 {
     public function __construct(Rollable ...$rollable);
     public static function of(Rollable $rollable, int $quantity = 1): self;
@@ -330,10 +330,10 @@ use Bakame\DiceRoller\FudgeDie;
 use Bakame\DiceRoller\PercentileDie;
 use Bakame\DiceRoller\SidedDie;
 
-echo Cup::of(new SidedDie(5), 3)->notation();           // displays 3D5
-echo Cup::of(new PercentileDie(), 4)->notation();       // displays 4D%
-echo Cup::of(CustomDie::fromNotation('d[1, 2, 2, 4]'), 2)->notation(); // displays 2D[1,2,2,4]
-echo Cup::of(new FudgeDie(), 42)->notation();           // displays 42DF
+echo Cup::of(3, new SidedDie(5))->notation();           // displays 3D5
+echo Cup::of(4, new PercentileDie())->notation();       // displays 4D%
+echo Cup::of(2, CustomDie::fromNotation('d[1, 2, 2, 4]'))->notation(); // displays 2D[1,2,2,4]
+echo Cup::of(42, new FudgeDie())->notation();           // displays 42DF
 ```
 
 A `Cup` created using `of` must contain at least 1 `Rollable` object otherwise a `Bakame\DiceRoller\SyntaxError` is thrown.
@@ -346,7 +346,7 @@ When iterating over a `Cup` object you will get access to all its inner `Rollabl
 use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\SidedDie;
 
-foreach (Cup::of(new SidedDie(5), 3) as $rollable) {
+foreach (Cup::of(3, new SidedDie(5)) as $rollable) {
     echo $rollable->notation(); // will always return D5
 }
 ```
@@ -360,7 +360,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\FudgeDie;
 use Bakame\DiceRoller\SidedDie;
 
-$cup = Cup::of(new SidedDie(5), 3);
+$cup = Cup::of(3, new SidedDie(5));
 count($cup);             //returns 3 the number of dices
 echo $cup->notation(); //returns 3D5
 
@@ -475,7 +475,7 @@ use Bakame\DiceRoller\Cup;
 use Bakame\DiceRoller\SidedDie;
 use Bakame\DiceRoller\DropKeep;
 
-$cup = Cup::of(new SidedDie(6), 4);
+$cup = Cup::of(4, new SidedDie(6));
 $modifier = DropKeep::dropHighest($cup, 3);
 echo $modifier->notation(); // displays '4D6DH3'
 ```
@@ -575,7 +575,7 @@ use Bakame\DiceRoller\MemoryTracer;
 
 $tracer = new MemoryTracer();
 $tracer->isEmpty(); //returns true
-$cup = Cup::of(new SidedDie(6), 3);
+$cup = Cup::of(3, new SidedDie(6));
 $cup->setTracer($tracer);
 $cup->roll();
 $tracer->isEmpty(); //returns false
