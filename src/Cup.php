@@ -44,6 +44,11 @@ final class Cup implements \JsonSerializable, Pool, SupportsRecursiveTracing
         return !$rollable instanceof Pool || !$rollable->isEmpty();
     }
 
+    public function getTracer(): Tracer
+    {
+        return $this->tracer;
+    }
+
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
@@ -60,11 +65,6 @@ final class Cup implements \JsonSerializable, Pool, SupportsRecursiveTracing
                 $rollable->setTracer($this->tracer);
             }
         }
-    }
-
-    public function getTracer(): Tracer
-    {
-        return $this->tracer;
     }
 
     /**
@@ -115,7 +115,7 @@ final class Cup implements \JsonSerializable, Pool, SupportsRecursiveTracing
             return '0';
         }
 
-        /** @psalm-suppress MissingClosureParamType */
+        /** @param-out string */
         $walker = function (string|int &$value, string $offset): void {
             $value = $value > 1 ? ''.$value.$offset : $offset;
         };

@@ -393,7 +393,7 @@ namespace Bakame\DiceRoller;
 
 interface Modifier implements Rollable
 {
-    public function getRollingInstance(): Rollable;
+    public function getInnerRollable(): Rollable;
 }
 ```
 
