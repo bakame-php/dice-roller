@@ -281,7 +281,7 @@ final class FactoryTest extends TestCase
             self::assertSame($tracer, $pool->getTracer());
         }
 
-        if ($pool instanceof SupportsRecursiveTracing && $pool instanceof Pool) {
+        if ($pool instanceof EnablesDeepTracing && $pool instanceof Pool) {
             foreach ($pool as $item) {
                 if ($item instanceof SupportsTracing) {
                     self::assertSame($tracer, $item->getTracer());

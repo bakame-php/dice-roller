@@ -16,7 +16,7 @@ namespace Bakame\DiceRoller;
 use function abs;
 use function in_array;
 
-final class Arithmetic implements \JsonSerializable, Modifier, SupportsRecursiveTracing
+final class Arithmetic implements \JsonSerializable, Modifier, EnablesDeepTracing
 {
     private const ADD = '+';
     private const DIV = '/';
@@ -111,7 +111,7 @@ final class Arithmetic implements \JsonSerializable, Modifier, SupportsRecursive
     public function setTracerRecursively(Tracer $tracer): void
     {
         $this->setTracer($tracer);
-        if ($this->rollable instanceof SupportsRecursiveTracing) {
+        if ($this->rollable instanceof EnablesDeepTracing) {
             $this->rollable->setTracerRecursively($tracer);
         } elseif ($this->rollable instanceof SupportsTracing) {
             $this->rollable->setTracer($tracer);

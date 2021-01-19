@@ -24,7 +24,7 @@ use function rsort;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements \JsonSerializable, Modifier, SupportsRecursiveTracing
+final class DropKeep implements \JsonSerializable, Modifier, EnablesDeepTracing
 {
     private const DROP_HIGHEST = 'DH';
     private const DROP_LOWEST = 'DL';
@@ -111,7 +111,7 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsRecursiveTr
     public function setTracerRecursively(Tracer $tracer): void
     {
         $this->setTracer($tracer);
-        if ($this->pool instanceof SupportsRecursiveTracing) {
+        if ($this->pool instanceof EnablesDeepTracing) {
             $this->pool->setTracerRecursively($tracer);
         } elseif ($this->pool instanceof SupportsTracing) {
             $this->pool->setTracer($tracer);

@@ -39,7 +39,7 @@ final class Factory
             return $rollable;
         }
 
-        if ($rollable instanceof SupportsRecursiveTracing) {
+        if ($rollable instanceof EnablesDeepTracing) {
             $rollable->setTracerRecursively($tracer);
         } elseif ($rollable instanceof SupportsTracing) {
             $rollable->setTracer($tracer);

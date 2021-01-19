@@ -23,7 +23,7 @@ use function array_walk;
 use function count;
 use function implode;
 
-final class Cup implements \JsonSerializable, Pool, SupportsRecursiveTracing
+final class Cup implements \JsonSerializable, Pool, EnablesDeepTracing
 {
     /** @var Rollable[] */
     private array $items;
@@ -59,7 +59,7 @@ final class Cup implements \JsonSerializable, Pool, SupportsRecursiveTracing
         $this->setTracer($tracer);
 
         foreach ($this->items as $rollable) {
-            if ($rollable instanceof SupportsRecursiveTracing) {
+            if ($rollable instanceof EnablesDeepTracing) {
                 $rollable->setTracerRecursively($this->tracer);
             } elseif ($rollable instanceof SupportsTracing) {
                 $rollable->setTracer($this->tracer);

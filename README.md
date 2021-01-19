@@ -305,11 +305,11 @@ with the `Bakame\DiceRoller\Cup` class which implements the interface.
 ```php
 <?php
 
-use Bakame\DiceRoller\SupportsRecursiveTracing;
+use Bakame\DiceRoller\EnablesDeepTracing;
 use Bakame\DiceRoller\Pool;
 use Bakame\DiceRoller\Rollable;
 
-final class Cup implements Pool, SupportsRecursiveTracing
+final class Cup implements Pool, EnablesDeepTracing
 {
     public function __construct(Rollable ...$rollable);
     public static function of(Rollable $rollable, int $quantity = 1): self;

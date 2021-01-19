@@ -21,7 +21,7 @@ use function in_array;
 use function iterator_to_array;
 use const PHP_INT_MAX;
 
-final class Explode implements \JsonSerializable, Modifier, SupportsRecursiveTracing
+final class Explode implements \JsonSerializable, Modifier, EnablesDeepTracing
 {
     private const EQ = '=';
     private const GT = '>';
@@ -138,7 +138,7 @@ final class Explode implements \JsonSerializable, Modifier, SupportsRecursiveTra
     public function setTracerRecursively(Tracer $tracer): void
     {
         $this->setTracer($tracer);
-        if ($this->pool instanceof SupportsRecursiveTracing) {
+        if ($this->pool instanceof EnablesDeepTracing) {
             $this->pool->setTracerRecursively($tracer);
         } elseif ($this->pool instanceof SupportsTracing) {
             $this->pool->setTracer($tracer);
