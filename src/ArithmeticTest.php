@@ -270,10 +270,12 @@ final class ArithmeticTest extends TestCase
      */
     public function testTracer(): void
     {
+        $pool = CustomDie::fromNotation('d[-1, -1, -1]');
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $arithmetic = Arithmetic::pow(CustomDie::fromNotation('d[-1, -1, -1]'), 3, $tracer);
+        $arithmetic = Arithmetic::pow($pool, 3, $tracer);
         self::assertSame($tracer, $arithmetic->getTracer());
+        self::assertNotEquals($tracer, $pool->getTracer());
 
         $arithmetic->roll();
         $arithmetic->maximum();
@@ -283,6 +285,9 @@ final class ArithmeticTest extends TestCase
         self::assertCount(1, $logger->getLogs());
         self::assertCount(1, $logger->getLogs(null));
         self::assertCount(0, $logger->getLogs('foobar'));
+
+        $arithmetic->setTracerRecursively($tracer);
+        self::assertSame($tracer, $pool->getTracer());
     }
 
     public function testCreateFromOperation(): void

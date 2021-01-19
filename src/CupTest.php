@@ -211,7 +211,7 @@ final class CupTest extends TestCase
         self::assertNotEquals($cup->getTracer(), $die2->getTracer());
         self::assertNotSame($tracer, $cup->getTracer());
 
-        $cup->setRecursiveTracer($tracer);
+        $cup->setTracerRecursively($tracer);
 
         self::assertSame($cup->getTracer(), $die1->getTracer());
         self::assertSame($cup->getTracer(), $die2->getTracer());

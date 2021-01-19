@@ -21,7 +21,7 @@ use function in_array;
 use function iterator_to_array;
 use const PHP_INT_MAX;
 
-final class Explode implements \JsonSerializable, Modifier, SupportsTracing
+final class Explode implements \JsonSerializable, Modifier, SupportsRecursiveTracing
 {
     private const EQ = '=';
     private const GT = '>';
@@ -125,14 +125,24 @@ final class Explode implements \JsonSerializable, Modifier, SupportsTracing
         return $min !== $max || $threshold !== $max;
     }
 
+    public function getTracer(): Tracer
+    {
+        return $this->tracer;
+    }
+
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
-    public function getTracer(): Tracer
+    public function setTracerRecursively(Tracer $tracer): void
     {
-        return $this->tracer;
+        $this->setTracer($tracer);
+        if ($this->pool instanceof SupportsRecursiveTracing) {
+            $this->pool->setTracerRecursively($tracer);
+        } elseif ($this->pool instanceof SupportsTracing) {
+            $this->pool->setTracer($tracer);
+        }
     }
 
     public function getInnerRollable(): Rollable

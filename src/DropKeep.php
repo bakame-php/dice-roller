@@ -24,7 +24,7 @@ use function rsort;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
+final class DropKeep implements \JsonSerializable, Modifier, SupportsRecursiveTracing
 {
     private const DROP_HIGHEST = 'DH';
     private const DROP_LOWEST = 'DL';
@@ -98,14 +98,24 @@ final class DropKeep implements \JsonSerializable, Modifier, SupportsTracing
         return new self($rollable, $algorithm, $threshold, $tracer);
     }
 
+    public function getTracer(): Tracer
+    {
+        return $this->tracer;
+    }
+
     public function setTracer(Tracer $tracer): void
     {
         $this->tracer = $tracer;
     }
 
-    public function getTracer(): Tracer
+    public function setTracerRecursively(Tracer $tracer): void
     {
-        return $this->tracer;
+        $this->setTracer($tracer);
+        if ($this->pool instanceof SupportsRecursiveTracing) {
+            $this->pool->setTracerRecursively($tracer);
+        } elseif ($this->pool instanceof SupportsTracing) {
+            $this->pool->setTracer($tracer);
+        }
     }
 
     public function getInnerRollable(): Rollable

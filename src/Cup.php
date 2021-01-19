@@ -54,13 +54,13 @@ final class Cup implements \JsonSerializable, Pool, SupportsRecursiveTracing
         $this->tracer = $tracer;
     }
 
-    public function setRecursiveTracer(Tracer $tracer): void
+    public function setTracerRecursively(Tracer $tracer): void
     {
         $this->setTracer($tracer);
 
         foreach ($this->items as $rollable) {
             if ($rollable instanceof SupportsRecursiveTracing) {
-                $rollable->setRecursiveTracer($this->tracer);
+                $rollable->setTracerRecursively($this->tracer);
             } elseif ($rollable instanceof SupportsTracing) {
                 $rollable->setTracer($this->tracer);
             }

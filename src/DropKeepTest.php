@@ -191,14 +191,16 @@ final class DropKeepTest extends TestCase
      */
     public function testTracer(): void
     {
+        $pool = Cup::of(3, new SidedDie(6));
         $logger = new Psr3Logger();
         $tracer = new Psr3LogTracer($logger, LogLevel::DEBUG);
-        $dropKeep = DropKeep::dropLowest(Cup::of(3, new SidedDie(6)), 2);
+        $dropKeep = DropKeep::dropLowest($pool, 2);
         $dropKeep->setTracer($tracer);
         $dropKeep->roll();
         $dropKeep->maximum();
         $dropKeep->minimum();
 
+        self::assertNotEquals($tracer, $pool->getTracer());
         self::assertSame($tracer, $dropKeep->getTracer());
         self::assertInstanceOf(Pool::class, $dropKeep->getInnerRollable());
         self::assertCount(3, $logger->getLogs(LogLevel::DEBUG));
@@ -207,6 +209,8 @@ final class DropKeepTest extends TestCase
         $dropKeep = DropKeep::dropLowest($pool, 1);
         $dropKeep->roll();
         self::assertGreaterThan(3, $logger->getLogs(LogLevel::DEBUG));
+        $dropKeep->setTracerRecursively($tracer);
+        self::assertSame($tracer, $pool->getTracer());
     }
 
     /**

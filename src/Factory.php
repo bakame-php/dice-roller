@@ -40,7 +40,7 @@ final class Factory
         }
 
         if ($rollable instanceof SupportsRecursiveTracing) {
-            $rollable->setRecursiveTracer($tracer);
+            $rollable->setTracerRecursively($tracer);
         } elseif ($rollable instanceof SupportsTracing) {
             $rollable->setTracer($tracer);
         }

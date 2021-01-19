@@ -15,5 +15,5 @@ namespace Bakame\DiceRoller;
 
 interface SupportsRecursiveTracing extends SupportsTracing
 {
-    public function setRecursiveTracer(Tracer $tracer): void;
+    public function setTracerRecursively(Tracer $tracer): void;
 }
