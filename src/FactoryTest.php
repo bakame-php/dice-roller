@@ -123,7 +123,7 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $factory = new Factory(new NotationParser(), $randomIntProvider);
+        $factory = new Factory($randomIntProvider);
 
         $dice = $factory->newInstance('d8');
         self::assertInstanceOf(SidedDie::class, $dice);
@@ -151,7 +151,7 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $factory = new Factory(new NotationParser(), $randomIntProvider);
+        $factory = new Factory($randomIntProvider);
         $dice = $factory->newInstance('d');
         self::assertInstanceOf(SidedDie::class, $dice);
         self::assertSame(6, $dice->size());
@@ -182,7 +182,7 @@ final class FactoryTest extends TestCase
             }
         };
 
-        $factory = new Factory(new NotationParser(), $randomIntProvider);
+        $factory = new Factory($randomIntProvider);
         $cup = $factory->newInstance('2D6+3d4');
         self::assertInstanceOf(Traversable::class, $cup);
         self::assertCount(2, $cup);
@@ -207,70 +207,18 @@ final class FactoryTest extends TestCase
         self::assertLessThanOrEqual($cup->maximum(), $result);
     }
 
-    public function testInvalidArithmeticOperator(): void
-    {
-        $parser = new class() implements Parser {
-            public function parse(string $notation): array
-            {
-                return [[
-                    'definition' => [
-                        'simple' => ['type' => 'D6', 'quantity' => '4'],
-                    ],
-                    'modifiers' => [
-                        ['modifier' => 'arithmetic', 'operator' => '%', 'value' => 2],
-                    ],
-                ]];
-            }
-        };
-
-        self::expectException(SyntaxError::class);
-
-        $factory = new Factory($parser, new SystemRandomInt());
-        $factory->newInstance('test');
-    }
-
     public function testInvalidDropKeepOperator(): void
     {
-        $parser = new class() implements Parser {
-            public function parse(string $notation): array
-            {
-                return [[
-                    'definition' => [
-                        'simple' => ['type' => 'D6', 'quantity' => '4'],
-                    ],
-                    'modifiers' => [
-                        ['modifier' => 'dropkeep', 'operator' => 'DV', 'value' => 2],
-                    ],
-                ]];
-            }
-        };
-
         self::expectException(SyntaxError::class);
 
-        $factory = new Factory($parser, new SystemRandomInt());
-        $factory->newInstance('test');
+        Factory::fromSystem()->newInstance('3D4%2');
     }
 
     public function testInvalidExplodeOperator(): void
     {
-        $parser = new class() implements Parser {
-            public function parse(string $notation): array
-            {
-                return [[
-                    'definition' => [
-                        'simple' => ['type' => 'D6', 'quantity' => '4'],
-                    ],
-                    'modifiers' => [
-                        ['modifier' => 'explode', 'operator' => '>=', 'value' => 2],
-                    ],
-                ]];
-            }
-        };
-
         self::expectException(SyntaxError::class);
 
-        $factory = new Factory($parser, new SystemRandomInt());
-        $factory->newInstance('test');
+        Factory::fromSystem()->newInstance('test');
     }
 
     public function testNewInstanceAddRecursivelyTheTracer(): void
@@ -298,5 +246,179 @@ final class FactoryTest extends TestCase
         if ($pool instanceof SupportsTracing) {
             self::assertSame($tracer, $pool->getTracer());
         }
+    }
+
+
+    /**
+     * @dataProvider invalidStringParsingProvider
+     */
+    public function testInvalidParserDefinition(string $expected): void
+    {
+        self::expectException(SyntaxError::class);
+
+        $this->factory->newInstance($expected);
+    }
+
+    public function invalidStringParsingProvider(): iterable
+    {
+        return [
+            'missing separator D' => ['ZZZ'],
+            'missing group definition' => ['+'],
+            'invalid group' => ['10+3dF'],
+            'invalid modifier' => ['3dFZZZZ'],
+            'invalid complex cup' => ['(3DF+2D6)*3+3F^2'],
+            'invalid complex cup 2' => ['(3DFoobar+2D6)*3+3DF^2'],
+            'invalid complex cup 3' => ['()*3'],
+            'invalid custom dice' => ['3dss'],
+        ];
+    }
+
+    /**
+     * @dataProvider permissiveParserProvider
+     */
+    public function testPermissiveParser(string $full, string $short): void
+    {
+        self::assertEquals($this->factory->newInstance($short)->notation(), $this->factory->newInstance($full)->notation());
+    }
+
+    public function permissiveParserProvider(): iterable
+    {
+        return [
+            'default dice size' => [
+                'full' => '1d6',
+                'short' => '1d',
+            ],
+            'default dice size 2' => [
+                'full' => '1d6',
+                'short' => 'd',
+            ],
+            'default fudge dice size' => [
+                'full' => '1dF',
+                'short' => 'df',
+            ],
+            'default percentile dice size' => [
+                'full' => '1d%',
+                'short' => 'd%',
+            ],
+            'default keep lowest modifier' => [
+                'full' => '2d3kl1',
+                'short' => '2d3KL',
+            ],
+            'default keep highest modifier' => [
+                'full' => '2d3KH1',
+                'short' => '2d3kh',
+            ],
+            'default drop highest modifier' => [
+                'full' => '2d3dh1',
+                'short' => '2d3DH',
+            ],
+            'default drop lowest modifier' => [
+                'full' => '2d3dl1',
+                'short' => '2D3Dl',
+            ],
+            'default explode modifier' => [
+                'full' => '1d6!',
+                'short' => 'D!',
+            ],
+            'default explode modifier with threshold' => [
+                'full' => '1d6!=3',
+                'short' => 'D!3',
+            ],
+        ];
+    }
+
+
+    /**
+     * @dataProvider validStringParserProvider
+     */
+    public function testInnerParser(string $notation, string $parsed): void
+    {
+        self::assertSame($parsed, $this->factory->newInstance($notation)->notation());
+    }
+
+    public function validStringParserProvider(): iterable
+    {
+        return [
+            'empty cup' => [
+                'notation' => '',
+                'parsed' => '0',
+            ],
+            'simple' => [
+                'notation' => '2D3',
+                'parsed' => '2D3',
+            ],
+            'empty nb dice' => [
+                'notation' => 'd3',
+                'parsed' => 'D3',
+            ],
+            'empty nb sides' => [
+                'notation' => '3d',
+                'parsed' => '3D6',
+            ],
+            'mixed group' => [
+                'notation' => '2D3+1D4',
+                'parsed' => '2D3+D4',
+            ],
+            'case insensitive' => [
+                'notation' => '2d3+1d4',
+                'parsed' => '2D3+D4',
+            ],
+            'default to one dice' => [
+                'notation' => 'd3+d4+1d3+5d2',
+                'parsed' => '2D3+D4+5D2',
+            ],
+            'fudge dice' => [
+                'notation' => '2dF',
+                'parsed' => '2DF',
+            ],
+            'multiple fudge dice' => [
+                'notation' => 'dF+3dF',
+                'parsed' => 'DF+3DF',
+            ],
+            'mixed cup' => [
+                'notation' => '2df+3d2',
+                'parsed' => '2DF+3D2',
+            ],
+            'add modifier' => [
+                'notation' => '2d3-4',
+                'parsed' => '2D3-4',
+            ],
+            'add modifier to multiple group' => [
+                'notation' => '2d3+4+3dF!>1/4^3',
+                'parsed' => '2D3+4+3DF!>1/4^3',
+            ],
+            'add explode modifier' => [
+                'notation' => '2d3!',
+                'parsed' => '2D3!',
+            ],
+            'add keep lowest modifier' => [
+                'notation' => '2d3kl1',
+                'parsed' => '2D3KL1',
+            ],
+            'add keep highest modifier' => [
+                'notation' => '2d3kh2',
+                'parsed' => '2D3KH2',
+            ],
+            'add drop lowest modifier' => [
+                'notation' => '4d6dl2',
+                'parsed' => '4D6DL2',
+            ],
+            'add drop highest modifier' => [
+                'notation' => '4d6dh3',
+                'parsed' =>'4D6DH3',
+            ],
+            'complex mixed cup' => [
+                'notation' => '(3DF+2D6)*3+3DF^2',
+                'parsed' => '(3DF+2D6)*3+3DF^2',
+            ],
+            'percentile dice' => [
+                'notation' => '3d%',
+                'parsed' => '3D%',
+            ],
+            'custom dice' => [
+                'notation' => '2d[1,2,34]',
+                'parsed' => '2D[1,2,34]',
+            ],
+        ];
     }
 }

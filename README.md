@@ -124,27 +124,14 @@ foreach ($tracer as $trace) {
 
 ### Parsing Dice notation
 
-#### The parser
+#### The Factory
 
-In order to roll the dice, the package comes bundles with:
+In order to roll the dice, the package comes bundles with a factory class, 
+`Bakame\DiceRoller\Factory`, to create a `Rollable` object from the result 
+of such parsing. The factory is able to extract roll rules in a case 
+incensitive way from a string notation and convert them into an PHP `Rollable` object.
 
-- a parser class, `Bakame\DiceRoller\NotationParser`, to split a roll notation into its inner pieces.
-- a factory class, `Bakame\DiceRoller\Factory`, to create a `Rollable` object from the result of such parsing.
-
-The `NotationParser` implements a `Parser` interface whose `Parser::parse` must be able to extract roll rules in a case insentitive way from a string notation and convert them into an PHP `array`.
-
-```php
-<?php
-
-namespace Bakame\DiceRoller;
-
-final class NotationParser implements Parser
-{
-    public function parse(string $notation): array;
-}
-```
-
-Here's the list of supported roll rules by `Bakame\DiceRoller\NotationParser`.
+Here's the list of supported roll rules by `Bakame\DiceRoller\Factory`.
 
 | Annotation | Examples  | Description |
 | ---------- | -------- | -------- |
@@ -156,16 +143,14 @@ Here's the list of supported roll rules by `Bakame\DiceRoller\NotationParser`.
 |  `!oc`     | `!>3` | an explode modifier where `o` represents one of the supported comparision operator (`>`, `<`, `=`)  and `c` a positive integer |
 |  `[dh,dl,kh,kl]z` | `dh4` | keeping or dropping the lowest or highest z dice |
 
-When using the `NotationParser` parser:
+When using the factory:
 
 - **Only 2 arithmetic modifiers can be appended to a given dice pool.**  
 - *The `=` comparison sign when using the explode modifier can be omitted*
 
 *TIP: You should use parenthesis to add more modifiers to your pool*
 
-#### The factory
-
-The `Factory` class uses a `Parser` implementation to return a `Rollable` object. Optionnally, the factory can attach a tracer to any object that can be traced.
+The `Factory` can optionally attach a tracer to any object that can be traced.
 
 ```php
 <?php
@@ -174,8 +159,8 @@ namespace Bakame\DiceRoller;
 
 final class Factory
 {
-    public function __construct(Parser $parser = null);
-    public function newInstance(string $notation, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null): Rollable;
+    public function __construct(RandomIntGenerator $randomIntGenerator);
+    public function newInstance(string $notation, Tracer $tracer = null): Rollable;
 }
 ```
 
@@ -184,16 +169,15 @@ Using both classes we can then parse the following notation.
 ```php
 <?php
 
-use Bakame\DiceRoller\NotationParser;
 use Bakame\DiceRoller\Factory;
 
-$factory = new Factory(new NotationParser());
+$factory = Factory::fromSystem();
 $cup = $factory->newInstance('3D20+4+D4!>3/4^3');
 
 echo $cup->roll()->value();
 ```
 
-If the `Parser` or the `Factory` are not able to parse or create a `Rollable` object from the string notation a `Bakame\DiceRoller\CanNotBeRolled` exception will be thrown.
+If the `Factory` is not able to parse or create a `Rollable` object from the string notation a `Bakame\DiceRoller\CanNotBeRolled` exception will be thrown.
 
 ### Rollable
 

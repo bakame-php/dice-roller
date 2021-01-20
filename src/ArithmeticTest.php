@@ -296,4 +296,11 @@ final class ArithmeticTest extends TestCase
 
         Arithmetic::fromOperation(Cup::of(4, new SidedDie(6)), '/', 0);
     }
+
+    public function testCreateFromOperationFails(): void
+    {
+        self::expectException(SyntaxError::class);
+
+        Arithmetic::fromOperation(Cup::of(4, new SidedDie(6)), '$', 0);
+    }
 }
