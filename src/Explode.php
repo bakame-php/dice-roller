@@ -237,14 +237,10 @@ final class Explode implements \JsonSerializable, Modifier, EnablesDeepTracing
      */
     private function isValid(int $result, int $threshold): bool
     {
-        if (self::EQ == $this->compare) {
-            return $result === $threshold;
-        }
-
-        if (self::GT === $this->compare) {
-            return $result > $threshold;
-        }
-
-        return $result < $threshold;
+        return  match (true) {
+            self::EQ == $this->compare => $result === $threshold,
+            self::GT === $this->compare => $result > $threshold,
+            default => $result < $threshold,
+        };
     }
 }

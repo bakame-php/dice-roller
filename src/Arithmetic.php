@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use function abs;
-use function in_array;
 
 final class Arithmetic implements \JsonSerializable, Modifier, EnablesDeepTracing
 {
@@ -31,41 +30,27 @@ final class Arithmetic implements \JsonSerializable, Modifier, EnablesDeepTracin
         self::POW,
     ];
 
-    private Rollable $rollable;
-
-    private string $operator;
-
     private int $value;
-
     private Tracer $tracer;
 
     /**
+     * @param  Rollable    $rollable
+     * @param  string      $operator
      * @throws SyntaxError if the operator is not recognized
      * @throws SyntaxError if the value is invalid for a given operator
      */
-    private function __construct(Rollable $rollable, string $operator, int $value, Tracer $tracer = null)
-    {
-        $this->isValidOperation($operator, $value);
+    private function __construct(
+        private Rollable $rollable,
+        private string $operator,
+        int $value,
+        Tracer $tracer = null
+    ) {
+        if (0 > $value) {
+            throw SyntaxError::dueToOperatorAndValueMismatched($this->operator, $value);
+        }
 
-        $this->rollable = $rollable;
-        $this->operator = $operator;
         $this->value = $value;
-
         $this->setTracer($tracer ?? new NullTracer());
-    }
-
-    /**
-     * @throws SyntaxError if the operation is invalid
-     */
-    private function isValidOperation(string $operator, int $value): void
-    {
-        if (!in_array($operator, self::ALGORITHM_LIST, true)) {
-            throw SyntaxError::dueToInvalidOperator($operator);
-        }
-
-        if (0 > $value || (0 === $value && $operator === self::DIV)) {
-            throw SyntaxError::dueToOperatorAndValueMismatched($operator, $value);
-        }
     }
 
     public static function add(Rollable $rollable, int $value, Tracer $tracer = null): self
@@ -85,6 +70,10 @@ final class Arithmetic implements \JsonSerializable, Modifier, EnablesDeepTracin
 
     public static function div(Rollable $rollable, int $value, Tracer $tracer = null): self
     {
+        if (0 === $value) {
+            throw SyntaxError::dueToOperatorAndValueMismatched(self::DIV, $value);
+        }
+
         return new self($rollable, self::DIV, $value, $tracer);
     }
 
@@ -95,7 +84,14 @@ final class Arithmetic implements \JsonSerializable, Modifier, EnablesDeepTracin
 
     public static function fromOperation(Rollable $rollable, string $operator, int $value, Tracer $tracer = null): self
     {
-        return new self($rollable, $operator, $value, $tracer);
+        return match (true) {
+            $operator === self::POW => self::pow($rollable, $value, $tracer),
+            $operator === self::DIV => self::div($rollable, $value, $tracer),
+            $operator === self::ADD => self::add($rollable, $value, $tracer),
+            $operator === self::SUB => self::sub($rollable, $value, $tracer),
+            $operator === self::MUL => self::mul($rollable, $value, $tracer),
+            default => throw SyntaxError::dueToInvalidOperator($operator),
+        };
     }
 
     public function getTracer(): Tracer
@@ -171,26 +167,13 @@ final class Arithmetic implements \JsonSerializable, Modifier, EnablesDeepTracin
 
     private function calculate(int $value): int
     {
-        if (self::ADD === $this->operator) {
-            return $value + $this->value;
-        }
-
-        if (self::SUB === $this->operator) {
-            return $value - $this->value;
-        }
-
-        if (self::MUL === $this->operator) {
-            return $value * $this->value;
-        }
-
-        if (self::DIV === $this->operator) {
-            return intdiv($value, $this->value);
-        }
-
-        if ($value > -1) {
-            return $value ** $this->value;
-        }
-
-        return (int) (abs($value) ** $this->value) * -1;
+        return match (true) {
+            self::ADD === $this->operator => $value + $this->value,
+            self::SUB === $this->operator => $value - $this->value,
+            self::MUL === $this->operator => $value * $this->value,
+            self::DIV === $this->operator => intdiv($value, $this->value),
+            $value > -1 => $value ** $this->value,
+            default => (int) (abs($value) ** $this->value) * -1
+        };
     }
 }

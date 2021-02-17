@@ -212,16 +212,12 @@ final class Factory
         $operator = strtoupper($operator);
         $value = $value ?? 1;
         $value = (int) $value;
-        if ('!' !== $algo[0]) {
-            return ['modifier' => 'dropkeep', 'operator' => $operator, 'value' => $value];
-        }
 
-        $operator = substr($operator, 1);
-        if ('' !== $operator) {
-            return ['modifier' => 'explode', 'operator' => $operator, 'value' => $value];
-        }
-
-        return ['modifier' => 'explode', 'operator' => '=', 'value' => $value];
+        return match (true) {
+            '!' !== $algo[0] => ['modifier' => 'dropkeep', 'operator' => $operator, 'value' => $value],
+            '' !== ($operator = substr($operator, 1)) => ['modifier' => 'explode', 'operator' => $operator, 'value' => $value],
+            default => ['modifier' => 'explode', 'operator' => '=', 'value' => $value],
+        };
     }
 
     /**
@@ -274,19 +270,12 @@ final class Factory
      */
     private function createDice(string $notation): Dice
     {
-        if ('DF' === $notation) {
-            return new FudgeDie($this->randomIntGenerator);
-        }
-
-        if ('D%' === $notation) {
-            return new PercentileDie($this->randomIntGenerator);
-        }
-
-        if (str_contains($notation, '[')) {
-            return CustomDie::fromNotation($notation, $this->randomIntGenerator);
-        }
-
-        return SidedDie::fromNotation($notation, $this->randomIntGenerator);
+        return match (true) {
+            'DF' === $notation => new FudgeDie($this->randomIntGenerator),
+            'D%' === $notation => new PercentileDie($this->randomIntGenerator),
+            str_contains($notation, '[') => CustomDie::fromNotation($notation, $this->randomIntGenerator),
+            default => SidedDie::fromNotation($notation, $this->randomIntGenerator),
+        };
     }
 
     /**
@@ -296,15 +285,11 @@ final class Factory
      */
     private function decorate(Rollable $rollable, array $matches): Rollable
     {
-        if ('arithmetic' === $matches['modifier']) {
-            return Arithmetic::fromOperation($rollable, $matches['operator'], $matches['value']);
-        }
-
-        if ('dropkeep' === $matches['modifier']) {
-            return DropKeep::fromAlgorithm($rollable, $matches['operator'], $matches['value']);
-        }
-
-        return Explode::fromAlgorithm($rollable, $matches['operator'], $matches['value']);
+        return match (true) {
+            'arithmetic' === $matches['modifier'] => Arithmetic::fromOperation($rollable, $matches['operator'], $matches['value']),
+            'dropkeep' === $matches['modifier'] => DropKeep::fromAlgorithm($rollable, $matches['operator'], $matches['value']),
+            default => Explode::fromAlgorithm($rollable, $matches['operator'], $matches['value']),
+        };
     }
 
     /**
@@ -312,14 +297,9 @@ final class Factory
      */
     private function flattenRollable(Rollable $rollable): Rollable
     {
-        if (!$rollable instanceof Pool) {
-            return $rollable;
-        }
-
-        if (1 !== count($rollable)) {
-            return $rollable;
-        }
-
-        return iterator_to_array($rollable, false)[0];
+        return match (true) {
+            !$rollable instanceof Pool || 1 !== count($rollable) =>  $rollable,
+            default => iterator_to_array($rollable, false)[0],
+        };
     }
 }
