@@ -13,22 +13,16 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use JsonSerializable;
 use function abs;
 
-final class Arithmetic implements \JsonSerializable, Modifier, EnablesDeepTracing
+final class Arithmetic implements JsonSerializable, Modifier, EnablesDeepTracing
 {
     private const ADD = '+';
     private const DIV = '/';
     private const MUL = '*';
     private const SUB = '-';
     private const POW = '^';
-    private const ALGORITHM_LIST = [
-        self::ADD,
-        self::SUB,
-        self::DIV,
-        self::MUL,
-        self::POW,
-    ];
 
     private int $value;
     private Tracer $tracer;

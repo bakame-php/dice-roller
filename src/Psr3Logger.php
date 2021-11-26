@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Psr\Log\AbstractLogger;
+use Stringable;
 use function strtr;
 
 final class Psr3Logger extends AbstractLogger
 {
     private array $logs = [];
 
-    public function log($level, $message, array $context = []): void
+    public function log($level, string|Stringable $message, array $context = []): void
     {
         $replace = [];
         foreach ($context as $key => $val) {
@@ -28,15 +29,15 @@ final class Psr3Logger extends AbstractLogger
         }
 
         $this->logs[$level] = $this->logs[$level] ?? [];
-        $this->logs[$level][] = strtr($message, $replace);
+        $this->logs[$level][] = strtr((string) $message, $replace);
     }
 
     /**
      * Retrieves the logs from the memory.
      *
-     * @param ?string $level
+     * @param string|null $level
      */
-    public function getLogs(?string $level = null): array
+    public function getLogs(string|null $level = null): array
     {
         if (null === $level) {
             return $this->logs;
@@ -48,9 +49,9 @@ final class Psr3Logger extends AbstractLogger
     /**
      * Clear the log messages.
      *
-     * @param ?string $level
+     * @param string|null $level
      */
-    public function clear(?string $level = null): void
+    public function clear(string|null $level = null): void
     {
         if (null === $level) {
             $this->logs = [];

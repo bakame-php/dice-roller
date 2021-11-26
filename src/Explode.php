@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use JsonSerializable;
 use function array_map;
 use function array_sum;
 use function count;
@@ -21,7 +22,7 @@ use function in_array;
 use function iterator_to_array;
 use const PHP_INT_MAX;
 
-final class Explode implements \JsonSerializable, Modifier, EnablesDeepTracing
+final class Explode implements JsonSerializable, Modifier, EnablesDeepTracing
 {
     private const EQ = '=';
     private const GT = '>';
@@ -40,7 +41,7 @@ final class Explode implements \JsonSerializable, Modifier, EnablesDeepTracing
 
     private Tracer $tracer;
 
-    private bool $is_rollable_wrapped = false;
+    private bool $isRollableWrapped = false;
 
     /**
      * @throws \Bakame\DiceRoller\SyntaxError if the comparison is unknown or not supported
@@ -56,7 +57,7 @@ final class Explode implements \JsonSerializable, Modifier, EnablesDeepTracing
         $this->threshold = $threshold;
 
         if (!$pool instanceof Pool) {
-            $this->is_rollable_wrapped = true;
+            $this->isRollableWrapped = true;
             $pool = new Cup($pool);
         }
 
@@ -93,15 +94,13 @@ final class Explode implements \JsonSerializable, Modifier, EnablesDeepTracing
      */
     private function isValidPool(Pool $pool): bool
     {
-        $state = false;
         foreach ($pool as $rollable) {
-            $state = $this->isValidRollable($rollable);
-            if (!$state) {
-                return $state;
+            if (!$this->isValidRollable($rollable)) {
+                return false;
             }
         }
 
-        return $state;
+        return 0 !== count($pool);
     }
 
     /**
@@ -147,7 +146,7 @@ final class Explode implements \JsonSerializable, Modifier, EnablesDeepTracing
 
     public function getInnerRollable(): Rollable
     {
-        if (!$this->is_rollable_wrapped) {
+        if (!$this->isRollableWrapped) {
             return $this->pool;
         }
 

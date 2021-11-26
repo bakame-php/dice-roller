@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-final class FudgeDie implements Dice, \JsonSerializable, SupportsTracing
+use JsonSerializable;
+
+final class FudgeDie implements Dice, JsonSerializable, SupportsTracing
 {
     private RandomIntGenerator $randomIntGenerator;
 

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use JsonSerializable;
 use function array_map;
 use function count;
 use function explode;
@@ -21,12 +22,9 @@ use function max;
 use function min;
 use function preg_match;
 
-final class CustomDie implements Dice, \JsonSerializable, SupportsTracing
+final class CustomDie implements Dice, JsonSerializable, SupportsTracing
 {
     private const REGEXP_NOTATION = '/^d\[(?<definition>(\s?(-?\d+)\s?,)*(\s?-?\d+)\s?)\]$/i';
-
-    /** @var array<int> */
-    private array $values = [];
 
     private RandomIntGenerator $randomIntGenerator;
 
@@ -37,15 +35,14 @@ final class CustomDie implements Dice, \JsonSerializable, SupportsTracing
      *
      * @throws SyntaxError if the number of side is invalid
      */
-    private function __construct(array $values, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null)
+    private function __construct(private array $values, RandomIntGenerator $randomIntGenerator = null, Tracer $tracer = null)
     {
-        $nbSides = count($values);
+        $nbSides = count($this->values);
         if (2 > $nbSides) {
             throw SyntaxError::dueToTooFewSides($nbSides);
         }
 
         $this->randomIntGenerator = $randomIntGenerator ?? new SystemRandomInt();
-        $this->values = $values;
         $this->tracer = $tracer ?? new NullTracer();
     }
 

@@ -20,13 +20,6 @@ use function json_encode;
  */
 final class CupTest extends TestCase
 {
-    private Tracer $tracer;
-
-    public function setUp(): void
-    {
-        $this->tracer = Psr3LogTracer::fromNullLogger();
-    }
-
     /**
      * @covers ::__construct
      * @covers ::withAddedRollable

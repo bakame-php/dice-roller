@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-interface CanNotBeRolled extends \Throwable
+use Throwable;
+
+interface CanNotBeRolled extends Throwable
 {
 }

@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use JsonSerializable;
 use function preg_match;
 
-final class SidedDie implements Dice, \JsonSerializable, SupportsTracing
+final class SidedDie implements Dice, JsonSerializable, SupportsTracing
 {
     private const REGEXP_NOTATION = '/^d(?<sides>\d+)$/i';
 
@@ -42,7 +43,7 @@ final class SidedDie implements Dice, \JsonSerializable, SupportsTracing
     /**
      * New instance from a dice notation.
      *
-     * @throws \Bakame\DiceRoller\SyntaxError if the dice notation is not valid.
+     * @throws SyntaxError if the dice notation is not valid.
      */
     public static function fromNotation(string $notation, RandomIntGenerator $randomIntGenerator = null): self
     {

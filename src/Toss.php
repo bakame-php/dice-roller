@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-final class Toss implements \JsonSerializable, Roll
+use JsonSerializable;
+
+final class Toss implements JsonSerializable, Roll
 {
     public function __construct(
         private int $value,
         private string $operation,
-        private ?Context $context = null
+        private Context|null $context = null
     ) {
     }
 
@@ -32,7 +34,7 @@ final class Toss implements \JsonSerializable, Roll
         return $this->operation;
     }
 
-    public function context(): ?Context
+    public function context(): Context|null
     {
         return $this->context;
     }

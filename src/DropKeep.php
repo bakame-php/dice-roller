@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
+use JsonSerializable;
 use function array_map;
 use function array_slice;
 use function array_sum;
@@ -24,7 +25,7 @@ use function rsort;
 use function strtoupper;
 use function uasort;
 
-final class DropKeep implements \JsonSerializable, Modifier, EnablesDeepTracing
+final class DropKeep implements JsonSerializable, Modifier, EnablesDeepTracing
 {
     private const DROP_HIGHEST = 'DH';
     private const DROP_LOWEST = 'DL';

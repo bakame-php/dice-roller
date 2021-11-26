@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-final class PercentileDie implements Dice, SupportsTracing, \JsonSerializable
+use JsonSerializable;
+
+final class PercentileDie implements Dice, SupportsTracing, JsonSerializable
 {
     private RandomIntGenerator $randomIntGenerator;
 

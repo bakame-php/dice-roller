@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Bakame\DiceRoller;
 
 use Iterator;
+use JsonSerializable;
 use function array_count_values;
 use function array_filter;
 use function array_map;
@@ -23,7 +24,7 @@ use function array_walk;
 use function count;
 use function implode;
 
-final class Cup implements \JsonSerializable, Pool, EnablesDeepTracing
+final class Cup implements JsonSerializable, Pool, EnablesDeepTracing
 {
     /** @var Rollable[] */
     private array $items;

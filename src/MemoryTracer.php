@@ -13,7 +13,13 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-final class MemoryTracer implements \Countable, \IteratorAggregate, \JsonSerializable, Tracer
+use Countable;
+use IteratorAggregate;
+use JsonSerializable;
+use OutOfBoundsException;
+use Traversable;
+
+final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializable, Tracer
 {
     /**
      * @var Roll[]
@@ -35,8 +41,8 @@ final class MemoryTracer implements \Countable, \IteratorAggregate, \JsonSeriali
         return [] === $this->collection;
     }
 
-    /** @return \Traversable<int,Roll> */
-    public function getIterator(): \Traversable
+    /** @return Traversable<int,Roll> */
+    public function getIterator(): Traversable
     {
         foreach ($this->collection as $trace) {
             yield $trace;
@@ -60,13 +66,13 @@ final class MemoryTracer implements \Countable, \IteratorAggregate, \JsonSeriali
     /**
      * Returns the trace specified at a given offset.
      *
-     * @throws \OutOfBoundsException If the offset is illegal for the current instance
+     * @throws OutOfBoundsException If the offset is illegal for the current instance
      */
     public function get(int $offset): Roll
     {
         $index = $this->filterOffset($offset);
         if (null === $index) {
-            throw new \OutOfBoundsException($offset.' is an invalid offset in the current instance.');
+            throw new OutOfBoundsException($offset.' is an invalid offset in the current instance.');
         }
 
         return $this->collection[$index];

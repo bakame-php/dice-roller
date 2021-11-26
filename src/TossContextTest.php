@@ -18,14 +18,6 @@ use function get_class;
 
 final class TossContextTest extends TestCase
 {
-    private Tracer $tracer;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->tracer = new MemoryTracer();
-    }
-
     public function testItCanBeInstantiated(): void
     {
         $cup = Cup::of(3, new SidedDie(6));

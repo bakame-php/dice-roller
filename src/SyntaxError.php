@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Bakame\DiceRoller;
 
-final class SyntaxError extends \InvalidArgumentException implements CanNotBeRolled
+use InvalidArgumentException;
+
+final class SyntaxError extends InvalidArgumentException implements CanNotBeRolled
 {
     private function __construct(string $message)
     {
