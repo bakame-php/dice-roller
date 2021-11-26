@@ -28,7 +28,7 @@ interface Roll
     /**
      * The roll context.
      */
-    public function context(): ?Context;
+    public function context(): Context|null;
 
     /**
      * The roll value as a string.

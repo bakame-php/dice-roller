@@ -85,7 +85,7 @@ final class MemoryTracer implements Countable, IteratorAggregate, JsonSerializab
      *
      * if no offset is found null is returned otherwise the return type is int
      */
-    private function filterOffset(int $offset): ?int
+    private function filterOffset(int $offset): int|null
     {
         if ([] === $this->collection) {
             return null;

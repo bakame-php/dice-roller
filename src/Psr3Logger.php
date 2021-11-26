@@ -34,8 +34,6 @@ final class Psr3Logger extends AbstractLogger
 
     /**
      * Retrieves the logs from the memory.
-     *
-     * @param string|null $level
      */
     public function getLogs(string|null $level = null): array
     {
@@ -48,8 +46,6 @@ final class Psr3Logger extends AbstractLogger
 
     /**
      * Clear the log messages.
-     *
-     * @param string|null $level
      */
     public function clear(string|null $level = null): void
     {
